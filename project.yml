@@ -35,3 +35,23 @@ targets:
         NSBluetoothAlwaysUsageDescription: Connect Bluetooth MIDI keyboards and controllers.
         LSSupportsOpeningDocumentsInPlace: false
         UIFileSharingEnabled: true
+  FM1UITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: FM1UITests
+    dependencies:
+      - target: FM1
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "2"
+schemes:
+  FM1:
+    build:
+      targets:
+        FM1: all
+        FM1UITests: [test]
+    test:
+      targets:
+        - FM1UITests

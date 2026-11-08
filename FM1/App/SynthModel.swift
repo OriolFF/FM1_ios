@@ -179,6 +179,11 @@ final class SynthModel: ObservableObject {
         let parts = name.split(separator: ",").map(String.init)
         bootFirmware = nil
         if parts.contains("boot") { bootFirmware = firmware }
+        if parts.contains("firmware") { showFirmware = true }
+        if let f = parts.first(where: { $0.hasPrefix("install=") }) {
+            let fw = Firmware(rawValue: String(f.dropFirst(8)))!
+            Task { try? await Task.sleep(for: .seconds(1)); self.installFirmware(fw) }
+        }
         if let f = parts.first(where: { $0.hasPrefix("flash=") }) { flashTarget = Firmware(rawValue: String(f.dropFirst(6))); flashProgress = 0.63 }
         for p in parts {
             switch p {

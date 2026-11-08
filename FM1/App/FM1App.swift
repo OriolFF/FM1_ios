@@ -232,30 +232,33 @@ struct HelpView: View {
 struct FirmwareView: View {
     @ObservedObject var model: SynthModel
     @Environment(\.dismiss) private var dismiss
-    @State private var pending: Firmware? = nil
+    @State private var selected: Firmware? = nil
 
     var body: some View {
+        let choice = selected ?? model.firmware
         NavigationStack {
             List {
                 Section {
                     ForEach(Firmware.allCases) { fw in
-                        Button { if fw != model.firmware { pending = fw } } label: {
+                        Button { selected = fw } label: {
                             HStack(alignment: .top, spacing: 14) {
-                                Image(systemName: fw == model.firmware ? "checkmark.circle.fill" : "circle")
+                                Image(systemName: fw == choice ? "largecircle.fill.circle" : "circle")
                                     .font(.title2)
-                                    .foregroundStyle(fw == model.firmware ? Color.green : .secondary)
+                                    .foregroundStyle(fw == choice ? Color.accentColor : .secondary)
                                 VStack(alignment: .leading, spacing: 5) {
                                     HStack {
                                         Text(fw.name).font(.headline)
                                         Text(fw.version).font(.subheadline.monospaced()).foregroundStyle(.secondary)
-                                        if fw.isStock { Text("ORIGINAL").font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(Color.blue.opacity(0.25))) }
-                                        if fw == model.firmware { Text("INSTALLED").font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(Color.green.opacity(0.25))) }
+                                        if fw.isStock { badge("ORIGINAL", .blue) }
+                                        if fw == model.firmware { badge("INSTALLED", .green) }
                                     }
                                     Text(fw.summary).font(.subheadline).foregroundStyle(.primary.opacity(0.85))
                                     Text(fw.credits).font(.caption).foregroundStyle(.secondary)
                                 }
+                                Spacer(minLength: 0)
                             }
                             .padding(.vertical, 6)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -263,14 +266,32 @@ struct FirmwareView: View {
                     Text("Switching firmware stops playback and reboots the panel. Presets, sequencer patterns and global settings are kept. Choose FM-1 Stock V15 to restore the original firmware.")
                 }
             }
-            .navigationTitle("Firmware")
-            .toolbar { Button("Done") { dismiss() } }
-            .alert(item: $pending) { fw in
-                Alert(title: Text("Install \(fw.name) \(fw.version)?"),
-                      message: Text(fw.isStock ? "Restores the original FM-1 firmware behaviour." : "The panel will reboot into this firmware."),
-                      primaryButton: .default(Text("Install")) { model.installFirmware(fw); dismiss() },
-                      secondaryButton: .cancel())
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    let fw = choice
+                    dismiss()
+                    // start flashing once the sheet has gone
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(450))
+                        model.installFirmware(fw)
+                    }
+                } label: {
+                    Text(choice == model.firmware ? "\(choice.name) is installed" : "Install \(choice.name) \(choice.version)")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(choice == model.firmware)
+                .padding()
+                .background(.bar)
             }
+            .navigationTitle("Firmware")
+            .toolbar { Button("Cancel") { dismiss() } }
         }
+    }
+
+    private func badge(_ t: String, _ c: Color) -> some View {
+        Text(t).font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(c.opacity(0.25)))
     }
 }

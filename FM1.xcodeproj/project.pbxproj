@@ -14,6 +14,7 @@
 		349B04D6BE05A846DF068F9B /* FM1_V15_factory_bank_A.syx in Resources */ = {isa = PBXBuildFile; fileRef = ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */; };
 		36A344D940963561D28D9F33 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE6DD706EB043B9819F88985 /* Assets.xcassets */; };
 		391BA8E0E78A2B6413378EC6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0248C86784AF3C606BC261FB /* PanelView.swift */; };
+		3ED103508A78479658BA9647 /* FirmwareMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */; };
 		4369D1D1698A19D442567D05 /* FM1_V15_factory_bank_C.syx in Resources */ = {isa = PBXBuildFile; fileRef = 838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */; };
 		4767088C1D6F881104D05A6D /* Algorithms.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D6FC05344FB3AA7031164C /* Algorithms.swift */; };
 		4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EBEB3921BB73FD5B6F50984 /* Theme.swift */; };
@@ -35,6 +36,16 @@
 		FAF25FF31B01E3717F6F573A /* ShareTech-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23CF3185944CE38E33AD2606 /* ShareTech-Regular.ttf */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		21CF6C7F0131526DBB3288B1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD9869A18547E5BAB483372C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2BE6E0891EE59FF7AB84F601;
+			remoteInfo = FM1;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0248C86784AF3C606BC261FB /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
 		025D95527C83C02F1D517316 /* SynthModel+Groove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SynthModel+Groove.swift"; sourceTree = "<group>"; };
@@ -53,6 +64,7 @@
 		98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrooveScreenView.swift; sourceTree = "<group>"; };
 		A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumKit.swift; sourceTree = "<group>"; };
 		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A95811FA66C19DCD0A3D8155 /* FM1UITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FM1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
 		B035B24749FE1CDD959B7F47 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
 		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
@@ -64,6 +76,7 @@
 		F917216FDF2D594D72CEF090 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		F9B1C03D65236759C2FE18EC /* Nunito.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Nunito.ttf; sourceTree = "<group>"; };
 		FC0DFFF97DED49CA1E36E91E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareMenuTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -83,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				A93FB98F46F65CD2C2950CDF /* FM1.app */,
+				A95811FA66C19DCD0A3D8155 /* FM1UITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				9D53655685CE3714FF6A0253 /* FM1 */,
+				F8BFB4BF1C0A200EB193AD94 /* FM1UITests */,
 				3C6A08B272BE7AB20692EFEE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -157,6 +172,14 @@
 			path = Engine;
 			sourceTree = "<group>";
 		};
+		F8BFB4BF1C0A200EB193AD94 /* FM1UITests */ = {
+			isa = PBXGroup;
+			children = (
+				FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */,
+			);
+			path = FM1UITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -178,6 +201,24 @@
 			productReference = A93FB98F46F65CD2C2950CDF /* FM1.app */;
 			productType = "com.apple.product-type.application";
 		};
+		3D60F72F9FBD4933A5EB9CCB /* FM1UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE04D075F78D40F7F4BC85D4 /* Build configuration list for PBXNativeTarget "FM1UITests" */;
+			buildPhases = (
+				B440B5B2201D94E3A60AA6EF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				50588FAA97D6E6BC26B4D9CB /* PBXTargetDependency */,
+			);
+			name = FM1UITests;
+			packageProductDependencies = (
+			);
+			productName = FM1UITests;
+			productReference = A95811FA66C19DCD0A3D8155 /* FM1UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -190,6 +231,11 @@
 					2BE6E0891EE59FF7AB84F601 = {
 						DevelopmentTeam = 37UF89K96Y;
 						ProvisioningStyle = Automatic;
+					};
+					3D60F72F9FBD4933A5EB9CCB = {
+						DevelopmentTeam = 37UF89K96Y;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2BE6E0891EE59FF7AB84F601;
 					};
 				};
 			};
@@ -208,6 +254,7 @@
 			projectRoot = "";
 			targets = (
 				2BE6E0891EE59FF7AB84F601 /* FM1 */,
+				3D60F72F9FBD4933A5EB9CCB /* FM1UITests */,
 			);
 		};
 /* End PBXProject section */
@@ -232,6 +279,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B440B5B2201D94E3A60AA6EF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ED103508A78479658BA9647 /* FirmwareMenuTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E2C8DA41D71BB8504DC9A584 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -257,6 +312,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		50588FAA97D6E6BC26B4D9CB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2BE6E0891EE59FF7AB84F601 /* FM1 */;
+			targetProxy = 21CF6C7F0131526DBB3288B1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		165287DA40EEE64D11D05801 /* Release */ = {
@@ -333,6 +396,23 @@
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
+		};
+		24317363D66DE33B7FC59231 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oriol.FM1UITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = FM1;
+			};
+			name = Debug;
 		};
 		38758A9B78EA3F4E92F75551 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -416,6 +496,23 @@
 			};
 			name = Debug;
 		};
+		FD7A1527A2E173B81EB1CBFD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oriol.FM1UITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = FM1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -433,6 +530,15 @@
 			buildConfigurations = (
 				8299C924737ECF48265F3EBC /* Debug */,
 				1C945446083B6A6477F186EF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FE04D075F78D40F7F4BC85D4 /* Build configuration list for PBXNativeTarget "FM1UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24317363D66DE33B7FC59231 /* Debug */,
+				FD7A1527A2E173B81EB1CBFD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
