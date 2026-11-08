@@ -77,6 +77,7 @@ struct ContentView: View {
             BluetoothMIDIView().ignoresSafeArea()
         }
         .sheet(isPresented: $showHelp) { HelpView() }
+        .sheet(isPresented: $model.showFirmware) { FirmwareView(model: model) }
     }
 
     private var backdrop: some View {
@@ -107,6 +108,16 @@ struct ContentView: View {
                 }
             }
             Divider().frame(height: 24).overlay(Color.white.opacity(0.2))
+            Button { model.showFirmware = true } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "cpu").font(.system(size: 16, weight: .medium))
+                    Text("\(model.firmware.name) \(model.firmware.version)").font(PanelFont.silkscreen(12))
+                }
+                .foregroundStyle(.white.opacity(0.75))
+                .padding(.horizontal, 10).frame(height: 32)
+                .background(Capsule().fill(Color.white.opacity(0.08)))
+            }
+            .accessibilityLabel("Firmware")
             Button { fullScreen = true } label: {
                 Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.white.opacity(0.75))
@@ -137,9 +148,11 @@ struct ContentView: View {
                     }
                 }
                 Button { showHelp = true } label: { Label("Controls", systemImage: "questionmark.circle") }
+                Button { model.showFirmware = true } label: { Label("Firmware… (\(model.firmware.name))", systemImage: "cpu") }
                 Divider()
             } else {
                 Button { fullScreen = true } label: { Label("Full Screen (iPad as device)", systemImage: "arrow.up.left.and.arrow.down.right") }
+                Button { model.showFirmware = true } label: { Label("Firmware… (\(model.firmware.name))", systemImage: "cpu") }
                 Divider()
             }
             Button { importing = true } label: { Label("Import SysEx (.syx)…", systemImage: "square.and.arrow.down") }
@@ -193,7 +206,7 @@ struct HelpView: View {
         ("SAVE", "Hold to save the current preset"),
         ("ARP / SEQ", "Arpeggiator / 16-step sequencer (white keys show steps)"),
         ("PLAY/STOP · REC", "Sequencer transport and step recording · hold PLAY = panic"),
-        ("GROOVE MODE", "GLO page 3 → Seq Mode: Groove. SEQ then opens the groovebox: synth track + 11-lane 808-style drums, 8 patterns × 64 steps"),
+        ("FIRMWARE", "Toolbar Firmware chip: switch between FM-1 Stock V15 (original) and FM Pocket Groove. In Groove, SEQ opens the groovebox: synth track + 11-lane 808-style drums, 8 patterns × 64 steps"),
         ("Groove · steps", "White keys = 16 steps (tap to toggle) · OCT−/OCT+ = step page · black keys = drum lane · SEL = synth/drum track"),
         ("Groove · hold a step", "K1–K4: note/velocity, velocity/chance, chance/ratchet … · SELECT = gate/TIE · ALGORITHM = lock parameter · PRESETS = lock value"),
         ("Groove · pages", "SELECT: Pattern (pattern, length, tempo, swing) · Euclid (hits, steps, rotate, velocity) · Kit (level, tune, decay, tone) · Tools (clear, copy, density fill, drum level)"),
@@ -210,6 +223,54 @@ struct HelpView: View {
             }
             .navigationTitle("Controls")
             .toolbar { Button("Done") { dismiss() } }
+        }
+    }
+}
+
+
+/// Firmware updater: pick which ported firmware the panel runs.
+struct FirmwareView: View {
+    @ObservedObject var model: SynthModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var pending: Firmware? = nil
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(Firmware.allCases) { fw in
+                        Button { if fw != model.firmware { pending = fw } } label: {
+                            HStack(alignment: .top, spacing: 14) {
+                                Image(systemName: fw == model.firmware ? "checkmark.circle.fill" : "circle")
+                                    .font(.title2)
+                                    .foregroundStyle(fw == model.firmware ? Color.green : .secondary)
+                                VStack(alignment: .leading, spacing: 5) {
+                                    HStack {
+                                        Text(fw.name).font(.headline)
+                                        Text(fw.version).font(.subheadline.monospaced()).foregroundStyle(.secondary)
+                                        if fw.isStock { Text("ORIGINAL").font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(Color.blue.opacity(0.25))) }
+                                        if fw == model.firmware { Text("INSTALLED").font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(Color.green.opacity(0.25))) }
+                                    }
+                                    Text(fw.summary).font(.subheadline).foregroundStyle(.primary.opacity(0.85))
+                                    Text(fw.credits).font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } footer: {
+                    Text("Switching firmware stops playback and reboots the panel. Presets, sequencer patterns and global settings are kept. Choose FM-1 Stock V15 to restore the original firmware.")
+                }
+            }
+            .navigationTitle("Firmware")
+            .toolbar { Button("Done") { dismiss() } }
+            .alert(item: $pending) { fw in
+                Alert(title: Text("Install \(fw.name) \(fw.version)?"),
+                      message: Text(fw.isStock ? "Restores the original FM-1 firmware behaviour." : "The panel will reboot into this firmware."),
+                      primaryButton: .default(Text("Install")) { model.installFirmware(fw); dismiss() },
+                      secondaryButton: .cancel())
+            }
         }
     }
 }

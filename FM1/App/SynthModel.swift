@@ -118,7 +118,17 @@ final class SynthModel: ObservableObject {
     enum Dialog: Equatable { case rename, copy, reset }
 
     // MARK: Groove mode state (see SynthModel+Groove.swift)
-    @Published var grooveMode = UserDefaults.standard.bool(forKey: "grooveMode")
+    @Published var grooveMode = SynthModel.storedFirmware == .groove
+    // MARK: Firmware
+    @Published var firmware: Firmware = SynthModel.storedFirmware
+    @Published var flashTarget: Firmware? = nil
+    @Published var flashProgress: Double = 0
+    @Published var bootFirmware: Firmware? = nil
+    @Published var showFirmware = false
+    static var storedFirmware: Firmware {
+        if let raw = UserDefaults.standard.string(forKey: "firmware"), let f = Firmware(rawValue: raw) { return f }
+        return UserDefaults.standard.bool(forKey: "grooveMode") ? .groove : .stockV15   // migrate
+    }
     @Published var grooveTrack = 1          // 0 synth, 1 drums
     @Published var grooveLane = 0
     @Published var groovePage = 0           // 16-step page
@@ -155,6 +165,7 @@ final class SynthModel: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 1 / 15, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
+        boot(firmware, duration: 1.4)
         #if DEBUG
         if let i = CommandLine.arguments.firstIndex(of: "-demo"), i + 1 < CommandLine.arguments.count {
             demo(CommandLine.arguments[i + 1])
@@ -166,6 +177,9 @@ final class SynthModel: ObservableObject {
     /// Puts the UI into a given state for screenshot checks.
     private func demo(_ name: String) {
         let parts = name.split(separator: ",").map(String.init)
+        bootFirmware = nil
+        if parts.contains("boot") { bootFirmware = firmware }
+        if let f = parts.first(where: { $0.hasPrefix("flash=") }) { flashTarget = Firmware(rawValue: String(f.dropFirst(6))); flashProgress = 0.63 }
         for p in parts {
             switch p {
             case "fx": mode = .fx; setExtra { $0.fxOn[0] = true; $0.fxOn[5] = true }; fxCursor = 5; fxLastParam = "Freq: 30%"
@@ -184,7 +198,7 @@ final class SynthModel: ObservableObject {
             case let c where c.hasPrefix("alg="): setPatch { $0[.algorithm] = (Int(c.dropFirst(4)) ?? 1) - 1 }
             case "presets": selectPreset(127); popupTask?.cancel()
             case "groove":
-                setGrooveMode(true)
+                setGrooveMode(true, quiet: true); firmware = .groove
                 popupTask?.cancel(); popup = nil
                 press(.seq)
                 let g = audio.groove
@@ -214,6 +228,7 @@ final class SynthModel: ObservableObject {
     private func tick() {
         tickCount += 1
         if tickCount % 4 == 0 { blinkPhase.toggle() }
+        if tickCount % 15 == 0 { audio.ensureRunning() }   // audio watchdog (1 s)
         let notes = Set(engine.soundingNotes())
         if notes != soundingNotes { soundingNotes = notes }
         if seq.seqOn || audio.groove.on || audio.groove.playing { objectWillChange.send() } // step LED playhead
@@ -430,6 +445,47 @@ final class SynthModel: ObservableObject {
         }
     }
 
+    // MARK: Firmware install
+
+    var isBusyFlashing: Bool { flashTarget != nil }
+
+    /// "Flashes" another firmware: stops playback, shows the updater progress
+    /// on the TFT, switches the behaviour profile and reboots to HOME.
+    /// Presets, patterns and global settings are kept.
+    func installFirmware(_ fw: Firmware) {
+        guard flashTarget == nil else { return }
+        persist()
+        seq.playing = false; seq.seqOn = false; seq.arpOn = false
+        groove.playing = false; groove.on = false
+        recording = false
+        engine.panic()
+        dialog = nil; pendingImport = nil; popup = nil
+        mode = .home; page = 0; grooveHeld = nil; fxGrabbed = false
+        flashTarget = fw
+        flashProgress = 0
+        Task { [weak self] in
+            for i in 1...20 {
+                try? await Task.sleep(for: .milliseconds(90))
+                self?.flashProgress = Double(i) / 20
+            }
+            try? await Task.sleep(for: .milliseconds(400))
+            guard let self else { return }
+            self.setGrooveMode(fw == .groove, quiet: true)
+            self.firmware = fw
+            UserDefaults.standard.set(fw.rawValue, forKey: "firmware")
+            self.flashTarget = nil
+            self.boot(fw, duration: 1.6)
+        }
+    }
+
+    func boot(_ fw: Firmware, duration: Double) {
+        bootFirmware = fw
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(duration))
+            if self?.bootFirmware == fw { self?.bootFirmware = nil }
+        }
+    }
+
     // MARK: Pages
 
     private func opParam(_ op: Int, _ p: FMPatch.OpParam, _ name: String, format: ((Int) -> String)? = nil) -> PageParam {
@@ -553,9 +609,10 @@ final class SynthModel: ObservableObject {
                     PageParam(name: "Glide Val", value: { [unowned self] in "\(globals.glide)" },
                               step: { [unowned self] d in globals.glide = cycle(globals.glide, d, 0...100); applyGlobals() }),
                 ]),
-                Page(title: "Global", params: [
-                    PageParam(name: "Seq Mode", value: { [unowned self] in grooveMode ? "Groove" : "Stock" },
-                              step: { [unowned self] d in setGrooveMode(d > 0) }),
+            ] + (grooveMode ? [
+                Page(title: "Groove", params: [
+                    PageParam(name: "Firmware", value: { [unowned self] in firmware.version },
+                              step: { [unowned self] d in if d > 0 { showFirmware = true } }),
                     PageParam(name: "Drum Level", value: { [unowned self] in "\(globals.drumLevel ?? 80)" },
                               step: { [unowned self] d in globals.drumLevel = cycle(globals.drumLevel ?? 80, d, 0...100); applyGlobals() }),
                     PageParam(name: "Drum Accent", value: { [unowned self] in "\(Int(audio.drums.accent * 100))" },
@@ -563,7 +620,7 @@ final class SynthModel: ObservableObject {
                     PageParam(name: "Hat Choke", value: { [unowned self] in audio.drums.chokeHats ? "ON" : "OFF" },
                               step: { [unowned self] d in audio.drums.chokeHats = d > 0 }),
                 ]),
-            ]
+            ] : [])
         case .arp:
             return [
                 Page(title: "Arpeggio", params: [
@@ -650,6 +707,16 @@ final class SynthModel: ObservableObject {
         let pg = pgs.isEmpty ? nil : pgs[min(page, pgs.count - 1)]
         let pageLabel = pgs.count > 1 ? "\(min(page, pgs.count - 1) + 1)/\(pgs.count) " : ""
 
+        if let f = flashTarget {
+            s.content = .flash(f.name, f.version, flashProgress)
+            s.footer = flashProgress < 1 ? "Updating firmware" : "Rebooting…"
+            return s
+        }
+        if let b = bootFirmware {
+            s.content = .boot(b.bootTitle, "\(b.name) \(b.version)")
+            s.footer = "Booting"
+            return s
+        }
         if let pending = pendingImport {
             _ = pending
             s.content = .save(bankName: "", selected: importBank)
@@ -723,6 +790,7 @@ final class SynthModel: ObservableObject {
     // MARK: Controls — encoders
 
     func turnMaster(_ d: Int) {
+        if isBusyFlashing { return }
         globals.master = min(1, max(0, globals.master + Double(d) * 0.02))
         applyGlobals()
         showPopup(.message("Volume \(Int(globals.master * 100))", nil), duration: 0.8)
@@ -730,6 +798,7 @@ final class SynthModel: ObservableObject {
     }
 
     func turnSelect(_ d: Int) {
+        if isBusyFlashing { return }
         if let dlg = dialog {
             if d > 0 {
                 switch dlg {
@@ -786,12 +855,14 @@ final class SynthModel: ObservableObject {
     private var tieExtended = false
 
     func turnPresets(_ d: Int) {
+        if isBusyFlashing { return }
         if groovePresets(d) { return }
         if seq.seqOn { showPopup(.message("Disable SEQ", "Voice bound to pattern"), duration: 1); return }
         selectPreset(current + d)
     }
 
     func turnAlgorithm(_ d: Int) {
+        if isBusyFlashing { return }
         if grooveAlgorithm(d) { return }
         if !octHeld.isEmpty {
             let sign = octHeld.contains(1) ? 1 : -1
@@ -809,6 +880,7 @@ final class SynthModel: ObservableObject {
     }
 
     func turnKnob(_ k: Int, _ d: Int) {
+        if isBusyFlashing { return }
         if pendingImport != nil { importBank = k; return }
         if let dlg = dialog {
             switch dlg {
@@ -850,6 +922,7 @@ final class SynthModel: ObservableObject {
     // MARK: Controls — buttons
 
     func press(_ b: PanelButton) {
+        if isBusyFlashing { return }
         if pendingImport != nil {
             if b == .home { pendingImport = nil } else if b == .save { confirmImport() }
             return
@@ -903,6 +976,7 @@ final class SynthModel: ObservableObject {
     }
 
     func longPress(_ b: PanelButton) {
+        if isBusyFlashing { return }
         switch b {
         case .save: saveCurrent()
         case .home: showBluetooth = true
@@ -982,6 +1056,7 @@ final class SynthModel: ObservableObject {
 
     func keyDown(_ k: Int, velocity: Int) {
         pressedKeys.insert(k)
+        if isBusyFlashing { return }
         // Rename: OP1-4 select class, OP5 delete
         if dialog == .rename, let label = SynthModel.editLabels[k] {
             switch label {

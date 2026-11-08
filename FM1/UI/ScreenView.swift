@@ -17,6 +17,8 @@ enum ScreenContent: Equatable {
     case message(String, String?)
     case presetList(Int, [String])
     case groove(GrooveScreen)
+    case flash(String, String, Double)
+    case boot(String, String)
 }
 
 struct ScreenState: Equatable {
@@ -56,7 +58,12 @@ struct TFTScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 3 * s))
     }
 
-    private var isDark: Bool { if case .osc = state.content { return true }; return false }
+    private var isDark: Bool {
+        switch state.content {
+        case .osc, .flash, .boot: return true
+        default: return false
+        }
+    }
     private var dividerColor: Color { isDark ? Color.white.opacity(0.15) : ScreenPalette.divider }
 
     @ViewBuilder private var background: some View {
@@ -141,6 +148,38 @@ struct TFTScreen: View {
             presetList(sel, names, s)
         case let .groove(g):
             GrooveGridView(g: g, s: s)
+        case let .flash(name, version, progress):
+            VStack(spacing: 10 * s) {
+                Text("Firmware Update")
+                    .font(PanelFont.screen(15 * s, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.75))
+                Text("\(name) \(version)")
+                    .font(PanelFont.screen(19 * s, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4 * s).fill(Color.white.opacity(0.15))
+                    RoundedRectangle(cornerRadius: 4 * s).fill(ScreenPalette.oscTrace)
+                        .frame(width: 180 * s * progress)
+                }
+                .frame(width: 180 * s, height: 10 * s)
+                Text("\(Int(progress * 100))%  · do not power off")
+                    .font(PanelFont.screen(11 * s))
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+            .padding(.horizontal, 10 * s)
+        case let .boot(title, sub):
+            VStack(spacing: 8 * s) {
+                Text(title)
+                    .font(PanelFont.legend(34 * s))
+                    .foregroundStyle(ScreenPalette.oscTrace)
+                    .shadow(color: ScreenPalette.oscTrace.opacity(0.6), radius: 6 * s)
+                    .lineLimit(1).minimumScaleFactor(0.5)
+                Text(sub)
+                    .font(PanelFont.screen(13 * s, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.75))
+            }
+            .padding(.horizontal, 10 * s)
         }
     }
 

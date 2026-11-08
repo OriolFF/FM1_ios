@@ -47,10 +47,23 @@ final class AudioController {
         avEngine.connect(source, to: avEngine.mainMixerNode, format: format)
         start()
         setupMIDI()
-        NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] n in
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] n in
             guard let raw = n.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
                   AVAudioSession.InterruptionType(rawValue: raw) == .ended else { return }
-            self?.start()
+            self?.restart()
+        }
+        // AVAudioEngine stops itself when the output configuration changes
+        // (route / sample rate / device). Restart it, or the app goes silent.
+        nc.addObserver(forName: .AVAudioEngineConfigurationChange, object: avEngine, queue: .main) { [weak self] _ in
+            self?.restart()
+        }
+        nc.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: .main) { [weak self] _ in
+            AudioController.configureSession()
+            self?.restart()
+        }
+        nc.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self?.ensureRunning() }
         }
     }
 
@@ -63,9 +76,24 @@ final class AudioController {
 
     func start() {
         if !avEngine.isRunning {
+            try? AVAudioSession.sharedInstance().setActive(true)
             avEngine.prepare()
-            try? avEngine.start()
+            do { try avEngine.start() } catch { print("AudioController: start failed \(error)") }
         }
+    }
+
+    /// Stop + start (used after configuration changes).
+    func restart() {
+        avEngine.stop()
+        engine.allNotesOff()
+        start()
+    }
+
+    var isRunning: Bool { avEngine.isRunning }
+
+    /// Watchdog: restart if the engine has silently stopped.
+    func ensureRunning() {
+        if !avEngine.isRunning { start() }
     }
 
 

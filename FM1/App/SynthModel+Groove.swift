@@ -29,7 +29,7 @@ extension SynthModel {
 
     // MARK: Mode switching
 
-    func setGrooveMode(_ on: Bool) {
+    func setGrooveMode(_ on: Bool, quiet: Bool = false) {
         guard on != grooveMode else { return }
         // stop everything first
         seq.playing = false; seq.seqOn = false
@@ -39,7 +39,7 @@ extension SynthModel {
         grooveMode = on
         UserDefaults.standard.set(on, forKey: "grooveMode")
         if mode == .seq { mode = .home }
-        showPopup(.message(on ? "Groove Mode" : "Stock Sequencer", on ? "SEQ = groovebox" : "V15 behaviour"), duration: 1.2)
+        if !quiet { showPopup(.message(on ? "Groove Mode" : "Stock Sequencer", on ? "SEQ = groovebox" : "V15 behaviour"), duration: 1.2) }
     }
 
     func syncGrooveBase() {

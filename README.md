@@ -32,9 +32,16 @@ Apache-2.0 recovery image in github.com/m-vave/fm1_open).
 
 Research notes and reference photos used for the recreation are in `research/`.
 
-## Groove mode (opt-in groovebox)
+## Firmware menu
 
-Enable with **GLO → page 3 → Seq Mode: Groove**. Inspired by the community FM-1 firmwares
+Toolbar **Firmware** chip (or ⋯ → Firmware… in full-screen mode) lists the ported firmwares, like the
+hardware updater: **FM-1 Stock V15** (original — always available to restore) and **FM Pocket Groove G1.0**.
+Installing shows a flashing progress screen on the TFT and reboots the panel; presets, patterns and globals
+are kept. Add new ports in `FM1/App/Firmware.swift`.
+
+## Groove firmware (groovebox)
+
+Install **FM Pocket Groove** from the Firmware menu. Inspired by the community FM-1 firmwares
 (Felucca / SLOOP / FM-1+VA / FM1 Open — see `research/FIRMWARE_*_SEQ.md`):
 
 * 8 patterns, each with an FM **synth track** (chords, tie, gate, chance/FILL conditions, ratchet ×1–4,
