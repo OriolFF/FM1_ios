@@ -16,6 +16,7 @@ enum ScreenContent: Equatable {
     case save(bankName: String, selected: Int)
     case message(String, String?)
     case presetList(Int, [String])
+    case groove(GrooveScreen)
 }
 
 struct ScreenState: Equatable {
@@ -138,6 +139,8 @@ struct TFTScreen: View {
             .padding(10 * s)
         case let .presetList(sel, names):
             presetList(sel, names, s)
+        case let .groove(g):
+            GrooveGridView(g: g, s: s)
         }
     }
 

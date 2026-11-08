@@ -229,7 +229,7 @@ struct PanelView: View {
         return RubberButton(lines: lines, size: size, colorway: cw, light: model.buttonLight(b), underline: b == .play,
                             action: { model.press(b) },
                             onLongPress: { model.longPress(b) },
-                            onHoldChange: b == .rec ? { model.recHeld = $0 } : nil)
+                            onHoldChange: b == .rec ? { model.recHeld = $0 } : (b == .glo ? { model.gloHeld = $0; if !$0 { model.audio.groove.fill = false } } : nil))
     }
 
     // MARK: Keyboard

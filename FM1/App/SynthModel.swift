@@ -24,6 +24,7 @@ struct GlobalSettings: Codable, Equatable {
     var octave = 0
     var transpose = 0
     var tempo = 120
+    var drumLevel: Int? = 80
 }
 
 /// Snapshot persisted to disk.
@@ -38,6 +39,7 @@ struct SavedState: Codable {
     var seqRate: [UInt8]
     var patLength: [Int], patRate: [Int], patGate: [Int], patSwing: [Int], patChain: [Int], patTranspose: [Int], patVoice: [Int]
     var arp: [Int]?              // mode, octaves, rate, gate, swing, latch
+    var groove: GrooveSaved?
 }
 
 enum Mode: Equatable { case home, fx, env, lfo, edit, glo, arp, seq }
@@ -115,6 +117,23 @@ final class SynthModel: ObservableObject {
 
     enum Dialog: Equatable { case rename, copy, reset }
 
+    // MARK: Groove mode state (see SynthModel+Groove.swift)
+    @Published var grooveMode = UserDefaults.standard.bool(forKey: "grooveMode")
+    @Published var grooveTrack = 1          // 0 synth, 1 drums
+    @Published var grooveLane = 0
+    @Published var groovePage = 0           // 16-step page
+    @Published var grooveHeld: Int? = nil   // held step (absolute)
+    var grooveHeldUsed = false
+    @Published var grooveRecCursor = 0
+    var recChordCount = 0
+    var grooveLastNote = 60
+    @Published var gloHeld = false
+    var gloLayerUsed = false
+    var tapTimes: [Date] = []
+    var euclidSettings: [[EuclidSetting]] = Array(repeating: Array(repeating: EuclidSetting(), count: GrooveSeq.lanes), count: GrooveSeq.patterns)
+    var densityValue = 50
+    @Published var lockSelection = 0
+
     private var recChordNotes: [Int] = []
     private var popupTask: Task<Void, Never>?
     private var footerTask: Task<Void, Never>?
@@ -164,6 +183,23 @@ final class SynthModel: ObservableObject {
             case "algo": turnAlgorithm(0); popupTask?.cancel()
             case let c where c.hasPrefix("alg="): setPatch { $0[.algorithm] = (Int(c.dropFirst(4)) ?? 1) - 1 }
             case "presets": selectPreset(127); popupTask?.cancel()
+            case "groove":
+                setGrooveMode(true)
+                popupTask?.cancel(); popup = nil
+                press(.seq)
+                let g = audio.groove
+                g.euclid(0, lane: 0, hits: 4, steps: 16, rotate: 0)
+                for s in [4, 12] { g.dVel[g.di(0, 1, s)] = 100 }
+                for s in stride(from: 0, to: 16, by: 2) { g.dVel[g.di(0, 10, s)] = 90 }
+                g.dVel[g.di(0, 9, 14)] = 100
+                g.dRatchet[g.di(0, 10, 14)] = 3
+                for (i, n) in [36, 0, 36, 48, 0, 36, 0, 43, 36, 0, 36, 48, 0, 39, 41, 43].enumerated() where n > 0 { g.setSynthNotes(0, i, [n]) }
+                g.sGate[g.si(0, 3)] = GrooveSeq.tieGate
+                g.sCond[g.si(0, 13)] = 4
+                g.sLockParam[g.si(0, 7) * 4] = 134; g.sLockVal[g.si(0, 7) * 4] = 4
+                g.playing = true
+            case "groovesynth": grooveTrack = 0
+            case "groovekit": page = 2
             case "import": pendingImport = presets.prefix(32).map { $0 }; importBank = 1
             case "play": engine.noteOn(60, velocity: 100); engine.noteOn(67, velocity: 100); pressedKeys = [7, 14]
             case let c where c.hasPrefix("color="): globals.colorway = String(c.dropFirst(6))
@@ -180,7 +216,7 @@ final class SynthModel: ObservableObject {
         if tickCount % 4 == 0 { blinkPhase.toggle() }
         let notes = Set(engine.soundingNotes())
         if notes != soundingNotes { soundingNotes = notes }
-        if seq.seqOn { objectWillChange.send() } // step LED playhead
+        if seq.seqOn || audio.groove.on || audio.groove.playing { objectWillChange.send() } // step LED playhead
     }
 
     // MARK: Factory data
@@ -218,6 +254,10 @@ final class SynthModel: ObservableObject {
                 seq.patLength = s.patLength; seq.patRate = s.patRate; seq.patGate = s.patGate
                 seq.patSwing = s.patSwing; seq.patChain = s.patChain; seq.patTranspose = s.patTranspose; seq.patVoice = s.patVoice
             }
+            if let g = s.groove {
+                g.restore(into: audio.groove, kit: audio.drums)
+                if g.euclid.count == GrooveSeq.patterns { euclidSettings = g.euclid }
+            }
             if let a = s.arp, a.count >= 6 {
                 seq.arpMode = ArpSeq.ArpMode(rawValue: a[0]) ?? .up
                 seq.arpOctaves = a[1]; seq.arpRate = a[2]; seq.arpGate = a[3]; seq.arpSwing = a[4]; seq.arpLatch = a[5] != 0
@@ -239,7 +279,8 @@ final class SynthModel: ObservableObject {
             seqRate: Array(UnsafeBufferPointer(start: seq.stepRate, count: n)),
             patLength: seq.patLength, patRate: seq.patRate, patGate: seq.patGate, patSwing: seq.patSwing,
             patChain: seq.patChain, patTranspose: seq.patTranspose, patVoice: seq.patVoice,
-            arp: [seq.arpMode.rawValue, seq.arpOctaves, seq.arpRate, seq.arpGate, seq.arpSwing, seq.arpLatch ? 1 : 0])
+            arp: [seq.arpMode.rawValue, seq.arpOctaves, seq.arpRate, seq.arpGate, seq.arpSwing, seq.arpLatch ? 1 : 0],
+            groove: GrooveSaved(audio.groove, kit: audio.drums, euclid: euclidSettings))
         if let d = try? JSONEncoder().encode(s) { try? d.write(to: stateURL, options: .atomic) }
     }
 
@@ -271,9 +312,11 @@ final class SynthModel: ObservableObject {
         seq.velocity = UInt8(clamping: globals.velocity)
         audio.midiChannel = globals.midiChannel
         audio.fxChannel = globals.fxChannel
+        engine.drumLevel = Float(globals.drumLevel ?? 80) / 80
+        audio.groove.tempo = Double(globals.tempo)
     }
 
-    private func pushPatch() { engine.loadPatch(patch) }
+    private func pushPatch() { engine.loadPatch(patch); syncGrooveBase() }
 
     private func pushExtra() {
         for i in 0..<6 { fx.order[i] = extra.fxOrder[i]; fx.enabled[i] = extra.fxOn[i] }
@@ -510,6 +553,16 @@ final class SynthModel: ObservableObject {
                     PageParam(name: "Glide Val", value: { [unowned self] in "\(globals.glide)" },
                               step: { [unowned self] d in globals.glide = cycle(globals.glide, d, 0...100); applyGlobals() }),
                 ]),
+                Page(title: "Global", params: [
+                    PageParam(name: "Seq Mode", value: { [unowned self] in grooveMode ? "Groove" : "Stock" },
+                              step: { [unowned self] d in setGrooveMode(d > 0) }),
+                    PageParam(name: "Drum Level", value: { [unowned self] in "\(globals.drumLevel ?? 80)" },
+                              step: { [unowned self] d in globals.drumLevel = cycle(globals.drumLevel ?? 80, d, 0...100); applyGlobals() }),
+                    PageParam(name: "Drum Accent", value: { [unowned self] in "\(Int(audio.drums.accent * 100))" },
+                              step: { [unowned self] d in audio.drums.accent = Float(cycle(Int(audio.drums.accent * 100), d, 0...100)) / 100 }),
+                    PageParam(name: "Hat Choke", value: { [unowned self] in audio.drums.chokeHats ? "ON" : "OFF" },
+                              step: { [unowned self] d in audio.drums.chokeHats = d > 0 }),
+                ]),
             ]
         case .arp:
             return [
@@ -622,6 +675,11 @@ final class SynthModel: ObservableObject {
             s.footer = popupFooter ?? (mode == .home ? "OSC" : footerTitle(pageLabel, pg))
             return s
         }
+        if let (c, f) = grooveScreen() {
+            s.content = c
+            s.footer = footerOverride ?? f
+            return s
+        }
         switch mode {
         case .home:
             s.content = .osc
@@ -693,6 +751,7 @@ final class SynthModel: ObservableObject {
             return
         }
         if pendingImport != nil { if d > 0 { confirmImport() } else { pendingImport = nil }; return }
+        if grooveSelect(d) { return }
         if mode == .seq && recording && recHeld {
             recCursor = cycle(recCursor, d, 0...(seq.patLength[seq.pattern] - 1))
             return
@@ -727,11 +786,13 @@ final class SynthModel: ObservableObject {
     private var tieExtended = false
 
     func turnPresets(_ d: Int) {
+        if groovePresets(d) { return }
         if seq.seqOn { showPopup(.message("Disable SEQ", "Voice bound to pattern"), duration: 1); return }
         selectPreset(current + d)
     }
 
     func turnAlgorithm(_ d: Int) {
+        if grooveAlgorithm(d) { return }
         if !octHeld.isEmpty {
             let sign = octHeld.contains(1) ? 1 : -1
             let range = sign > 0 ? 0...12 : -12...0
@@ -761,6 +822,7 @@ final class SynthModel: ObservableObject {
             }
             return
         }
+        if grooveKnob(k, d) { return }
         if mode == .fx {
             let kind = FXChain.Kind(rawValue: extra.fxOrder[fxCursor])!
             if k == 3 {
@@ -793,6 +855,7 @@ final class SynthModel: ObservableObject {
             return
         }
         if dialog != nil && b == .home { dialog = nil; return }
+        if grooveButton(b) { objectWillChange.send(); return }
         switch b {
         case .fx: toggleMode(.fx)
         case .sel:
@@ -855,6 +918,7 @@ final class SynthModel: ObservableObject {
     func octDown(_ dir: Int) {
         octHeld.insert(dir)
         octTransposeUsed = false
+        if grooveOct(dir) { octTransposeUsed = true; return }
         if octHeld.count == 2 {
             globals.octave = 0; globals.transpose = 0
             engine.allNotesOff()
@@ -939,6 +1003,7 @@ final class SynthModel: ObservableObject {
             }
             return
         }
+        if grooveKeyDown(k) { return }
         if mode == .edit, let label = SynthModel.editLabels[k] {
             keyDownTime[k] = Date()
             switch label {
@@ -957,6 +1022,8 @@ final class SynthModel: ObservableObject {
         let note = midiNote(forKey: k)
         keyNoteMap[k] = note
         engine.noteOn(note, velocity: globals.velocity)
+        grooveLastNote = note
+        if grooveMode { grooveRecordNote(note); return }
         if mode == .seq && recording {
             if !recChordNotes.contains(note) { recChordNotes.append(note) }
             let p = seq.pattern
@@ -971,6 +1038,7 @@ final class SynthModel: ObservableObject {
 
     func keyUp(_ k: Int) {
         pressedKeys.remove(k)
+        if grooveKeyUp(k) { return }
         if mode == .edit, let label = SynthModel.editLabels[k], label.hasPrefix("OP"), let n = Int(label.dropFirst(2)) {
             if let t = keyDownTime[k], Date().timeIntervalSince(t) > 0.6 {
                 if mutedOps.contains(n) { mutedOps.remove(n) } else { mutedOps.insert(n) }
@@ -985,6 +1053,7 @@ final class SynthModel: ObservableObject {
         if dialog == .rename || (mode == .edit && SynthModel.editLabels[k] != nil) { return }
         if let note = keyNoteMap.removeValue(forKey: k) {
             engine.noteOff(note)
+            if grooveMode { grooveRecordRelease(); return }
             if mode == .seq && recording {
                 recChordNotes.removeAll { $0 == note }
                 if recChordNotes.isEmpty {
@@ -998,6 +1067,7 @@ final class SynthModel: ObservableObject {
     // MARK: LEDs
 
     func keyLED(_ k: Int) -> Color? {
+        if let g = grooveKeyLED(k) { return g }
         let lit = Color(hex: 0xd9f3ff)
         if pressedKeys.contains(k) { return lit }
         if mode == .edit, let label = SynthModel.editLabels[k] {
@@ -1027,6 +1097,16 @@ final class SynthModel: ObservableObject {
     }
 
     func buttonLight(_ b: PanelButton) -> ButtonLight {
+        if grooveMode {
+            switch b {
+            case .seq: return mode == .seq ? .on : (audio.groove.on ? .blue : .off)
+            case .play: return audio.groove.on ? (audio.groove.playing ? .green : .red) : .off
+            case .rec: return recording ? .red : .off
+            case .sel where grooveGrid: return grooveTrack == 0 ? .on : .blue
+            case .glo where gloHeld: return .on
+            default: break
+            }
+        }
         switch b {
         case .fx: return mode == .fx ? .on : .off
         case .sel: return fxGrabbed ? .on : .off

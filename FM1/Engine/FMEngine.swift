@@ -29,6 +29,13 @@ final class FMEngine: @unchecked Sendable {
     var envOn = false
     var envA: Float = 0, envD: Float = 0.3, envS: Float = 1, envR: Float = 0.2
     let arpSeq = ArpSeq()
+    /// Groove mode (set up by AudioController once the sample rate is known)
+    var groove: GrooveSeq?
+    var drums: DrumKit?
+    var drumLevel: Float = 1
+    private let drumScratch: UnsafeMutablePointer<Float> = {
+        let p = UnsafeMutablePointer<Float>.allocate(capacity: FMEngine.blockSize); p.initialize(repeating: 0, count: FMEngine.blockSize); return p
+    }()
     var maxVoices: Int = 12 { didSet { maxVoices = min(max(1, maxVoices), FMEngine.voiceCapacity) } }
     var monoMode = false
     var velocityCurveOn = true          // false → velocity fixed at 100
@@ -440,7 +447,20 @@ final class FMEngine: @unchecked Sendable {
             if arpSeq.arpOn || arpSeq.seqOn {
                 arpSeq.advance(frames: n, sampleRate: Double(sampleRate)) { self.handle($0) }
             }
+            if let g = groove, g.on {
+                g.advance(frames: n, sampleRate: Double(sampleRate)) { self.handle($0) }
+            }
             renderBlock(n: n, out: out + done)
+            if let d = drums {
+                for k in 0..<n { drumScratch[k] = 0 }
+                d.render(frames: n, out: drumScratch)
+                let g = masterVolume * drumLevel
+                let o = out + done
+                for k in 0..<n {
+                    let x = o[k] + drumScratch[k] * g
+                    o[k] = x > 1 ? 1 : (x < -1 ? -1 : x)
+                }
+            }
             done += n
         }
         // scope

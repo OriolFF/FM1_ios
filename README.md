@@ -32,6 +32,17 @@ Apache-2.0 recovery image in github.com/m-vave/fm1_open).
 
 Research notes and reference photos used for the recreation are in `research/`.
 
+## Groove mode (opt-in groovebox)
+
+Enable with **GLO → page 3 → Seq Mode: Groove**. Inspired by the community FM-1 firmwares
+(Felucca / SLOOP / FM-1+VA / FM1 Open — see `research/FIRMWARE_*_SEQ.md`):
+
+* 8 patterns, each with an FM **synth track** (chords, tie, gate, chance/FILL conditions, ratchet ×1–4,
+  up to 4 parameter locks per step) and an **11-lane 808-style drum track** (`DrumKit.swift`), per-track length 1–64 (polymeter), swing.
+* SEQ page: white keys = steps (OCT± pages), black keys = drum lanes, SEL = track, hold step + knobs = step edit.
+* Pages: Pattern · Euclid generator · Kit (level/tune/decay/tone) · Tools (clear, copy, density fill).
+* Hold GLO = perform layer (mute/solo/fill/tap tempo). REC records the synth track live or step-by-step.
+
 ## Controls (same as the hardware)
 
 * **MASTER** volume · **SELECT** pages / cursor / confirm · **PRESETS** 001–128 · **ALGORITHM** 1–32

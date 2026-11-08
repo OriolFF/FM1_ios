@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CE8B17EB05DB0292289836A /* DrumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */; };
 		1F95CA4629A73A55429B7B73 /* PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B035B24749FE1CDD959B7F47 /* PanelComponents.swift */; };
 		3199450D8C990597B7DA928E /* FM1App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */; };
 		31EF7BBF7536F168BA6391F5 /* ArpSeq.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EA898544FE056718BD4048 /* ArpSeq.swift */; };
@@ -20,11 +21,14 @@
 		62EB8A5F52651A6B5D9EF82D /* Orbitron.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 05DA32C16124D15968674A16 /* Orbitron.ttf */; };
 		6A77E4004B46E1F0F9067895 /* SynthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747B220C7D8797C754B32CFC /* SynthModel.swift */; };
 		6F8DA89347CE535CFD069EF1 /* Aldrich-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ECDB95F013915318D9D6608E /* Aldrich-Regular.ttf */; };
+		702BFA2271E0017AFB224755 /* GrooveScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */; };
 		98C8041214DCA3EE6274B699 /* FMPatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B79A6F69E0739B3AF01FBC1 /* FMPatch.swift */; };
+		9F2D3EB850300D2B17555CFB /* GrooveSeq.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA84C0C1DA2446FFF83B113 /* GrooveSeq.swift */; };
 		A6310899F151A94D49E767CA /* FXChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A40BD6D67294FF8811CA520 /* FXChain.swift */; };
 		AF9219A623DF2BD9E20E1780 /* ScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606C1AC0584CCFA7691508E5 /* ScreenView.swift */; };
 		B055E5B0F66F964FBC6E86C6 /* FM1_V15_factory_bank_B.syx in Resources */ = {isa = PBXBuildFile; fileRef = D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */; };
 		C2220721645F1DE699C92156 /* FMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D81475E10ED87FA8398F785 /* FMEngine.swift */; };
+		E65A73134E14D1E3A9449C44 /* SynthModel+Groove.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025D95527C83C02F1D517316 /* SynthModel+Groove.swift */; };
 		F30CB2A7434E2C74E04FD7CB /* FM1_V15_factory_bank_D.syx in Resources */ = {isa = PBXBuildFile; fileRef = BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */; };
 		F59916053C2F39EAE29EAE7D /* AudioController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D96734BD75547B9F97552E5 /* AudioController.swift */; };
 		FAF25FF31B01E3717F6F573A /* ShareTech-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23CF3185944CE38E33AD2606 /* ShareTech-Regular.ttf */; };
@@ -32,22 +36,26 @@
 
 /* Begin PBXFileReference section */
 		0248C86784AF3C606BC261FB /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
+		025D95527C83C02F1D517316 /* SynthModel+Groove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SynthModel+Groove.swift"; sourceTree = "<group>"; };
 		05DA32C16124D15968674A16 /* Orbitron.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Orbitron.ttf; sourceTree = "<group>"; };
 		09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FM1App.swift; sourceTree = "<group>"; };
 		1B79A6F69E0739B3AF01FBC1 /* FMPatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMPatch.swift; sourceTree = "<group>"; };
 		23CF3185944CE38E33AD2606 /* ShareTech-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ShareTech-Regular.ttf"; sourceTree = "<group>"; };
 		4D81475E10ED87FA8398F785 /* FMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMEngine.swift; sourceTree = "<group>"; };
+		4FA84C0C1DA2446FFF83B113 /* GrooveSeq.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrooveSeq.swift; sourceTree = "<group>"; };
 		606C1AC0584CCFA7691508E5 /* ScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenView.swift; sourceTree = "<group>"; };
 		6A40BD6D67294FF8811CA520 /* FXChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FXChain.swift; sourceTree = "<group>"; };
 		6D96734BD75547B9F97552E5 /* AudioController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioController.swift; sourceTree = "<group>"; };
 		747B220C7D8797C754B32CFC /* SynthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthModel.swift; sourceTree = "<group>"; };
 		7EBEB3921BB73FD5B6F50984 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_C.syx; sourceTree = "<group>"; };
-		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
+		838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_C.syx; sourceTree = "<group>"; };
+		98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrooveScreenView.swift; sourceTree = "<group>"; };
+		A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumKit.swift; sourceTree = "<group>"; };
+		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
 		B035B24749FE1CDD959B7F47 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
-		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
-		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
+		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
+		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
 		DE6DD706EB043B9819F88985 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ECDB95F013915318D9D6608E /* Aldrich-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Aldrich-Regular.ttf"; sourceTree = "<group>"; };
 		F0D6FC05344FB3AA7031164C /* Algorithms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithms.swift; sourceTree = "<group>"; };
@@ -63,6 +71,7 @@
 				09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */,
 				FC0DFFF97DED49CA1E36E91E /* Info.plist */,
 				747B220C7D8797C754B32CFC /* SynthModel.swift */,
+				025D95527C83C02F1D517316 /* SynthModel+Groove.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -99,6 +108,7 @@
 		9B35180C790C80270A45EBE6 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */,
 				B035B24749FE1CDD959B7F47 /* PanelComponents.swift */,
 				0248C86784AF3C606BC261FB /* PanelView.swift */,
 				606C1AC0584CCFA7691508E5 /* ScreenView.swift */,
@@ -135,9 +145,11 @@
 				F0D6FC05344FB3AA7031164C /* Algorithms.swift */,
 				F6EA898544FE056718BD4048 /* ArpSeq.swift */,
 				6D96734BD75547B9F97552E5 /* AudioController.swift */,
+				A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */,
 				4D81475E10ED87FA8398F785 /* FMEngine.swift */,
 				1B79A6F69E0739B3AF01FBC1 /* FMPatch.swift */,
 				6A40BD6D67294FF8811CA520 /* FXChain.swift */,
+				4FA84C0C1DA2446FFF83B113 /* GrooveSeq.swift */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -173,6 +185,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					2BE6E0891EE59FF7AB84F601 = {
+						DevelopmentTeam = 37UF89K96Y;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -223,13 +236,17 @@
 				4767088C1D6F881104D05A6D /* Algorithms.swift in Sources */,
 				31EF7BBF7536F168BA6391F5 /* ArpSeq.swift in Sources */,
 				F59916053C2F39EAE29EAE7D /* AudioController.swift in Sources */,
+				0CE8B17EB05DB0292289836A /* DrumKit.swift in Sources */,
 				3199450D8C990597B7DA928E /* FM1App.swift in Sources */,
 				C2220721645F1DE699C92156 /* FMEngine.swift in Sources */,
 				98C8041214DCA3EE6274B699 /* FMPatch.swift in Sources */,
 				A6310899F151A94D49E767CA /* FXChain.swift in Sources */,
+				702BFA2271E0017AFB224755 /* GrooveScreenView.swift in Sources */,
+				9F2D3EB850300D2B17555CFB /* GrooveSeq.swift in Sources */,
 				1F95CA4629A73A55429B7B73 /* PanelComponents.swift in Sources */,
 				391BA8E0E78A2B6413378EC6 /* PanelView.swift in Sources */,
 				AF9219A623DF2BD9E20E1780 /* ScreenView.swift in Sources */,
+				E65A73134E14D1E3A9449C44 /* SynthModel+Groove.swift in Sources */,
 				6A77E4004B46E1F0F9067895 /* SynthModel.swift in Sources */,
 				4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */,
 			);
@@ -243,7 +260,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 37UF89K96Y;
 				INFOPLIST_FILE = FM1/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -292,7 +308,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 37UF89K96Y;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -319,7 +335,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 37UF89K96Y;
 				INFOPLIST_FILE = FM1/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -368,7 +383,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 37UF89K96Y;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

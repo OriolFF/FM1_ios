@@ -193,6 +193,12 @@ struct HelpView: View {
         ("SAVE", "Hold to save the current preset"),
         ("ARP / SEQ", "Arpeggiator / 16-step sequencer (white keys show steps)"),
         ("PLAY/STOP · REC", "Sequencer transport and step recording · hold PLAY = panic"),
+        ("GROOVE MODE", "GLO page 3 → Seq Mode: Groove. SEQ then opens the groovebox: synth track + 11-lane 808-style drums, 8 patterns × 64 steps"),
+        ("Groove · steps", "White keys = 16 steps (tap to toggle) · OCT−/OCT+ = step page · black keys = drum lane · SEL = synth/drum track"),
+        ("Groove · hold a step", "K1–K4: note/velocity, velocity/chance, chance/ratchet … · SELECT = gate/TIE · ALGORITHM = lock parameter · PRESETS = lock value"),
+        ("Groove · pages", "SELECT: Pattern (pattern, length, tempo, swing) · Euclid (hits, steps, rotate, velocity) · Kit (level, tune, decay, tone) · Tools (clear, copy, density fill, drum level)"),
+        ("Groove · hold GLO", "Perform: key 1/2 mute synth/drums · 5/6 solo · 9 fill · 16 tap tempo · black keys mute lanes"),
+        ("Groove · REC", "Records the synth track from the keyboard (outside the SEQ page): live while playing, step-by-step when stopped"),
     ]
     var body: some View {
         NavigationStack {

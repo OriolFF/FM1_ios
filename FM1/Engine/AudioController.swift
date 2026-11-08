@@ -7,6 +7,8 @@ final class AudioController {
     private let avEngine = AVAudioEngine()
     private var source: AVAudioSourceNode!
     let fx: FXChain
+    let drums: DrumKit
+    let groove: GrooveSeq
 
     private var midiClient = MIDIClientRef()
     private var midiIn = MIDIPortRef()
@@ -26,6 +28,10 @@ final class AudioController {
         let format = AVAudioFormat(standardFormatWithSampleRate: AVAudioSession.sharedInstance().sampleRate > 0 ? AVAudioSession.sharedInstance().sampleRate : 48000, channels: 2)!
         engine.sampleRate = Float(format.sampleRate)
         fx = FXChain(sampleRate: Float(format.sampleRate))
+        drums = DrumKit(sampleRate: Float(format.sampleRate))
+        groove = GrooveSeq(enginePatch: engine.patch, kit: drums)
+        engine.drums = drums
+        engine.groove = groove
         let fm = engine
         let chain = fx
         source = AVAudioSourceNode(format: format) { _, _, frameCount, abl -> OSStatus in
