@@ -41,7 +41,9 @@ Research notes and reference photos used for the recreation are in `research/`.
   **LFO** · **EDIT** operator editor (black keys: OP1–OP6, PIT, GLO, MONO, POLY; hold OP = mute) · **GLO** globals.
 * **HOME** oscilloscope (hold = Bluetooth MIDI) · **SAVE** hold to store · **ARP** · **SEQ** · **PLAY/STOP**
   (hold = panic) · **REC** step recording (hold REC + SELECT moves the step cursor; hold a chord + SELECT = long note).
-* Toolbar: colourways, SysEx import/export, Bluetooth MIDI.
+* Toolbar: colourways, full-screen mode, SysEx import/export, Bluetooth MIDI.
+* **Full-screen mode** (toolbar ⤢ button): drops the case and stretches the panel to the whole iPad
+  screen (taller keys, bigger display). The ⋯ button in the top-right corner switches back.
 
 Knobs: drag up/right to turn clockwise.
 

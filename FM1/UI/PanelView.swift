@@ -5,13 +5,17 @@ import SwiftUI
 struct PanelView: View {
     @ObservedObject var model: SynthModel
     let width: CGFloat
+    /// nil = hardware proportions; otherwise stretch to this height (full-screen mode)
+    var height: CGFloat? = nil
+    /// false = no case / rounded body: the iPad itself is the device
+    var framed = true
 
     static let aspect: CGFloat = 161.5 / 96.5
 
     @State private var knobAngles: [Double] = Array(repeating: 0, count: 7)
 
     private var W: CGFloat { width }
-    private var H: CGFloat { width / PanelView.aspect }
+    private var H: CGFloat { height ?? width / PanelView.aspect }
     private func x(_ p: CGFloat) -> CGFloat { W * p / 100 }
     private func y(_ p: CGFloat) -> CGFloat { H * p / 100 }
 
@@ -44,7 +48,21 @@ struct PanelView: View {
 
     // MARK: Body
 
-    private func bodyShape(_ cw: Colorway) -> some View {
+    @ViewBuilder private func bodyShape(_ cw: Colorway) -> some View {
+        if framed { framedBody(cw) } else {
+            ZStack {
+                Rectangle().fill(LinearGradient(colors: [cw.bodyHighlight, cw.body, cw.body.darker(0.04)],
+                                                startPoint: .topLeading, endPoint: .bottomTrailing))
+                Rectangle()
+                    .fill(ImagePaint(image: Image(uiImage: Noise.texture), scale: 0.5))
+                    .opacity(0.05)
+                    .blendMode(.overlay)
+            }
+            .frame(width: W, height: H)
+        }
+    }
+
+    private func framedBody(_ cw: Colorway) -> some View {
         let r = W * 0.05
         return ZStack {
             // side / depth
@@ -159,7 +177,8 @@ struct PanelView: View {
     // MARK: Screen
 
     private var screen: some View {
-        let bezelW = x(23.1)
+        // full-screen mode uses the extra height for a bigger display
+        let bezelW = framed ? x(23.1) : min(x(26.0), y(40.0))
         let side = bezelW * 0.76
         return ZStack {
             RoundedRectangle(cornerRadius: bezelW * 0.13)
@@ -175,7 +194,7 @@ struct PanelView: View {
                 .frame(width: bezelW, height: bezelW)
                 .allowsHitTesting(false)
         }
-        .position(x: x(26.4) + bezelW / 2, y: y(8.3) + bezelW / 2)
+        .position(x: x(37.95), y: y(27.75))
     }
 
     private func scopeData() -> [Float] {

@@ -27,25 +27,42 @@ struct ContentView: View {
     @State private var exporting = false
     @State private var exportBank = 0
     @State private var showHelp = false
+    /// Full-screen mode: no case, no toolbar — the iPad is the device.
+    @AppStorage("fullScreenPanel") private var fullScreen = false
 
     var body: some View {
         GeometryReader { geo in
-            let avail = CGSize(width: geo.size.width - 40, height: geo.size.height - 90)
-            let w = min(avail.width, avail.height * PanelView.aspect)
-            ZStack {
-                backdrop
-                VStack(spacing: 0) {
-                    toolbar
-                        .frame(height: 54)
-                        .padding(.horizontal, 24)
-                    Spacer(minLength: 0)
-                    PanelView(model: model, width: w)
-                    Spacer(minLength: 0)
+            if fullScreen {
+                ZStack(alignment: .topTrailing) {
+                    PanelView(model: model, width: geo.size.width, height: geo.size.height, framed: false)
+                    optionsMenu {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(model.colorway.silkscreen.opacity(0.45))
+                            .frame(width: 44, height: 44)
+                    }
+                    .padding(.top, 6)
+                    .padding(.trailing, 8)
                 }
-                .padding(.bottom, 18)
+            } else {
+                let avail = CGSize(width: geo.size.width - 40, height: geo.size.height - 90)
+                let w = min(avail.width, avail.height * PanelView.aspect)
+                ZStack {
+                    backdrop
+                    VStack(spacing: 0) {
+                        toolbar
+                            .frame(height: 54)
+                            .padding(.horizontal, 24)
+                        Spacer(minLength: 0)
+                        PanelView(model: model, width: w)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.bottom, 18)
+                }
             }
         }
         .ignoresSafeArea()
+        .animation(.easeInOut(duration: 0.25), value: fullScreen)
         .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "syx") ?? .data, .data], allowsMultipleSelection: false) { result in
             if case .success(let urls) = result, let url = urls.first {
                 let ok = url.startAccessingSecurityScopedResource()
@@ -90,19 +107,13 @@ struct ContentView: View {
                 }
             }
             Divider().frame(height: 24).overlay(Color.white.opacity(0.2))
-            Menu {
-                Button { importing = true } label: { Label("Import SysEx (.syx)…", systemImage: "square.and.arrow.down") }
-                Menu("Export Bank") {
-                    ForEach(0..<4, id: \.self) { b in
-                        Button("Bank \(["A", "B", "C", "D"][b]) (\(String(format: "%03d–%03d", b * 32 + 1, b * 32 + 32)))") {
-                            exportBank = b; exporting = true
-                        }
-                    }
-                }
-                Divider()
-                Button { model.showBluetooth = true } label: { Label("Bluetooth MIDI…", systemImage: "dot.radiowaves.left.and.right") }
-                Button(role: .destructive) { model.engine.panic() } label: { Label("Panic (all notes off)", systemImage: "exclamationmark.octagon") }
-            } label: {
+            Button { fullScreen = true } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Full screen")
+            optionsMenu {
                 Image(systemName: "tray.and.arrow.down").font(.system(size: 18, weight: .medium))
                     .foregroundStyle(.white.opacity(0.75))
                     .frame(width: 36, height: 36)
@@ -113,6 +124,36 @@ struct ContentView: View {
                     .frame(width: 36, height: 36)
             }
         }
+    }
+
+    /// Shared menu (toolbar + full-screen corner button).
+    private func optionsMenu<L: View>(@ViewBuilder label: () -> L) -> some View {
+        Menu {
+            if fullScreen {
+                Button { fullScreen = false } label: { Label("Show Device Frame", systemImage: "arrow.down.right.and.arrow.up.left") }
+                Menu("Colour") {
+                    ForEach(Colorway.all) { c in
+                        Button(c.name) { model.globals.colorway = c.id; model.persistGlobalsNow() }
+                    }
+                }
+                Button { showHelp = true } label: { Label("Controls", systemImage: "questionmark.circle") }
+                Divider()
+            } else {
+                Button { fullScreen = true } label: { Label("Full Screen (iPad as device)", systemImage: "arrow.up.left.and.arrow.down.right") }
+                Divider()
+            }
+            Button { importing = true } label: { Label("Import SysEx (.syx)…", systemImage: "square.and.arrow.down") }
+                Menu("Export Bank") {
+                    ForEach(0..<4, id: \.self) { b in
+                        Button("Bank \(["A", "B", "C", "D"][b]) (\(String(format: "%03d–%03d", b * 32 + 1, b * 32 + 32)))") {
+                            exportBank = b; exporting = true
+                        }
+                    }
+                }
+                Divider()
+                Button { model.showBluetooth = true } label: { Label("Bluetooth MIDI…", systemImage: "dot.radiowaves.left.and.right") }
+                Button(role: .destructive) { model.engine.panic() } label: { Label("Panic (all notes off)", systemImage: "exclamationmark.octagon") }
+        } label: { label() }
     }
 }
 
