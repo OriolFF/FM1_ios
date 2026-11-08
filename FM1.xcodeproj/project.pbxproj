@@ -42,12 +42,12 @@
 		6D96734BD75547B9F97552E5 /* AudioController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioController.swift; sourceTree = "<group>"; };
 		747B220C7D8797C754B32CFC /* SynthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthModel.swift; sourceTree = "<group>"; };
 		7EBEB3921BB73FD5B6F50984 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_C.syx; sourceTree = "<group>"; };
-		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
+		838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_C.syx; sourceTree = "<group>"; };
+		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
 		B035B24749FE1CDD959B7F47 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
-		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
-		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
+		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
+		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; lastKnownFileType = file; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
 		DE6DD706EB043B9819F88985 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ECDB95F013915318D9D6608E /* Aldrich-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Aldrich-Regular.ttf"; sourceTree = "<group>"; };
 		F0D6FC05344FB3AA7031164C /* Algorithms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithms.swift; sourceTree = "<group>"; };
@@ -173,7 +173,6 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					2BE6E0891EE59FF7AB84F601 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -244,6 +243,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 37UF89K96Y;
 				INFOPLIST_FILE = FM1/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -319,6 +319,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 37UF89K96Y;
 				INFOPLIST_FILE = FM1/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
