@@ -1,0 +1,37 @@
+name: FM1
+options:
+  bundleIdPrefix: com.oriol
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  FM1:
+    type: application
+    platform: iOS
+    sources:
+      - path: FM1
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.oriol.fm1pocket
+        TARGETED_DEVICE_FAMILY: "2"
+        INFOPLIST_FILE: FM1/App/Info.plist
+        SWIFT_OPTIMIZATION_LEVEL: "-O"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: FM1/App/Info.plist
+      properties:
+        CFBundleDisplayName: FM Pocket
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        UIBackgroundModes: [audio]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UIAppFonts: [Orbitron.ttf, Nunito.ttf, ShareTech-Regular.ttf, Aldrich-Regular.ttf]
+        NSBluetoothAlwaysUsageDescription: Connect Bluetooth MIDI keyboards and controllers.
+        LSSupportsOpeningDocumentsInPlace: false
+        UIFileSharingEnabled: true
