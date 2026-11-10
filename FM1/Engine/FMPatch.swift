@@ -67,10 +67,30 @@ struct FMPatch: Equatable, Codable {
             return String(decoding: bytes, as: UTF8.self).trimmingCharacters(in: .whitespaces)
         }
         set {
-            var b = Array(newValue.uppercased().utf8.prefix(10)).map { $0 < 127 ? $0 : 32 }
+            var b = Array(newValue.utf8.prefix(10)).map { $0 >= 32 && $0 < 127 ? $0 : 32 }
             while b.count < 10 { b.append(32) }
             for i in 0..<10 { data[145 + i] = b[i] }
         }
+    }
+
+    // MARK: Ranges
+
+    private static let opMax: [UInt8] = [99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 3, 3, 7, 3, 7, 99, 1, 31, 99, 14]
+    private static let globalMax: [UInt8] = [99, 99, 99, 99, 99, 99, 99, 99, 31, 7, 1, 99, 99, 99, 99, 1, 5, 7, 48]
+    /// Highest legal value of VCED byte `i` (the FM-1 clamps anything above it).
+    static func maxValue(at i: Int) -> UInt8 {
+        if i < 126 { return opMax[i % 21] }
+        if i < 145 { return globalMax[i - 126] }
+        return 127
+    }
+    /// Clamps every parameter into its DX7 range.
+    mutating func sanitize() {
+        for i in 0..<FMPatch.size { data[i] = min(data[i], FMPatch.maxValue(at: i)) }
+    }
+    /// Sets one VCED parameter (SysEx parameter change); ignores unknown indices.
+    mutating func setParameter(_ i: Int, _ value: Int) {
+        guard i >= 0 && i < FMPatch.size else { return }
+        data[i] = min(UInt8(clamping: value), FMPatch.maxValue(at: i))
     }
 
     // MARK: Builders
@@ -178,7 +198,9 @@ struct FMPatch: Equatable, Codable {
                         result.append(FMPatch(packed: msg[s..<(s + 128)]))
                     }
                 } else if format == 0x00, msg.count >= 6 + 155 {
-                    result.append(FMPatch(data: Array(msg[6..<(6 + 155)]).map { $0 & 0x7F }))
+                    var single = FMPatch(data: Array(msg[6..<(6 + 155)]).map { $0 & 0x7F })
+                    single.sanitize()
+                    result.append(single)
                 }
             }
             i = end + 1
@@ -188,6 +210,12 @@ struct FMPatch: Equatable, Codable {
             for v in 0..<32 { result.append(FMPatch(packed: bytes[(v * 128)..<(v * 128 + 128)])) }
         }
         return result
+    }
+
+    /// DX7 voice parameter change `F0 43 1n pp qq vv F7` → (VCED index pp·128 + qq, value).
+    static func parseParameterChange(_ msg: [UInt8]) -> (Int, Int)? {
+        guard msg.count == 7, msg[0] == 0xF0, msg[1] == 0x43, msg[2] & 0xF0 == 0x10, msg[3] < 4, msg[6] == 0xF7 else { return nil }
+        return (Int(msg[3] & 0x01) * 128 + Int(msg[4] & 0x7F), Int(msg[5] & 0x7F))
     }
 
     static func bankSysEx(_ patches: [FMPatch]) -> [UInt8] {

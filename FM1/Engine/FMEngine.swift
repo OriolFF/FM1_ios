@@ -6,9 +6,10 @@ import os
 /// This is a port of the MSFA engine (Google "music-synthesizer-for-android",
 /// as used by Dexed and by M-VAVE's FM-1 firmware). Control-rate maths
 /// (envelopes, pitch EG, LFO, levels, frequencies) follows MSFA's fixed-point
-/// formulas and runs once per 64-sample block; the audio-rate operator kernel
-/// is floating point (phase in cycles, 1.0 operator output = 1 cycle of phase
-/// modulation, exactly MSFA's Q24 convention).
+/// formulas and runs once per 64-sample block. The audio-rate operator kernel
+/// is the FM-1 integer kernel (m-vave/fm1_open `dx7core.c` / `mk_sin`): Q24
+/// phase, 4096-step log-sine + exponent tables and log-domain gain ramps, so
+/// the quantisation character of the hardware is reproduced.
 ///
 /// The audio thread only touches preallocated unsafe buffers. The UI thread
 /// edits the shared patch bytes directly (single-byte writes are benign races)
@@ -25,9 +26,9 @@ final class FMEngine: @unchecked Sendable {
     /// Mono glide time in seconds (0 = off) and mode
     var glideTime: Float = 0
     var glideFingered = false
-    /// Global ADSR (FM-1 "ENV"), 0...1 each
+    /// Global ADSR (FM-1 "ENV"), panel values 0...100
     var envOn = false
-    var envA: Float = 0, envD: Float = 0.3, envS: Float = 1, envR: Float = 0.2
+    var envA = 0, envD = 30, envS = 100, envR = 20
     let arpSeq = ArpSeq()
     /// Groove mode (set up by AudioController once the sample rate is known)
     var groove: GrooveSeq?
@@ -38,7 +39,6 @@ final class FMEngine: @unchecked Sendable {
     }()
     var maxVoices: Int = 12 { didSet { maxVoices = min(max(1, maxVoices), FMEngine.voiceCapacity) } }
     var monoMode = false
-    var velocityCurveOn = true          // false → velocity fixed at 100
     var masterTune: Float = 0           // cents
 
     static let voiceCapacity = 16
@@ -48,7 +48,7 @@ final class FMEngine: @unchecked Sendable {
     let patch: UnsafeMutablePointer<UInt8>
 
     // MARK: Events
-    enum Event { case keyOn(UInt8, UInt8), keyOff(UInt8), noteOn(UInt8, UInt8), noteOff(UInt8), cc(UInt8, UInt8), bend(Int), allOff, panic }
+    enum Event { case keyOn(UInt8, UInt8), keyOff(UInt8), noteOn(UInt8, UInt8), noteOff(UInt8), cc(UInt8, UInt8), aftertouch(UInt8), bend(Int), allOff, panic }
     private struct EventQueue { var items: [Event] = []; init() { items.reserveCapacity(512) } }
     private let queue = OSAllocatedUnfairLock(initialState: EventQueue())
     private var pending: UnsafeMutablePointer<Event>
@@ -66,24 +66,29 @@ final class FMEngine: @unchecked Sendable {
     private var vPitchStage: UnsafeMutablePointer<Int>  // MSFA ix_ (0...4)
     private var vGlide: UnsafeMutablePointer<Float>     // glide offset, semitones (→ 0)
     private var vGlideStep: UnsafeMutablePointer<Float> // semitones per 64-sample block
-    private var vAdsr: UnsafeMutablePointer<Float>
-    private var vAdsrStage: UnsafeMutablePointer<Int>   // 0 A, 1 D, 2 S, 3 R, 4 done
+    private var vAdsr: UnsafeMutablePointer<Float>      // ADSR current level
+    private var vAdsrRec: UnsafeMutablePointer<Float>   // ADSR level_record
+    private var vAdsrT: UnsafeMutablePointer<Double>    // ADSR time in state, 0...1
+    private var vAdsrStage: UnsafeMutablePointer<Int>   // 0 A, 1 D, 2 S, 3 R, 4 idle
     private var monoStack = [Int](repeating: 0, count: 16)
     private var monoCount = 0
-    private var lastMonoPitch: Float = -1
+    private var lastMonoMidi = -1                        // glide start (transposed pitch), -1 = none
     // per operator (V*6)
-    private var oPhase: UnsafeMutablePointer<Float>     // cycles 0..<1
+    private var oPhase: UnsafeMutablePointer<UInt32>    // Q24 cycles (upper bits ignored)
     private var oEnv: UnsafeMutablePointer<Int>         // env level, Q24 ("actual" << 16)
     private var oStage: UnsafeMutablePointer<Int>       // MSFA ix_ 0...3, 4 = finished
-    private var oGain: UnsafeMutablePointer<Float>      // last gain_out (linear)
+    private var oAtt: UnsafeMutablePointer<Int32>       // last attenuation (0 = fresh note, fade in from silence)
     // feedback history (2 samples) per voice
-    private var fbY0: UnsafeMutablePointer<Float>
-    private var fbY1: UnsafeMutablePointer<Float>
+    private var fbY0: UnsafeMutablePointer<Int32>
+    private var fbY1: UnsafeMutablePointer<Int32>
     private var ageCounter = 0
 
     // controllers
     private var bend: Float = 0      // -1...1
     private var wheelCC = 0          // 0...127
+    private var aftertouchCC = 0
+    private var breathCC = 127       // CC2 / CC4: 127 = no attenuation
+    private var footCC = 127
     private var sustainPedal = false
 
     // LFO (global, like MSFA / FM-1): Q32 phase, Q24 outputs
@@ -94,10 +99,12 @@ final class FMEngine: @unchecked Sendable {
     // output stage
     private var dcX1: Float = 0, dcY1: Float = 0
 
-    // scratch
-    private var sine: UnsafeMutablePointer<Float>
-    private static let sineSize = 4096
-    private let opOut = UnsafeMutablePointer<Float>.allocate(capacity: 6)
+    // DX7 log-sine / exponent ROM tables (quarter wave, 1024 entries each)
+    private let sinLog = UnsafeMutablePointer<Int32>.allocate(capacity: 1024)
+    private let sinExp = UnsafeMutablePointer<Int32>.allocate(capacity: 1024)
+    private static let envMax: Int32 = 1 << 14            // attenuation of a silent operator
+    private static let attThresh: Int32 = (1 << 14) - 100 // kLevelThresh in dx7core.c
+    private let opOut = UnsafeMutablePointer<Int32>.allocate(capacity: 6)
     var sampleRate: Float = 48000
 
     // Scope buffer for the display
@@ -120,15 +127,24 @@ final class FMEngine: @unchecked Sendable {
         let V = FMEngine.voiceCapacity
         vActive = b(V); vNote = i(V); vMidi = i(V); vVel = i(V); vKeyDown = b(V); vSustained = b(V); vAge = i(V)
         vPitchLevel = i(V); vPitchStage = i(V); vGlide = f(V); vGlideStep = f(V)
-        vAdsr = f(V); vAdsrStage = i(V)
-        oPhase = f(V * 6); oEnv = i(V * 6); oStage = i(V * 6); oGain = f(V * 6)
-        fbY0 = f(V); fbY1 = f(V)
+        vAdsr = f(V); vAdsrRec = f(V); vAdsrStage = i(V)
+        vAdsrT = .allocate(capacity: V); vAdsrT.initialize(repeating: 0, count: V)
+        oPhase = .allocate(capacity: V * 6); oPhase.initialize(repeating: 0, count: V * 6)
+        oAtt = .allocate(capacity: V * 6); oAtt.initialize(repeating: 0, count: V * 6)
+        oEnv = i(V * 6); oStage = i(V * 6)
+        fbY0 = .allocate(capacity: V); fbY0.initialize(repeating: 0, count: V)
+        fbY1 = .allocate(capacity: V); fbY1.initialize(repeating: 0, count: V)
         for k in 0..<(V * 6) { oStage[k] = 4 }
-        sine = f(FMEngine.sineSize + 1)
-        for k in 0...FMEngine.sineSize { sine[k] = sinf(2 * .pi * Float(k) / Float(FMEngine.sineSize)) }
+        // Same values as dx7_sin_log_table / dx7_sin_exp_table (checked entry for entry).
+        for k in 0..<1024 {
+            sinLog[k] = Int32((-log2(sin((Double(k) + 0.5) * .pi / 2 / 1024)) * 1024).rounded())
+            sinExp[k] = Int32(((exp2(Double(k) / 1024) - 1) * 4096).rounded())
+        }
         scope = f(FMEngine.scopeSize)
         opMeter = f(6)
-        for ptr in [opOut, opInc, opG1, opGStep, opMeterTmp] { ptr.initialize(repeating: 0, count: 6) }
+        for ptr in [opOut, opGain, opGStep] { ptr.initialize(repeating: 0, count: 6) }
+        opFreq.initialize(repeating: 0, count: 6)
+        opMeterTmp.initialize(repeating: 0, count: 6)
         opOn.initialize(repeating: false, count: 6)
         amFactor.initialize(repeating: 0, count: 4)
         for a in 0..<32 {
@@ -137,7 +153,7 @@ final class FMEngine: @unchecked Sendable {
                 let mods = alg.modulators[o]
                 modCount[a * 6 + o] = mods.count
                 for (i, m) in mods.enumerated() { modList[a * 36 + o * 6 + i] = m - 1 }
-                carrierMask[a * 6 + o] = alg.isCarrier(o + 1) ? 1 : 0
+                carrierMask[a * 6 + o] = alg.isCarrier(o + 1)
             }
         }
     }
@@ -184,8 +200,6 @@ final class FMEngine: @unchecked Sendable {
     private static let fineLog: [Double] = (0..<100).map { log2(1 + 0.01 * Double($0)) }
     /// log2 of MIDI note 0 frequency (50857777 / 2^24)
     private static let noteZeroLog = 50857777.0 / 16777216.0
-    /// Exp2 lookup threshold of fm_core.cc (kLevelThresh = 1120 in Q24)
-    private static let levelThresh: Float = 1120.0 / 16777216.0
 
     @inline(__always) private func p(_ i: Int) -> Int { Int(patch[i]) }
 
@@ -227,43 +241,41 @@ final class FMEngine: @unchecked Sendable {
         var level = FMEngine.scaleOutLevel(p(b + 16))
         level += scaleLevel(note: note, base: b)
         var out = min(127, level) << 5
-        let vel = velocityCurveOn ? velocity : 100
-        let v = FMEngine.velocityData[min(63, vel >> 1)] - 239
+        let v = FMEngine.velocityData[min(63, velocity >> 1)] - 239
         out += ((p(b + 15) * v + 7) >> 3) * 16
         return max(0, out)
     }
 
-    // MARK: Voice management (audio thread)
+    // MARK: Voice management (audio thread, dx7synth.c)
 
-    private func startVoice(_ v: Int, note: Int, vel: Int, glideFrom: Float? = nil) {
-        let retrigger = vActive[v]
-        vAdsrStage[v] = 0
-        if !retrigger { vAdsr[v] = 0 }
-        vActive[v] = true; vNote[v] = note; vVel[v] = vel; vKeyDown[v] = true; vSustained[v] = false
-        vMidi[v] = min(127, max(0, note + p(144) - 24))
+    /// dx7synth_keydown + dx7note_init. `keepSignal` = mono hand-over from a
+    /// voice that is still sounding (phase and gain carry on, envelopes restart).
+    private func startVoice(_ v: Int, note: Int, pitch: Int, vel: Int, glideFrom: Int? = nil, keepSignal: Bool = false) {
+        vAdsrStage[v] = 0; vAdsr[v] = 0; vAdsrRec[v] = 0; vAdsrT[v] = 0     // adsr_init
+        vActive[v] = true; vNote[v] = note; vKeyDown[v] = true; vSustained[v] = false
+        vVel[v] = (vel * 100) >> 7          // the FM-1 scales velocity by 100/128 before MSFA
+        vMidi[v] = pitch
         ageCounter += 1; vAge[v] = ageCounter
-        setGlide(v, from: glideFrom, to: Float(note))
+        setGlide(v, from: glideFrom, to: pitch)
         // PitchEnv::set: level starts at L4, stage 0
         vPitchStage[v] = 0
         vPitchLevel[v] = FMEngine.pitchEnvTab[min(99, p(133))] << 19
-        let sync = p(136) == 1
         for o in 0..<6 {
             let k = v * 6 + o
             oStage[k] = 0
-            // Env::init starts from level 0; a stolen voice keeps its level to avoid a click.
-            if !retrigger { oEnv[k] = 0; oGain[k] = 0 }
-            if sync { oPhase[k] = 0 }
+            oEnv[k] = 0                     // Env::init
+            if !keepSignal { oPhase[k] = 0; oAtt[k] = 0 }
         }
-        if sync || !retrigger { fbY0[v] = 0; fbY1[v] = 0 }
         lfoKeyDown()
     }
 
-    private func setGlide(_ v: Int, from: Float?, to: Float) {
-        guard let from, glideTime > 0, from != to else { vGlide[v] = 0; vGlideStep[v] = 0; return }
-        let delta = from - to
-        let blocks = max(1, glideTime * sampleRate / Float(FMEngine.blockSize))
+    /// glide_apply: constant time (glide × 10 ms) whatever the interval.
+    private func setGlide(_ v: Int, from: Int?, to: Int) {
+        guard let from, from >= 0, glideTime > 0, from != to else { vGlide[v] = 0; vGlideStep[v] = 0; return }
+        let delta = Float(from - to)
+        let blocks = max(1, Int(glideTime * sampleRate / Float(FMEngine.blockSize)))
         vGlide[v] = delta
-        vGlideStep[v] = abs(delta) / blocks
+        vGlideStep[v] = abs(delta) / Float(blocks)
     }
 
     private func releaseVoice(_ v: Int) {
@@ -272,52 +284,62 @@ final class FMEngine: @unchecked Sendable {
         enterRelease(v)
     }
 
-    /// Env::keydown(false) / PitchEnv::keydown(false): jump to stage 4 (index 3).
+    /// Env::keydown(false) / PitchEnv::keydown(false) / adsr_note_off.
     private func enterRelease(_ v: Int) {
         for o in 0..<6 { oStage[v * 6 + o] = 3 }
         vPitchStage[v] = 3
-        vAdsrStage[v] = 3
+        if vAdsrStage[v] != 4 { vAdsrStage[v] = 3; vAdsrT[v] = 0; vAdsrRec[v] = vAdsr[v] }
+    }
+
+    /// Patch transpose (VCED 144, 24 = none). Notes that leave 0...127 do not sound.
+    @inline(__always) private func transposed(_ note: Int) -> Int? {
+        let pitch = note + p(144) - 24
+        return pitch >= 0 && pitch <= 127 ? pitch : nil
     }
 
     private func monoNoteOn(_ note: Int, vel: Int) {
+        guard let pitch = transposed(note) else { return }
         // push (remove duplicates)
         var j = 0
         for i in 0..<monoCount where monoStack[i] != note { monoStack[j] = monoStack[i]; j += 1 }
         monoCount = j
         if monoCount < monoStack.count { monoStack[monoCount] = note; monoCount += 1 }
-        let legato = vActive[0] && (vKeyDown[0] || vSustained[0]) && monoCount > 1
+        let legato = vActive[0] && vKeyDown[0]
+        // Full Time always glides from the previous note, Fingered only when it is still held.
+        let from: Int? = (!glideFingered || legato) ? lastMonoMidi : nil
         if legato {
-            let current = Float(vNote[0]) + vGlide[0]
+            // dx7note_transfer_state: operator envelopes carry on; pitch EG, ADSR and LFO restart
             vNote[0] = note
-            vMidi[0] = min(127, max(0, note + p(144) - 24))
-            vKeyDown[0] = true
-            setGlide(0, from: current, to: Float(note))
+            vMidi[0] = pitch
+            vSustained[0] = false
+            setGlide(0, from: from, to: pitch)
+            vPitchStage[0] = 0
+            vPitchLevel[0] = FMEngine.pitchEnvTab[min(99, p(133))] << 19
+            vAdsrStage[0] = 0; vAdsr[0] = 0; vAdsrRec[0] = 0; vAdsrT[0] = 0
             lfoKeyDown()
         } else {
-            let from: Float? = (glideTime > 0 && !glideFingered && lastMonoPitch >= 0) ? lastMonoPitch : nil
-            startVoice(0, note: note, vel: vel, glideFrom: from)
+            startVoice(0, note: note, pitch: pitch, vel: vel, glideFrom: from, keepSignal: vActive[0])
         }
+        lastMonoMidi = pitch
     }
 
     private func monoNoteOff(_ note: Int) {
-        let wasTop = monoCount > 0 && monoStack[monoCount - 1] == note
         var j = 0
         for i in 0..<monoCount where monoStack[i] != note { monoStack[j] = monoStack[i]; j += 1 }
         monoCount = j
-        guard vActive[0], vNote[0] == note || wasTop else { return }
-        if monoCount > 0 {
-            let current = Float(vNote[0]) + vGlide[0]
-            let n = monoStack[monoCount - 1]
-            vNote[0] = n
-            vMidi[0] = min(127, max(0, n + p(144) - 24))
-            setGlide(0, from: current, to: Float(n))
+        guard vActive[0], vKeyDown[0], vNote[0] == note else { return }
+        if monoCount > 0, let pitch = transposed(monoStack[monoCount - 1]) {
+            // fall back to a key that is still held (no retrigger, no glide)
+            vNote[0] = monoStack[monoCount - 1]
+            vMidi[0] = pitch
+            vGlide[0] = 0; vGlideStep[0] = 0
         } else {
             releaseVoice(0)
         }
     }
 
-    /// Voice to use for a new note: idle > released > pedal-held > same pitch > oldest.
-    private func allocateVoice(note: Int) -> Int {
+    /// Voice to use for a new note: idle > released > pedal-held > oldest.
+    private func allocateVoice() -> Int {
         let n = maxVoices
         for v in 0..<n where !vActive[v] { return v }
         var best = -1, bestAge = Int.max
@@ -325,7 +347,6 @@ final class FMEngine: @unchecked Sendable {
         if best >= 0 { return best }
         for v in 0..<n where !vKeyDown[v] && vAge[v] < bestAge { best = v; bestAge = vAge[v] }
         if best >= 0 { return best }
-        for v in 0..<n where vNote[v] == note { return v }
         for v in 0..<n where vAge[v] < bestAge { best = v; bestAge = vAge[v] }
         return max(0, best)
     }
@@ -338,37 +359,42 @@ final class FMEngine: @unchecked Sendable {
             if arpSeq.consumesKeys { arpSeq.keyUp(Int(n)) } else { handle(.noteOff(n)) }
         case .panic:
             arpSeq.releaseAll()
-            monoCount = 0
-            for v in 0..<FMEngine.voiceCapacity { vActive[v] = false; vKeyDown[v] = false; vSustained[v] = false }
-            for k in 0..<(FMEngine.voiceCapacity * 6) { oStage[k] = 4; oGain[k] = 0; oEnv[k] = 0 }
+            monoCount = 0; lastMonoMidi = -1
+            sustainPedal = false
+            bend = 0; wheelCC = 0; aftertouchCC = 0; breathCC = 127; footCC = 127
+            for v in 0..<FMEngine.voiceCapacity { vActive[v] = false; vKeyDown[v] = false; vSustained[v] = false; fbY0[v] = 0; fbY1[v] = 0 }
+            for k in 0..<(FMEngine.voiceCapacity * 6) { oStage[k] = 4; oAtt[k] = 0; oEnv[k] = 0 }
+            dcX1 = 0; dcY1 = 0
         case let .noteOn(n, vel):
             let note = Int(n)
             if monoMode {
                 monoNoteOn(note, vel: Int(vel))
                 return
             }
-            startVoice(allocateVoice(note: note), note: note, vel: Int(vel))
+            guard let pitch = transposed(note) else { return }
+            startVoice(allocateVoice(), note: note, pitch: pitch, vel: Int(vel))
         case let .noteOff(n):
             if monoMode { monoNoteOff(Int(n)); return }
-            for v in 0..<FMEngine.voiceCapacity where vActive[v] && vNote[v] == Int(n) && vKeyDown[v] { releaseVoice(v) }
+            for v in 0..<FMEngine.voiceCapacity where vActive[v] && vNote[v] == Int(n) && vKeyDown[v] { releaseVoice(v); break }
         case let .cc(c, val):
             switch c {
             case 1: wheelCC = Int(val)
-            case 64:
-                sustainPedal = val >= 64
-                if !sustainPedal {
-                    for v in 0..<FMEngine.voiceCapacity where vSustained[v] {
-                        vSustained[v] = false
-                        if !vKeyDown[v] { enterRelease(v) }
-                    }
-                }
+            case 2: breathCC = Int(val)
+            case 4: footCC = Int(val)
+            case 64: setSustain(val >= 64)
+            case 121:   // reset all controllers
+                bend = 0; wheelCC = 0; aftertouchCC = 0; breathCC = 127; footCC = 127
+                setSustain(false)
             case 120, 123: handle(.allOff)
             default: break
             }
+        case let .aftertouch(val):
+            aftertouchCC = Int(val)
         case let .bend(v14):
             bend = Float(v14 - 8192) / 8192
         case .allOff:
-            monoCount = 0
+            monoCount = 0; lastMonoMidi = -1
+            sustainPedal = false
             for v in 0..<FMEngine.voiceCapacity where vActive[v] {
                 vKeyDown[v] = false; vSustained[v] = false
                 enterRelease(v)
@@ -376,7 +402,16 @@ final class FMEngine: @unchecked Sendable {
         }
     }
 
-    // MARK: LFO (lfo.cc, FM-1 variant: speed formula instead of table)
+    private func setSustain(_ on: Bool) {
+        sustainPedal = on
+        guard !on else { return }
+        for v in 0..<FMEngine.voiceCapacity where vSustained[v] {
+            vSustained[v] = false
+            if !vKeyDown[v] { enterRelease(v) }
+        }
+    }
+
+    // MARK: LFO (dx7lfo.c: speed formula instead of the MSFA table)
 
     private func lfoKeyDown() {
         if p(141) != 0 { lfoPhase = (1 << 31) - 1 }
@@ -470,29 +505,76 @@ final class FMEngine: @unchecked Sendable {
         }
     }
 
+    /// mk_sin (dx7math.c): DX7-style log-sine lookup, attenuation added in the
+    /// log domain, 12-bit exponent table. `phase` is Q24 cycles, `att` is in
+    /// 1/1024-octave steps (0 = loudest). Full scale is ±2^26.
+    @inline(__always) private func mkSin(_ phase: UInt32, _ att: Int32) -> Int32 {
+        let phi = Int32(truncatingIfNeeded: (phase >> 12) & 0xFFF)
+        var index = phi & 0x3FF
+        if phi & 0x400 != 0 { index ^= 0x3FF }
+        let e = sinLog[Int(index)] &+ att
+        let r = (4096 &+ sinExp[Int((e & 0x3FF) ^ 0x3FF)]) >> (e >> 10)
+        return phi & 0x800 != 0 ? -(r &+ 1) &* 8192 : r &* 8192
+    }
+
+    /// adsr_update (adsr.c), one sample.
+    @inline(__always) private func adsrNext(_ v: Int, _ aStep: Double, _ dStep: Double, _ rStep: Double, _ sus: Float) -> Float {
+        let st = vAdsrStage[v]
+        if st >= 4 { return 0 }
+        let step = st == 0 ? aStep : (st == 1 ? dStep : rStep)
+        var t = vAdsrT[v]
+        if st != 2 { t += step }
+        let done = t >= 0.99999999 || step == 0 || step >= 1
+        let progress = Float(t)
+        var target: Float = 0, smoothing: Float = 0.5
+        switch st {
+        case 0:
+            if done { target = 1; vAdsrRec[v] = 1; vAdsrStage[v] = 1; t = 0 } else { target = progress; vAdsrRec[v] = target }
+        case 1:
+            smoothing = 0.35
+            if done { target = sus; vAdsrStage[v] = 2; t = 0 } else { target = 1 - (1 - sus) * progress; vAdsrRec[v] = target }
+        case 2:
+            target = sus
+        default:
+            smoothing = 0.125
+            if done { vAdsrStage[v] = 4 } else { target = vAdsrRec[v] * (1 - progress) }
+        }
+        vAdsrT[v] = t
+        let level = vAdsr[v] + (target - vAdsr[v]) * smoothing
+        vAdsr[v] = level
+        return level
+    }
+
+    /// Per-sample ADSR phase step for a stage lasting `ms` (adsr.c `increment`).
+    @inline(__always) private func adsrStepSize(_ ms: Int) -> Double {
+        let samples = (Double(sampleRate) * Double(ms) / 1000).rounded()
+        return samples < 1 ? 0 : 1 / samples
+    }
+
     private func renderBlock(n: Int, out: UnsafeMutablePointer<Float>) {
         for k in 0..<n { out[k] = 0 }
         let sr = sampleRate
-        let blockSeconds = Float(n) / sr
-        let blockFrac = Float(n) / Float(FMEngine.blockSize)
 
-        // ---- global modulation (Dx7Note::compute, once per block)
+        // ---- global modulation (dx7note_compute_64, once per block)
         let (lfoVal, lfoDelay) = lfoTick(n: n)
         let pmdDepth = (min(99, p(139)) * 165) >> 6
         let pms = FMEngine.pmsTab[min(7, p(143))]
         let senslfo = pms * (lfoVal - (1 << 23))
         let pmd1 = Int(abs(Double(pmdDepth * lfoDelay) * Double(senslfo) / 549755813888.0))   // >> 39
         let wheelLfo = (pms != 0 ? pms : 10) * (lfoVal - (1 << 23))
-        let wheelDepth = (wheelCC * 100 + 64) >> 7           // mod wheel → pitch (0...99)
-        let pmd2 = abs((wheelDepth * wheelLfo) >> 14)
+        // mod wheel and channel aftertouch → pitch modulation depth (0...99)
+        let pitchCtl = max((wheelCC * 100 + 64) >> 7, (aftertouchCC * 100 + 64) >> 7)
+        let pmd2 = abs((pitchCtl * wheelLfo) >> 14)
         let lfoPitch = Double(max(pmd1, pmd2) * (wheelLfo < 0 ? -1 : 1)) / 16777216.0   // octaves
         let bendSemis = bend >= 0 ? bend * bendUp : bend * bendDown
         let pitchBase = Double(bendSemis) / 12 + Double(masterTune) / 1200                 // octaves
 
-        // amplitude modulation: per-sensitivity log-level factor (pt / 2^24 in dx7note.cc)
+        // amplitude modulation: LFO (AMD) or breath / foot controller, per-sensitivity factor
         let amdDepth = (min(99, p(140)) * 165) >> 6
         let lfoInv = (1 << 24) - lfoVal
-        let amod = (((amdDepth * lfoDelay) >> 8) * lfoInv) >> 24
+        let amod1 = (((amdDepth * lfoDelay) >> 8) * lfoInv) >> 24
+        let ampCtl = max(((127 - breathCC) * 100 + 64) >> 7, ((127 - footCC) * 100 + 64) >> 7)
+        let amod = max(amod1, (ampCtl * lfoInv) >> 7)
         for s in 1...3 {
             let sensamp = (amod * FMEngine.amsTab[s]) >> 24
             amFactor[s] = Float(exp(Double(sensamp) / 262144.0 * 0.07 + 12.2) / 16777216.0)
@@ -508,24 +590,43 @@ final class FMEngine: @unchecked Sendable {
         let cMask = carrierMask + algIndex * 6
         let fbParam = min(7, p(135))
         // feedback: (y0 + y1) >> (shift + 1), shift = 8 - fb. Algorithms 4, 6 and 32 use shift + 2 (FM-1 core).
-        let fbExtra = (algIndex == 3 || algIndex == 5 || algIndex == 31) ? 2 : 0
-        let fbAmount: Float = fbParam == 0 ? 0 : 0.5 * exp2f(Float(fbParam - 8 - fbExtra))
+        let fbOn = fbParam != 0
+        let fbShift = Int32(min(16, 8 - fbParam + ((algIndex == 3 || algIndex == 5 || algIndex == 31) ? 2 : 0)) + 1)
         let fbOpIdx = FMAlgorithm.all[algIndex].feedbackOp - 1
         let fbFromIdx = FMAlgorithm.all[algIndex].feedbackFrom - 1
         let muteMask = opMuteMask
         let adsrOn = envOn
-        let invN = 1 / Float(n)
-        let thresh = FMEngine.levelThresh
+        let aStep = adsrStepSize(8 * min(100, max(0, envA)))
+        let dStep = adsrStepSize(100 + 8 * min(100, max(0, envD)))
+        let rStep = adsrStepSize(100 + 19 * min(100, max(0, envR)))
+        let sus = Float(100 + 7 * min(100, max(0, envS))) / 1000
+        let n32 = Int32(n)
+        let envMax = FMEngine.envMax, attThresh = FMEngine.attThresh
         var active = 0
         var newest = -1, newestAge = -1
+        for v in 0..<FMEngine.voiceCapacity where vActive[v] && vAge[v] > newestAge { newestAge = vAge[v]; newest = v }
 
         for v in 0..<FMEngine.voiceCapacity where vActive[v] {
-            active += 1
-            if vAge[v] > newestAge { newestAge = vAge[v]; newest = v }
+            let base = v * 6
             let midi = vMidi[v]
             let down = vKeyDown[v] || vSustained[v]
 
-            // ---- pitch EG (pitchenv.cc)
+            // ---- note_finished: a released voice retires once all six envelopes have ended inaudibly
+            if !down {
+                var finished = adsrOn && vAdsrStage[v] >= 4
+                if !finished {
+                    finished = true
+                    for o in 0..<6 where oStage[base + o] < 4 || oEnv[base + o] >= (100 << 14) { finished = false; break }
+                }
+                if finished {
+                    vActive[v] = false
+                    for o in 0..<6 { oStage[base + o] = 4 }
+                    continue
+                }
+            }
+            active += 1
+
+            // ---- pitch EG (dx7pitchenv.c)
             var pix = vPitchStage[v]
             var plevel = vPitchLevel[v]
             if pix < 3 || (pix < 4 && !down) {
@@ -541,39 +642,31 @@ final class FMEngine: @unchecked Sendable {
                 vPitchLevel[v] = plevel; vPitchStage[v] = pix
             }
 
-            // ---- glide (ratio operators only, as in the FM-1 core)
-            var glide = vGlide[v]
+            // ---- glide (ratio operators only): use the offset, then move it towards 0
+            let glide = vGlide[v]
             if glide != 0 {
-                let step = vGlideStep[v] * blockFrac
-                glide = glide > 0 ? max(0, glide - step) : min(0, glide + step)
-                vGlide[v] = glide
+                let step = vGlideStep[v] * Float(n) / Float(FMEngine.blockSize)
+                vGlide[v] = glide > 0 ? max(0, glide - step) : min(0, glide + step)
             }
-            if v == 0 { lastMonoPitch = Float(vNote[v]) + glide }
-
-            // ---- global ADSR
-            let adsrStart = vAdsr[v]
-            if adsrOn { adsrStep(v, blockSeconds) } else { vAdsr[v] = 1 }
-            let adsrEnd = vAdsr[v]
 
             let pitchMod = lfoPitch + Double(plevel) / 16777216.0 + Double(glide) / 12 + pitchBase
             let noteLog = FMEngine.noteZeroLog + Double(midi) / 12
 
             // ---- per-operator envelope, level and frequency
-            var anyCarrierSounding = false
             for o in 0..<6 {
                 let b = FMPatch.opBase(o + 1)
-                let k = v * 6 + o
-                // Env (env.cc), advanced once per block
+                let k = base + o
+                // Env (dx7env.c), advanced once per block
                 var ix = oStage[k]
                 var level = oEnv[k]
                 if ix < 3 || (ix < 4 && !down) {
                     let outLevel = operatorOutLevel(base: b, note: midi, velocity: vVel[v])
                     var target = ((FMEngine.scaleOutLevel(p(b + 4 + ix)) >> 1) << 6) + outLevel - 4256
                     target = max(16, target) << 16
-                    var qrate = (p(b + ix) * 41) >> 6
-                    qrate += FMEngine.scaleRate(midi, p(b + 13))
+                    var qrate = (min(99, p(b + ix)) * 41) >> 6
+                    qrate += FMEngine.scaleRate(midi, p(b + 13) & 7)
                     qrate = min(63, qrate)
-                    let inc = Int(Double((4 + (qrate & 3)) << (2 + (qrate >> 2))) * srMul) * n
+                    let inc = Int(Double(((4 + (qrate & 3)) << (2 + (qrate >> 2))) * n) * srMul)
                     if target > level {
                         level = max(1716 << 16, level)                    // jumpstart
                         level += (((17 << 24) - level) >> 24) * inc         // exponential attack
@@ -587,16 +680,17 @@ final class FMEngine: @unchecked Sendable {
                 }
                 // amplitude modulation (scales the log level)
                 let ams = p(b + 14) & 3
-                var lv = Float(level)
-                if ams != 0 { lv -= lv * amFactor[ams] }
+                if ams != 0 { level -= Int(Float(level) * amFactor[ams]) }
+                // attenuation: 0 marks a fresh note, which fades in from silence over the block
                 let muted = (muteMask >> o) & 1 == 1
-                let g2: Float = muted ? 0 : exp2f(lv / 16777216 - 14)
-                let g1 = oGain[k]
-                oGain[k] = g2
-                opG1[o] = g1
-                opGStep[o] = (g2 - g1) * invN
-                opOn[o] = g1 >= thresh || g2 >= thresh
-                // operator frequency (osc_freq + Freqlut)
+                let att2 = muted ? envMax : max(0, envMax - Int32(truncatingIfNeeded: level >> 14))
+                let att1 = oAtt[k] == 0 ? envMax - 1 : oAtt[k]
+                oAtt[k] = att2
+                opGain[o] = att1
+                let num = att2 - att1 + (n32 >> 1)
+                opGStep[o] = num >= 0 ? num / n32 : -((n32 - 1 - num) / n32)   // floor division
+                opOn[o] = att1 <= attThresh || att2 <= attThresh
+                // operator frequency (osc_freq + freqlut)
                 let fine = min(99, p(b + 19)), detune = min(14, p(b + 20)), coarse = p(b + 18) & 31
                 var lf: Double
                 if p(b + 17) == 1 {
@@ -611,67 +705,51 @@ final class FMEngine: @unchecked Sendable {
                     }
                     lf += FMEngine.coarseLog[coarse] + FMEngine.fineLog[fine] + pitchMod
                 }
-                opInc[o] = Float(exp2(lf) / Double(sr))
-                if cMask[o] > 0 && opOn[o] { anyCarrierSounding = true }
-                if v == newest { opMeterTmp[o] = min(1, g2 * 0.5) }
+                opFreq[o] = UInt32(min(2147483647.0, (exp2(lf) / Double(sr) * 16777216.0).rounded()))
+                if v == newest { opMeterTmp[o] = min(1, 0.5 * exp2f(2 - Float(att2) / 1024)) }
             }
-            let adsrDone = adsrOn && vAdsrStage[v] >= 4
-            if (!anyCarrierSounding || adsrDone) && !down {
-                vActive[v] = false
-                for o in 0..<6 { oStage[v * 6 + o] = 4; oGain[v * 6 + o] = 0 }
-                active -= 1
-                continue
-            }
+            // algorithms 4 and 6 render their feedback loop as one chain
+            let fbActive = fbOn && opOn[fbOpIdx]
+            if fbActive && algIndex == 3 { opOn[4] = true; opOn[3] = true }
+            if fbActive && algIndex == 5 { opOn[4] = true }
 
-            // ---- synthesis (fm_core.cc / fm_op_kernel.cc)
-            let base = v * 6
+            // ---- synthesis (dx7core.c)
             var y0 = fbY0[v], y1 = fbY1[v]
-            let adsrStep = (adsrEnd - adsrStart) * invN
             for s in 0..<n {
-                let fs = Float(s + 1)
-                var mix: Float = 0
+                var mix: Int32 = 0
                 var o = 5
                 while o >= 0 {
                     if opOn[o] {
                         let k = base + o
-                        var mod: Float = 0
+                        let g = opGain[o] &+ opGStep[o]
+                        opGain[o] = g
+                        var mod: Int32 = 0
                         let mc = mCount[o]
                         var mi = 0
-                        while mi < mc { mod += opOut[mList[o * 6 + mi]]; mi += 1 }
-                        if o == fbOpIdx { mod += (y0 + y1) * fbAmount }
+                        while mi < mc { mod = mod &+ opOut[mList[o * 6 + mi]]; mi += 1 }
+                        if fbActive && o == fbOpIdx { mod = mod &+ ((y0 &+ y1) >> fbShift) }
                         let ph = oPhase[k]
-                        var np = ph + opInc[o]
-                        if np >= 1 { np -= 1 }
-                        oPhase[k] = np
-                        var x = ph + mod
-                        x -= floorf(x)
-                        let fi = x * Float(FMEngine.sineSize)
-                        let ii = Int(fi)
-                        let fr = fi - Float(ii)
-                        let sv = sine[ii] + (sine[ii + 1] - sine[ii]) * fr
-                        let y = sv * (opG1[o] + opGStep[o] * fs)
+                        oPhase[k] = ph &+ opFreq[o]
+                        let y = mkSin(ph &+ UInt32(bitPattern: mod), g)
                         opOut[o] = y
-                        mix += y * cMask[o]
+                        if cMask[o] { mix = mix &+ y }
                     } else {
                         opOut[o] = 0
                     }
                     o -= 1
                 }
-                if fbAmount > 0 && opOn[fbFromIdx] { y0 = y1; y1 = opOut[fbFromIdx] }
-                out[s] += mix * (adsrStart + adsrStep * fs)
+                if fbActive { y0 = y1; y1 = opOut[fbFromIdx] }
+                let x = Float(mix) * (1.0 / 16777216.0)
+                out[s] += adsrOn ? x * adsrNext(v, aStep, dStep, rStep, sus) : x
             }
             fbY0[v] = y0; fbY1[v] = y1
-            // phase of silent operators keeps running (param.phase += freq << LG_N)
-            for o in 0..<6 where !opOn[o] {
-                var ph = oPhase[base + o] + opInc[o] * Float(n)
-                ph -= floorf(ph)
-                oPhase[base + o] = ph
-            }
+            // phase of silent operators keeps running
+            for o in 0..<6 where !opOn[o] { oPhase[base + o] = oPhase[base + o] &+ opFreq[o] &* UInt32(n) }
         }
         activeVoiceCount = active
         if newest >= 0 { for o in 0..<6 { opMeter[o] = opMeterTmp[o] } } else { for o in 0..<6 { opMeter[o] *= 0.8 } }
 
-        // ---- output: MSFA voice sum >> 4, DC blocker (FM-1 core), master, soft limiter
+        // ---- output: voice sum >> 4, DC blocker (FM-1 core), master, soft limiter
         let gain = masterVolume * FMEngine.outputScale
         let r = 1 - 126 / sr
         var x1 = dcX1, y1 = dcY1
@@ -684,7 +762,7 @@ final class FMEngine: @unchecked Sendable {
         dcX1 = x1; dcY1 = y1
     }
 
-    /// Voice sum to output: MSFA divides the Q24 carrier sum by 16; the extra
+    /// Voice sum to output: the FM-1 divides the carrier sum by 16; the extra
     /// factor 2 puts the app default master volume (0.8) at +4 dB
     /// relative to the FM-1 / Dexed level (volume 0.5 = MSFA unity).
     private static let outputScale: Float = 2.0 / 16
@@ -697,39 +775,14 @@ final class FMEngine: @unchecked Sendable {
         return x < 0 ? -y : y
     }
 
-    private let opInc = UnsafeMutablePointer<Float>.allocate(capacity: 6)
-    private let opG1 = UnsafeMutablePointer<Float>.allocate(capacity: 6)
-    private let opGStep = UnsafeMutablePointer<Float>.allocate(capacity: 6)
+    private let opFreq = UnsafeMutablePointer<UInt32>.allocate(capacity: 6)
+    private let opGain = UnsafeMutablePointer<Int32>.allocate(capacity: 6)     // running attenuation
+    private let opGStep = UnsafeMutablePointer<Int32>.allocate(capacity: 6)
     private let opOn = UnsafeMutablePointer<Bool>.allocate(capacity: 6)
     private let opMeterTmp = UnsafeMutablePointer<Float>.allocate(capacity: 6)
     private let amFactor = UnsafeMutablePointer<Float>.allocate(capacity: 4)
     /// [alg][op] → count, [alg][op][i] → modulator index (0-based)
     private let modCount = UnsafeMutablePointer<Int>.allocate(capacity: 32 * 6)
     private let modList = UnsafeMutablePointer<Int>.allocate(capacity: 32 * 36)
-    private let carrierMask = UnsafeMutablePointer<Float>.allocate(capacity: 32 * 6)
-
-    /// 0...1 knob → seconds (cubic, 0 → 1 ms ... 1 → ~8 s)
-    @inline(__always) private func envTime(_ x: Float) -> Float { 0.001 + x * x * x * 8 }
-
-    private func adsrStep(_ v: Int, _ dt: Float) {
-        var lvl = vAdsr[v]
-        switch vAdsrStage[v] {
-        case 0:
-            lvl += dt / envTime(envA)
-            if lvl >= 1 { lvl = 1; vAdsrStage[v] = 1 }
-        case 1:
-            let k = expf(-dt / (envTime(envD) * 0.3))
-            lvl = envS + (lvl - envS) * k
-            if abs(lvl - envS) < 0.001 { lvl = envS; vAdsrStage[v] = 2 }
-        case 2:
-            lvl = envS
-        case 3:
-            lvl *= expf(-dt / (envTime(envR) * 0.25))
-            if lvl < 0.0005 { lvl = 0; vAdsrStage[v] = 4 }
-        default:
-            lvl = 0
-        }
-        if vAdsrStage[v] < 3 && !vKeyDown[v] && !vSustained[v] { vAdsrStage[v] = 3 }
-        vAdsr[v] = lvl
-    }
+    private let carrierMask = UnsafeMutablePointer<Bool>.allocate(capacity: 32 * 6)
 }

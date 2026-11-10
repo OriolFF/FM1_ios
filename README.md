@@ -19,11 +19,11 @@ iPadOS 18+, landscape only. To run on a device, set your signing team in Xcode.
 
 | Area | Files |
 |---|---|
-| 6-op FM engine (MSFA-style envelopes/levels/scaling, 32 algorithms, LFO, pitch EG, mono/glide, global ADSR, op mute) | `FM1/Engine/FMEngine.swift`, `Algorithms.swift` |
+| 6-op FM engine, ported from M-VAVE's `fm1_open` DX7 core (integer log-sine kernel, envelopes/levels/scaling, 32 algorithms, LFO, pitch EG, mono/glide, global ADSR, op mute) | `FM1/Engine/FMEngine.swift`, `Algorithms.swift` |
 | DX7 voice format + SysEx (32-voice bank / single voice import, bank export) | `FM1/Engine/FMPatch.swift` |
 | Effect chain: Filter, Reverb, Delay, Distortion, Chorus, Phaser (re-orderable, per preset) | `FM1/Engine/FXChain.swift` |
 | Arpeggiator (7 modes) + 16×16-step sequencer (step record, long notes, chain, per-step rate) | `FM1/Engine/ArpSeq.swift` |
-| AVAudioEngine host, CoreMIDI / Bluetooth MIDI (notes, PC, bend, CC1/64, FX CC0–23 on the effect channel, SysEx) | `FM1/Engine/AudioController.swift` |
+| AVAudioEngine host, CoreMIDI / Bluetooth MIDI (notes, PC, bend, aftertouch, CC1/2/4/64/121/123, FX CC0–23 on the effect channel, SysEx voice / bank dumps and DX7 parameter changes) | `FM1/Engine/AudioController.swift` |
 | Panel UI state machine (modes, pages, popups, LEDs, dialogs, persistence) | `FM1/App/SynthModel.swift` |
 | Panel, knobs, rubber buttons, silicone keys, TFT screen renderer | `FM1/UI/*` |
 

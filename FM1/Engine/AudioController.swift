@@ -20,6 +20,8 @@ final class AudioController {
     var midiChannel: Int = 0   // 0 = omni, 1...16
     var fxChannel: Int = 2
     var onProgramChange: ((Int) -> Void)?
+    /// DX7 SysEx voice parameter change (VCED index, value), main thread.
+    var onParameterChange: ((Int, Int) -> Void)?
     var onFXControl: ((Int, Int) -> Void)?
     var onConnectionChange: ((Bool) -> Void)?
 
@@ -145,6 +147,7 @@ final class AudioController {
                         DispatchQueue.main.async { self.onMIDINote?(d1, false) }
                     case 0xB0: engine.controlChange(d1, d2)
                     case 0xC0: DispatchQueue.main.async { self.onProgramChange?(d1) }
+                    case 0xD0: engine.post(.aftertouch(UInt8(d1)))
                     case 0xE0: engine.pitchBend(d1 | (d2 << 7))
                     default: break
                     }
@@ -165,9 +168,13 @@ final class AudioController {
                     sysexBuffer += bytes.prefix(n)
                     if status == 0 || status == 3 {
                         sysexBuffer.append(0xF7)
-                        let patches = FMPatch.parseSysEx(sysexBuffer)
+                        if let (index, value) = FMPatch.parseParameterChange(sysexBuffer) {
+                            DispatchQueue.main.async { self.onParameterChange?(index, value) }
+                        } else {
+                            let patches = FMPatch.parseSysEx(sysexBuffer)
+                            if !patches.isEmpty { DispatchQueue.main.async { self.onSysExPatches?(patches) } }
+                        }
                         sysexBuffer = []
-                        if !patches.isEmpty { DispatchQueue.main.async { self.onSysExPatches?(patches) } }
                     }
                     idx += 2
                 } else {

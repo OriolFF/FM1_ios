@@ -24,7 +24,6 @@ enum ScreenContent: Equatable {
 struct ScreenState: Equatable {
     var presetNumber: Int = 1
     var presetName: String = "PIANO 1"
-    var trailing: String = "3"
     var footer: String = "OSC"
     var content: ScreenContent = .osc
     var transientValue: String? = nil  // pop-up when a knob is turned
@@ -80,8 +79,6 @@ struct TFTScreen: View {
                 .font(PanelFont.screen(19 * s, weight: .medium))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-            Text(state.trailing)
-                .font(PanelFont.screen(19 * s, weight: .medium))
             Spacer(minLength: 0)
             battery(s)
         }
@@ -131,7 +128,7 @@ struct TFTScreen: View {
         case let .tiles(tiles):
             tileGrid(tiles, columns: 2, s: s)
         case let .fx(sel, active):
-            let names = state.fxNames.map { $0 == "Distortion" ? "Distort-\nion" : $0 }
+            let names = state.fxNames.map { $0 == "Distortion" ? "Distort\nion" : $0 }
             let tiles = names.enumerated().map { ScreenTile(name: $0.element, value: nil, marked: $0.offset == sel, dim: !active[$0.offset]) }
             tileGrid(tiles, columns: 3, s: s, selected: state.fxGrabbed ? sel : nil)
         case let .save(bank, sel):

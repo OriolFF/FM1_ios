@@ -160,6 +160,7 @@ final class SynthModel: ObservableObject {
         audio.onSysExPatches = { [weak self] p in self?.receiveSysEx(p) }
         audio.onMIDINote = { _, _ in }
         audio.onProgramChange = { [weak self] pc in self?.selectPreset(pc) }
+        audio.onParameterChange = { [weak self] index, value in self?.setPatch { $0.setParameter(index, value) } }
         audio.onFXControl = { [weak self] cc, v in self?.fxControlChange(cc, v) }
         audio.onConnectionChange = { [weak self] connected in self?.bluetoothConnected = connected }
         timer = Timer.scheduledTimer(withTimeInterval: 1 / 15, repeats: true) { [weak self] _ in
@@ -191,7 +192,7 @@ final class SynthModel: ObservableObject {
             case "env": press(.env)
             case "lfo": press(.lfo)
             case "edit": press(.edit)
-            case "tuning": press(.edit); page = 2
+            case "tuning": press(.edit); page = 0
             case "voice": press(.edit); section = .voice
             case "glo": press(.glo)
             case "arp": press(.arp)
@@ -342,10 +343,10 @@ final class SynthModel: ObservableObject {
         for i in 0..<6 { fx.order[i] = extra.fxOrder[i]; fx.enabled[i] = extra.fxOn[i] }
         for i in 0..<18 { fx.params[i] = extra.fxParams[i] }
         engine.envOn = extra.envOn
-        engine.envA = Float(extra.adsr[0]) / 100
-        engine.envD = Float(extra.adsr[1]) / 100
-        engine.envS = Float(extra.adsr[2]) / 100
-        engine.envR = Float(extra.adsr[3]) / 100
+        engine.envA = extra.adsr[0]
+        engine.envD = extra.adsr[1]
+        engine.envS = extra.adsr[2]
+        engine.envR = extra.adsr[3]
         engine.monoMode = extra.mono
     }
 
@@ -514,16 +515,6 @@ final class SynthModel: ObservableObject {
         return "\(noteNames[n % 12])\(n / 12 - 2)"
     }
 
-    func freqString(op: Int) -> String {
-        let coarse = patch[op: op, .coarse], fine = patch[op: op, .fine]
-        if patch[op: op, .oscMode] == 1 {
-            let hz = pow(10, Double(coarse & 3) + Double(fine) / 100)
-            return hz >= 1000 ? String(format: "%.2fkHz", hz / 1000) : String(format: "%.2fHz", hz)
-        }
-        let r = (coarse == 0 ? 0.5 : Double(coarse)) * (1 + Double(fine) / 100)
-        return String(format: "%.2f", r)
-    }
-
     var pages: [Page] {
         switch mode {
         case .home: return []
@@ -552,25 +543,26 @@ final class SynthModel: ObservableObject {
             switch section {
             case .op(let op):
                 let n = "OP\(op)"
+                // V15 page order (official V15 manual and M-VAVE's page table in fm1_open screen.c)
                 return [
-                    Page(title: "\(n) Envelope", params: [opParam(op, .r1, "Rate 1"), opParam(op, .r2, "Rate 2"), opParam(op, .r3, "Rate 3"), opParam(op, .r4, "Rate 4")]),
-                    Page(title: "\(n) Env Level", params: [opParam(op, .l1, "Level 1"), opParam(op, .l2, "Level 2"), opParam(op, .l3, "Level 3"), opParam(op, .l4, "Level 4")]),
                     Page(title: "\(n) Tuning", params: [
                         opParam(op, .detune, "Detune", format: { "\($0 - 7)" }),
                         opParam(op, .coarse, "FreqCoarse"),
                         opParam(op, .fine, "FreqFine"),
-                        opParam(op, .oscMode, "OscMode", format: { $0 == 1 ? "Fixed" : "Ratio" })]),
-                    Page(title: "\(n) Output", params: [
-                        opParam(op, .outputLevel, "Level"),
-                        opParam(op, .velSens, "Key Velo"),
+                        opParam(op, .outputLevel, "OutLevel")]),
+                    Page(title: "\(n) Envelope", params: [opParam(op, .r1, "Rate 1"), opParam(op, .r2, "Rate 2"), opParam(op, .r3, "Rate 3"), opParam(op, .r4, "Rate 4")]),
+                    Page(title: "\(n) Env Level", params: [opParam(op, .l1, "Level 1"), opParam(op, .l2, "Level 2"), opParam(op, .l3, "Level 3"), opParam(op, .l4, "Level 4")]),
+                    Page(title: "\(n) Sens", params: [
                         opParam(op, .ampModSens, "AmpMod"),
-                        PageParam(name: "Freq", value: { [unowned self] in freqString(op: op) }, step: { _ in })]),
+                        opParam(op, .velSens, "Key Velo"),
+                        opParam(op, .oscMode, "OscMode", format: { $0 == 1 ? "Fixed" : "Ratio" }),
+                        nil]),
                     Page(title: "\(n) Scaling", params: [
                         opParam(op, .leftDepth, "L Depth"), opParam(op, .rightDepth, "R Depth"),
                         opParam(op, .breakPoint, "BreakPoint", format: SynthModel.breakPointName), nil]),
                     Page(title: "\(n) Curves", params: [
-                        opParam(op, .leftCurve, "L Curve", format: { SynthModel.curveNames[$0] }),
-                        opParam(op, .rightCurve, "R Curve", format: { SynthModel.curveNames[$0] }),
+                        opParam(op, .leftCurve, "L Curve", format: { SynthModel.curveNames[$0 & 3] }),
+                        opParam(op, .rightCurve, "R Curve", format: { SynthModel.curveNames[$0 & 3] }),
                         opParam(op, .rateScaling, "Rate Scale"), nil]),
                 ]
             case .pitch:
@@ -584,7 +576,7 @@ final class SynthModel: ObservableObject {
                         gParam(.algorithm, "Algorithm", format: { "\($0 + 1)" }),
                         gParam(.feedback, "Feedback"),
                         gParam(.oscKeySync, "Osc Sync", format: { $0 == 1 ? "ON" : "OFF" }),
-                        gParam(.transpose, "Transpose", format: { "\($0 - 24)" })]),
+                        gParam(.transpose, "Transpose")]),
                     Page(title: "Globe", params: [
                         PageParam(name: "Init Voice", value: { "" }, step: { [unowned self] d in
                             if d > 0 { setPatch { $0 = .initVoice }; showPopup(.message("Init Voice", nil), duration: 0.8) } }, hideValue: true),
@@ -707,7 +699,6 @@ final class SynthModel: ObservableObject {
         var s = ScreenState()
         s.presetNumber = current + 1
         s.presetName = patch.name
-        s.trailing = "\(globals.octave + 3)"
         let pgs = pages
         let pg = pgs.isEmpty ? nil : pgs[min(page, pgs.count - 1)]
         let pageLabel = pgs.count > 1 ? "\(min(page, pgs.count - 1) + 1)/\(pgs.count) " : ""
@@ -890,7 +881,8 @@ final class SynthModel: ObservableObject {
         if let dlg = dialog {
             switch dlg {
             case .reset: resetBank = k
-            case .copy: if k == 3 { copySource = ((copySource + d) % 128 + 128) % 128 }
+            case .copy:
+                if k == 3 { copySource = ((copySource + d) % 128 + 128) % 128 } else if k == 2 && d < 0 { dialog = nil }
             case .rename:
                 if k == 2 {
                     let c = SynthModel.renameClasses[renameClass].count
@@ -955,7 +947,7 @@ final class SynthModel: ObservableObject {
             } else if seq.arpOn {
                 enter(.arp)
             } else {
-                engine.allNotesOff(); seq.arpOn = true; enter(.arp)
+                engine.allNotesOff(); seq.arpResetRequest = true; seq.arpOn = true; enter(.arp)
             }
         case .seq:
             if seq.arpOn { showPopup(.message("Disable ARP to enter", nil), duration: 1.2); return }

@@ -26,6 +26,8 @@ final class ArpSeq: @unchecked Sendable {
     var arpGate = 50          // 20...100 %
     var arpSwing = 50         // 50...75 %
     var arpLatch = false
+    /// Set by the UI when the arpeggiator is switched on: forget old (latched) notes.
+    var arpResetRequest = false
     var tempo: Double = 120   // shared by ARP and SEQ
 
     // MARK: Sequencer settings / data
@@ -108,7 +110,13 @@ final class ArpSeq: @unchecked Sendable {
 
     func keyDown(_ note: Int, vel: Int) {
         guard note >= 0 && note < 128 else { return }
-        if arpLatch && physicalCount == 0 { heldCount = 0; arpIndex = 0 }
+        if arpLatch && physicalCount == 0 && heldCount > 0 {
+            // latch: a new chord replaces the latched one, the clock keeps running
+            heldCount = 0; arpIndex = 0
+        } else if heldCount == 0 {
+            // first key of a new phrase: play it straight away instead of waiting for the running clock
+            samplesToNext = 0; arpStepCount = 0; arpIndex = 0
+        }
         if !physical[note] { physical[note] = true; physicalCount += 1 }
         for i in 0..<heldCount where held[i] == note { return }
         if heldCount < held.count { held[heldCount] = note; heldCount += 1 }
@@ -163,7 +171,15 @@ final class ArpSeq: @unchecked Sendable {
         let beat = 60.0 / max(20, tempo) * sampleRate
 
         // ---- ARP
+        if arpResetRequest {
+            arpResetRequest = false
+            releaseAll()
+            if soundingArp >= 0 { sink(.noteOff(UInt8(soundingArp))); soundingArp = -1 }
+            samplesToNext = 0; arpIndex = 0; arpStepCount = 0; gateLeft = -1
+        }
         if arpOn {
+            // latch switched off with no key down: let the latched notes go
+            if !arpLatch && physicalCount == 0 && heldCount > 0 { heldCount = 0 }
             if gateLeft >= 0 {
                 gateLeft -= Double(frames)
                 if gateLeft < 0, soundingArp >= 0 { sink(.noteOff(UInt8(soundingArp))); soundingArp = -1 }

@@ -1,6 +1,7 @@
 import Foundation
 
-/// Master effects in the order Filter → Distortion → Chorus → Phaser → Delay → Reverb.
+/// The six FM-1 effects (Filter, Reverb, Delay, Distortion, Chorus, Phaser) in a
+/// user-defined chain order.
 /// All parameters are plain stored floats (0...1 unless noted); the UI writes
 /// them directly, the audio thread reads them once per buffer.
 final class FXChain: @unchecked Sendable {
@@ -105,8 +106,8 @@ final class FXChain: @unchecked Sendable {
 
     private let sr: Float
 
-    // filter state (stereo SVF)
-    private var fLow: (Float, Float) = (0, 0), fBand: (Float, Float) = (0, 0)
+    // filter state (stereo TPT SVF integrators)
+    private var fIc1: (Float, Float) = (0, 0), fIc2: (Float, Float) = (0, 0)
     // distortion tone lowpass
     private var dLP: (Float, Float) = (0, 0)
     // chorus
@@ -198,23 +199,23 @@ final class FXChain: @unchecked Sendable {
     }
 
     private func filter(_ l: UnsafeMutablePointer<Float>, _ r: UnsafeMutablePointer<Float>, _ n: Int) {
-        let hz = filterFreq
-        let f = min(0.95, 2 * sinf(.pi * min(hz, sr * 0.24) / sr))
-        let q = 1 - filterRes * 0.92
+        // Topology-preserving SVF: the cutoff is exact (the displayed Hz) and it
+        // stays stable over the whole 100 Hz – 20 kHz range.
+        let g = tanf(.pi * min(filterFreq, sr * 0.45) / sr)
+        let k = 1 - filterRes * 0.92            // damping = 1/Q
+        let a1 = 1 / (1 + g * (g + k)), a2 = g * a1, a3 = g * a2
         for i in 0..<n {
             for ch in 0..<2 {
                 let x = ch == 0 ? l[i] : r[i]
-                var low = ch == 0 ? fLow.0 : fLow.1
-                var band = ch == 0 ? fBand.0 : fBand.1
-                // two iterations for stability at high cutoffs
-                for _ in 0..<2 {
-                    low += f * band
-                    let high = x - low - q * band
-                    band += f * high
-                }
-                let high = x - low - q * band
+                let ic1 = ch == 0 ? fIc1.0 : fIc1.1
+                let ic2 = ch == 0 ? fIc2.0 : fIc2.1
+                let v3 = x - ic2
+                let band = a1 * ic1 + a2 * v3
+                let low = ic2 + a2 * ic1 + a3 * v3
+                let high = x - k * band - low
                 let y: Float = filterType == 0 ? low : (filterType == 1 ? band : high)
-                if ch == 0 { fLow.0 = low; fBand.0 = band; l[i] = y } else { fLow.1 = low; fBand.1 = band; r[i] = y }
+                if ch == 0 { fIc1.0 = 2 * band - ic1; fIc2.0 = 2 * low - ic2; l[i] = y }
+                else { fIc1.1 = 2 * band - ic1; fIc2.1 = 2 * low - ic2; r[i] = y }
             }
         }
     }
