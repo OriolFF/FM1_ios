@@ -136,7 +136,7 @@ struct PanelView: View {
     }
 
     private func encoder(_ i: Int, _ d: CGFloat, _ onStep: @escaping (Int) -> Void) -> some View {
-        KnobView(diameter: d, angle: knobAngles[i], showPointer: false, onStep: { s in
+        KnobView(diameter: d, angle: knobAngles[i], onStep: { s in
             knobAngles[i] += Double(s) * 18
             onStep(s)
         })

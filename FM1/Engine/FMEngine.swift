@@ -34,6 +34,9 @@ final class FMEngine: @unchecked Sendable {
     var groove: GrooveSeq?
     var drums: DrumKit?
     var drumLevel: Float = 1
+    /// Package firmwares (FM1/FirmwareHost) add their sequencer and voices here.
+    /// nil for the stock and Groove firmwares, which leaves their output unchanged.
+    var blockHook: FMBlockHook?
     private let drumScratch: UnsafeMutablePointer<Float> = {
         let p = UnsafeMutablePointer<Float>.allocate(capacity: FMEngine.blockSize); p.initialize(repeating: 0, count: FMEngine.blockSize); return p
     }()
@@ -485,7 +488,10 @@ final class FMEngine: @unchecked Sendable {
             if let g = groove, g.on {
                 g.advance(frames: n, sampleRate: Double(sampleRate)) { self.handle($0) }
             }
+            let hook = blockHook
+            if let h = hook { h.advance(frames: n, sampleRate: Double(sampleRate)) { self.handle($0) } }
             renderBlock(n: n, out: out + done)
+            if let h = hook { h.mix(frames: n, out: out + done) }
             if let d = drums {
                 for k in 0..<n { drumScratch[k] = 0 }
                 d.render(frames: n, out: drumScratch)
@@ -785,4 +791,13 @@ final class FMEngine: @unchecked Sendable {
     private let modCount = UnsafeMutablePointer<Int>.allocate(capacity: 32 * 6)
     private let modList = UnsafeMutablePointer<Int>.allocate(capacity: 32 * 36)
     private let carrierMask = UnsafeMutablePointer<Bool>.allocate(capacity: 32 * 6)
+}
+
+/// A realtime block source the FM engine calls once per control block (≤ 64 frames):
+/// `advance` before the FM voices render (it may send FM note events through `sink`),
+/// `mix` after, with the block's FM output in `out` to process or add to in place.
+/// Both run on the audio thread and must not allocate, lock or call into a script.
+protocol FMBlockHook: AnyObject {
+    func advance(frames: Int, sampleRate: Double, sink: (FMEngine.Event) -> Void)
+    func mix(frames: Int, out: UnsafeMutablePointer<Float>)
 }

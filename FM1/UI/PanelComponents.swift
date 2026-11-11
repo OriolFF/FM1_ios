@@ -3,20 +3,83 @@ import UIKit
 
 // MARK: - Knob (endless encoder or absolute pot)
 
+/// Maps finger travel to encoder detents.
+///
+/// Model: velocity-dependent acceleration (like a hardware encoder or a
+/// trackpad). Slow, deliberate movement costs `basePointsPerDetent` of
+/// travel per detent, so landing on a value is easy; a quick flick
+/// multiplies travel by up to `maxGain`, so a 0–100 sweep still fits in
+/// one swipe. Only the dominant axis counts (up / right = increase), so a
+/// diagonal wobble does not double the change.
+struct KnobDragMapper {
+    /// Finger travel per detent at slow speed (pt). ~2 mm on an iPad mini.
+    static let basePointsPerDetent: CGFloat = 14
+    /// Below this speed the gain is 1 (pt/s).
+    static let slowSpeed: CGFloat = 250
+    /// At or above this speed the gain is `maxGain` (pt/s).
+    static let fastSpeed: CGFloat = 1500
+    static let maxGain: CGFloat = 6
+    /// Movement ignored at touch-down so resting a finger does not nudge the value.
+    static let deadZone: CGFloat = 4
+
+    private var accum: CGFloat = 0
+    private var last: CGSize = .zero
+    private var lastTime: Date? = nil
+    private var speed: CGFloat = 0
+    private var engaged = false
+
+    static func gain(forSpeed v: CGFloat) -> CGFloat {
+        let t = min(1, max(0, (v - slowSpeed) / (fastSpeed - slowSpeed)))
+        return 1 + (maxGain - 1) * t * t   // gentle ramp: mid speeds stay fairly precise
+    }
+
+    /// Feed the drag's cumulative translation; returns whole detents to emit.
+    mutating func update(translation: CGSize, time: Date) -> Int {
+        if !engaged {
+            guard hypot(translation.width, translation.height) >= Self.deadZone else { return 0 }
+            engaged = true
+            last = translation   // start counting from here; the dead zone is not a step
+            lastTime = time
+            return 0
+        }
+        let dx = translation.width - last.width
+        let dy = -(translation.height - last.height)
+        last = translation
+        let d = abs(dy) >= abs(dx) ? dy : dx
+        if let lt = lastTime {
+            let dt = max(time.timeIntervalSince(lt), 1.0 / 240)
+            let inst = hypot(dx, dy) / CGFloat(dt)
+            speed = speed * 0.6 + inst * 0.4   // smooth out touch sample jitter
+        }
+        lastTime = time
+        // reversing direction drops leftover travel so the first step back is immediate-ish
+        if (d > 0 && accum < 0) || (d < 0 && accum > 0) { accum = 0 }
+        accum += d * Self.gain(forSpeed: speed)
+        let steps = Int(accum / Self.basePointsPerDetent)
+        accum -= CGFloat(steps) * Self.basePointsPerDetent
+        return steps
+    }
+
+    var moved: Bool { engaged }
+
+    mutating func reset() { self = KnobDragMapper() }
+}
+
 struct KnobView: View {
     let diameter: CGFloat
-    /// Visual rotation in degrees (encoders spin freely, pots map value).
+    /// Visual rotation in degrees. Encoders are endless, so for them the
+    /// pointer and ridges show relative movement only (18° per detent);
+    /// MASTER is a pot and its pointer maps the value.
     var angle: Double
-    var showPointer: Bool = true
     /// Called with integer detent steps (+ clockwise / up).
     var onStep: (Int) -> Void
     var onTap: (() -> Void)? = nil
 
-    @State private var accum: CGFloat = 0
-    @State private var lastTranslation: CGSize = .zero
-    @State private var lastAngle: Double? = nil
+    /// Encoder detents per revolution: one grip ridge per detent (18°).
+    static let ridges = 20
 
-    private var stepDistance: CGFloat { max(6, diameter * 0.16) }
+    @State private var mapper = KnobDragMapper()
+    @State private var active = false
 
     var body: some View {
         ZStack {
@@ -26,45 +89,53 @@ struct KnobView: View {
                 .frame(width: diameter * 1.04, height: diameter * 1.04)
                 .offset(y: diameter * 0.06)
                 .blur(radius: diameter * 0.05)
-            // knurled skirt
-            Circle()
-                .fill(AngularGradient(gradient: Gradient(colors: knurl()), center: .center))
-                .frame(width: diameter, height: diameter)
-                .rotationEffect(.degrees(angle))
+            // knurled skirt + grip ridges (rotate with the knob)
+            ZStack {
+                Circle()
+                    .fill(AngularGradient(gradient: Gradient(colors: knurl()), center: .center))
+                ForEach(0..<Self.ridges, id: \.self) { i in
+                    Capsule()
+                        .fill(Color.white.opacity(i == 0 ? 0 : 0.30))
+                        .frame(width: max(1, diameter * 0.035), height: diameter * 0.09)
+                        .offset(y: -diameter * 0.445)
+                        .rotationEffect(.degrees(Double(i) * 360 / Double(Self.ridges)))
+                }
+            }
+            .frame(width: diameter, height: diameter)
+            .rotationEffect(.degrees(angle))
             // cap
             Circle()
                 .fill(RadialGradient(colors: [Color(hex: 0x3a3a3a), Color(hex: 0x141414)],
                                      center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: diameter * 0.5))
                 .frame(width: diameter * 0.8, height: diameter * 0.8)
-                .overlay(Circle().stroke(Color.white.opacity(0.08), lineWidth: 1))
-            if showPointer {
+                .overlay(Circle().stroke(Color.white.opacity(active ? 0.22 : 0.08), lineWidth: 1))
+            // pointer line from near the centre to the cap edge, plus a dot on the skirt
+            ZStack {
                 Capsule()
                     .fill(Color.white)
-                    .frame(width: diameter * 0.13, height: diameter * 0.22)
-                    .offset(y: -diameter * 0.26)
-                    .rotationEffect(.degrees(angle))
+                    .frame(width: max(1.5, diameter * 0.06), height: diameter * 0.26)
+                    .offset(y: -diameter * 0.24)
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: diameter * 0.08, height: diameter * 0.08)
+                    .offset(y: -diameter * 0.445)
             }
+            .shadow(color: .white.opacity(0.35), radius: diameter * 0.03)
+            .rotationEffect(.degrees(angle))
         }
         .frame(width: diameter * 1.6, height: diameter * 1.6)
         .contentShape(Circle().scale(1.3))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { g in
-                    // combine vertical drag (up = increase) with horizontal
-                    let dy = -(g.translation.height - lastTranslation.height)
-                    let dx = (g.translation.width - lastTranslation.width)
-                    lastTranslation = g.translation
-                    accum += dy + dx * 0.6
-                    let steps = Int(accum / stepDistance)
-                    if steps != 0 {
-                        accum -= CGFloat(steps) * stepDistance
-                        onStep(steps)
-                    }
+                    active = true
+                    let steps = mapper.update(translation: g.translation, time: g.time)
+                    if steps != 0 { onStep(steps) }
                 }
-                .onEnded { g in
-                    if abs(g.translation.width) < 3 && abs(g.translation.height) < 3 { onTap?() }
-                    lastTranslation = .zero
-                    accum = 0
+                .onEnded { _ in
+                    if !mapper.moved { onTap?() }
+                    mapper.reset()
+                    active = false
                 }
         )
     }
