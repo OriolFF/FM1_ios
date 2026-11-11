@@ -9,6 +9,13 @@ private enum PkgModes {
 
 final class FirmwarePackageTests: XCTestCase {
 
+    /// Every test starts from the bundled catalog (no packages left over from earlier runs).
+    private func makeApp() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["FM1_TEST_RESET_PACKAGES"] = "1"
+        return app
+    }
+
     /// A minimal script firmware, delivered as a `data:` URL so the test needs no network.
     static var testPackageURL: String {
         let manifest = """
@@ -58,7 +65,7 @@ final class FirmwarePackageTests: XCTestCase {
     }
 
     func testInstallPackageFromURLAndSwitchToIt() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments = ["-demo", "firmware", "-firmware", "stock-v15"]
         app.launchEnvironment["FM1_TEST_PACKAGE_URL"] = Self.testPackageURL
         app.launch()
@@ -97,7 +104,7 @@ final class FirmwarePackageTests: XCTestCase {
     }
 
     func testSwitchBetweenBundledPackageAndStock() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments = ["-demo", "firmware", "-firmware", "stock-v15"]
         app.launch()
 
@@ -130,7 +137,7 @@ final class FirmwarePackageTests: XCTestCase {
     }
     /// Felucca's ARP page drives the host arpeggiator: KNOB1 (MODE) turns it on, a second ARP tap opens ARP 2.
     func testFeluccaArpPage() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments = ["-firmware", "felucca"]
         app.launch()
         let screen = packageScreen(app)
@@ -166,5 +173,41 @@ final class FirmwarePackageTests: XCTestCase {
 
         arp.tap()
         XCTAssertTrue(screenShows("LATCH"), "second ARP tap opens ARP 2, got: \(screen.label)")
+    }
+    /// Real network install: Felucca's packed file from the public GitHub repo, over https.
+    /// Needs the simulator to be online. The downloaded copy replaces the bundled one; the next test resets it.
+    func testInstallFromHTTPSAndRun() throws {
+        let app = makeApp()
+        app.launchArguments = ["-demo", "firmware", "-firmware", "stock-v15"]
+        app.launchEnvironment["FM1_TEST_PACKAGE_URL"] = "https://raw.githubusercontent.com/OriolFF/FM1_ios/main/Firmwares/dist/felucca.fm1fw"
+        app.launch()
+        let sheetTitle = app.navigationBars["Firmware"]
+        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5))
+
+        let fromURL = app.buttons["Install from URL…"]
+        XCTAssertTrue(reveal(fromURL, in: app))
+        RunLoop.current.run(until: Date().addingTimeInterval(0.6))
+        fromURL.tap()
+        let download = app.buttons["Download & Install"]
+        XCTAssertTrue(download.waitForExistence(timeout: 5))
+        download.tap()
+        let done = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Installed Felucca'")).firstMatch
+        if !done.waitForExistence(timeout: 30) {
+            let msgs = app.staticTexts.allElementsBoundByIndex.map(\.label).filter { $0.contains("nstall") || $0.contains("fail") || $0.contains("rror") }
+            XCTFail("https download should install; messages: \(msgs)")
+        }
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        // a successful install selects it: flash the downloaded Felucca and check it runs
+        let flash = app.buttons["Install Felucca 1.8.1-p1"]
+        XCTAssertTrue(flash.waitForExistence(timeout: 5), "downloaded firmware selected")
+        flash.tap()
+        XCTAssertTrue(sheetTitle.waitForNonExistence(timeout: 3))
+        XCTAssertTrue(waitForChip(app, containing: "Felucca"))
+        let screen = packageScreen(app)
+        XCTAssertTrue(screen.waitForExistence(timeout: 8))
+        let deadline = Date().addingTimeInterval(6)
+        while Date() < deadline && !screen.label.contains("HOME") { RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
+        XCTAssertTrue(screen.label.contains("HOME"), "downloaded Felucca boots to HOME, got: \(screen.label)")
     }
 }

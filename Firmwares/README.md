@@ -202,6 +202,7 @@ The scripts share one global scope. The host calls these functions if they exist
 | function | when |
 |---|---|
 | `onBoot()` | Once, after the scripts load. Instrument parameters saved last time are restored *after* it. |
+| `onMidi(kind, n, v, ch)` | Incoming MIDI while the package runs: `kind` is `"on"`, `"off"`, `"cc"` (n = controller, v = value) or `"program"`. The stock firmware's MIDI channel setting filters it first. Without `onMidi`, MIDI does nothing in the package. `LIB.midiNote(...)` and `LIB.gmLane(n)` in the bundled `lib.js` play a note on a track, with the GM drum map on a drum track. |
 | `onButton(name, down)` | Every rubber button and OCT key, on press and on release. The names are `FX SEL ENV LFO EDIT GLO HOME SAVE ARP SEQ PLAY REC OCT- OCT+`. Holds, taps and double taps are up to the script; `fm.now()` gives the time in ms. |
 | `onKey(k, down, velocity)` | Keys 0–26, from left to right. Use `fm.isWhite(k)`, `fm.whiteIndex(k)` (0–15) and `fm.blackIndex(k)` (0–10). |
 | `onKnob(i, delta)` | KNOB 1–4 as 0–3. Each detent is ±1. |

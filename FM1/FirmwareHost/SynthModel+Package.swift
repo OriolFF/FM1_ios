@@ -9,6 +9,8 @@ extension SynthModel {
             let host = try PackageHost(firmware: fw, model: self)
             packageHost = host
             host.start()
+            audio.onPackageMIDI = { [weak self] s, a, b in self?.packageHost?.midi(s, a, b) }
+            audio.routeMIDIToPackage = true
         } catch {
             showPopup(.message("Firmware error", error.localizedDescription), duration: 3)
             restoreNativeEngine()
@@ -19,6 +21,7 @@ extension SynthModel {
     /// Stops the running script firmware (if any) and gives the engine back to the native panel.
     func stopPackage() {
         guard let h = packageHost else { return }
+        audio.routeMIDIToPackage = false
         h.stop()
         packageHost = nil
         // keep the detached engine alive past any render callback still holding it

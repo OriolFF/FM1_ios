@@ -18,7 +18,15 @@ final class FirmwareCatalog: ObservableObject {
         return base.appendingPathComponent("FirmwareData", isDirectory: true).appendingPathComponent(id, isDirectory: true)
     }
 
-    private init() { reload() }
+    private init() {
+        #if DEBUG
+        // UI tests start from the bundled catalog: drop packages earlier runs downloaded
+        if ProcessInfo.processInfo.environment["FM1_TEST_RESET_PACKAGES"] == "1" {
+            try? FileManager.default.removeItem(at: Self.installedRoot)
+        }
+        #endif
+        reload()
+    }
 
     func reload() {
         var list: [Firmware] = []

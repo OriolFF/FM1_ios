@@ -89,6 +89,8 @@ final class PackageHost {
     func button(_ b: PanelButton, down: Bool) { call("button", PackageHost.buttonNames[b] ?? "?", down); render() }
     func key(_ k: Int, down: Bool, velocity: Int) { call("key", k, down, velocity); render() }
     func knob(_ k: Int, _ d: Int) { call("knob", k, d); render() }
+    /// Incoming MIDI (status with channel, data 1, data 2), see `onMidi` in Firmwares/README.md.
+    func midi(_ status: UInt8, _ d1: Int, _ d2: Int) { call("midi", Int(status), d1, d2); render() }
     func encoder(_ name: String, _ d: Int) { call("encoder", name, d); render() }
     func tick() {
         call("tick", Date().timeIntervalSince1970 * 1000)

@@ -708,3 +708,10 @@ function leds() {
   fm.led.button("GLO", layer === "GLO" ? (latched ? "blue" : "on") : (section === "GLO" ? "on" : "off"));
 }
 function onShutdown() { saveUI(); fm.store.set("song", song); }
+
+// Incoming MIDI: notes play the selected track (GM drum map on the drum track) and record while REC runs.
+function onMidi(kind, n, v, ch) {
+  if (kind !== "on" && kind !== "off") return;
+  var t = S.track;
+  LIB.midiNote(t, inst(t), t === DR, kind, n, v, recording && fm.seq.playing());
+}

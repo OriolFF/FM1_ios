@@ -145,6 +145,24 @@ var LIB = (function () {
       "hold keys to arpeggiate; follows PLAY's beat"];
   }
 
+  // General MIDI drum note -> host drum lane (BD SD LT MT HT RM CP CB CY OH CH), or -1.
+  var GM_LANES = { 35: 0, 36: 0, 37: 5, 38: 1, 40: 1, 39: 6, 41: 2, 43: 2, 45: 3, 47: 3, 48: 4, 50: 4,
+    42: 10, 44: 10, 46: 9, 49: 8, 51: 8, 52: 8, 55: 8, 57: 8, 59: 8, 56: 7, 54: 7, 75: 5, 76: 5 };
+  function gmLane(n) { return GM_LANES.hasOwnProperty(n) ? GM_LANES[n] : -1; }
+  // Plays an incoming MIDI note on track t (instrument i) and records it while `rec`.
+  // Returns the drum lane or note played, or -1.
+  function midiNote(t, i, isDrum, kind, n, v, rec) {
+    if (isDrum) {
+      var lane = gmLane(n);
+      if (lane < 0 || kind !== "on") return -1;
+      i.hit(lane, v);
+      if (rec) fm.seq.recordHit(t, lane, v);
+      return lane;
+    }
+    if (kind === "on") { i.note(n, v); if (rec) fm.seq.record(t, n, v); } else i.off(n);
+    return n;
+  }
+
   // Drawing helpers
   function knob(g, x, y, r, frac, col, bg) {
     g.arc(x, y, r, -135, 135, bg || "#ffffff30", 4);
@@ -155,6 +173,6 @@ var LIB = (function () {
   return {
     noteName: noteName, clamp: clamp, wrap: wrap, pct: pct, Buttons: Buttons, Undo: Undo,
     snapshot: snapshot, restore: restore, euclid: euclid, shift: shift, reverse: reverse, double: double,
-    SCALES: SCALES, degree: degree, snap: snap, CHORDS: CHORDS, chordNotes: chordNotes, knob: knob, hexA: hexA, arpKnobs: arpKnobs, arpLines: arpLines
+    SCALES: SCALES, degree: degree, snap: snap, CHORDS: CHORDS, chordNotes: chordNotes, knob: knob, hexA: hexA, arpKnobs: arpKnobs, arpLines: arpLines, gmLane: gmLane, midiNote: midiNote
   };
 })();

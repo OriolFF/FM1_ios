@@ -314,7 +314,9 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
     opens ARP 2.
 * **Screens:** screenshots of SLOOP, Felucca and Melodee booted in the simulator show their own
   screens.
+* **Install over the network:** `testInstallFromHTTPSAndRun` downloads Felucca's packed file from
+  the public GitHub repo over https, then flashes and runs it.
+* **MIDI in:** the script fuzz includes random note, CC and program messages on all 16 channels.
 * **Not verified:**
   * listening tests, since nothing was heard;
-  * install from a real https URL (the test uses a `data:` URL);
   * a physical iPad.

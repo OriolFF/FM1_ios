@@ -711,3 +711,10 @@ function leds() {
   if (button !== "ARP" && !layer) fm.led.button("ARP", arpBeat() ? "on" : "off");   // beat LED while an arp runs
 }
 function onShutdown() { saveUI(); fm.store.set("song", song); if (fxHeld >= 0) endFx(); }
+
+// Incoming MIDI: notes play the selected track (GM drum map on the drum track) and record while REC runs.
+function onMidi(kind, n, v, ch) {
+  if (kind !== "on" && kind !== "off") return;
+  var t = S.track;
+  LIB.midiNote(t, inst(t), t === DR, kind, n, v, recording && fm.seq.playing());
+}

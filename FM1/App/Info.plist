@@ -22,8 +22,15 @@
 	<string>1</string>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Connect Bluetooth MIDI keyboards and controllers.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Download firmware packages from a computer on your network.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Orbitron.ttf</string>

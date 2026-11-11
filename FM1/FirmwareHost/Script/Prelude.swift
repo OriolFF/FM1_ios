@@ -120,6 +120,15 @@ function __event(type, a, b, c) {
     case "knob": if (typeof onKnob === "function") onKnob(a, b); break;
     case "encoder": if (typeof onEncoder === "function") onEncoder(a, b); break;
     case "tick": if (typeof onTick === "function") onTick(a); break;
+    case "midi":
+      if (typeof onMidi === "function") {
+        var kind = a & 0xF0, ch = (a & 15) + 1;
+        if (kind === 0x90 && c > 0) onMidi("on", b, c, ch);
+        else if (kind === 0x80 || kind === 0x90) onMidi("off", b, 0, ch);
+        else if (kind === 0xB0) onMidi("cc", b, c, ch);
+        else if (kind === 0xC0) onMidi("program", b, 0, ch);
+      }
+      break;
     case "shutdown": if (typeof onShutdown === "function") onShutdown(); break;
   }
 }

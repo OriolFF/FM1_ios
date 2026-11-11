@@ -482,7 +482,7 @@ function KIT(lane, p, label) {
 }
 function transposePattern(t, d) {
   undo.push(t, pat(t));
-  for (var s = 0; s < 64; s++) { var st = fm.seq.get(t, pat(t), s); if (st.vel) fm.seq.set(t, pat(t), s, { notes: st.notes.map(function (n) { return n + d; }) }); }
+  for (var s = 0; s < 64; s++) { var st = fm.seq.get(t, pat(t), s); if (st.vel) fm.seq.set(t, pat(t), s, { notes: st.notes.map(function (n) { return LIB.clamp(n + d, 12, 120); }) }); }
 }
 function stepKnobs() {
   var t = S.track, p = pat(t), row = t === DR ? S.lane : 0;
@@ -760,3 +760,10 @@ function leds() {
 }
 
 function onShutdown() { saveUI(); fm.store.set("master", master); fm.punch("OFF"); }
+
+// Incoming MIDI: notes play the selected track (GM drum map on the drum track) and record while REC runs.
+function onMidi(kind, n, v, ch) {
+  if (kind !== "on" && kind !== "off") return;
+  var t = S.track;
+  LIB.midiNote(t, inst(t), t === DR, kind, n, v, recording && fm.seq.playing());
+}

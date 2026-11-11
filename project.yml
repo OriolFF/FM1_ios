@@ -43,6 +43,9 @@ targets:
         NSBluetoothAlwaysUsageDescription: Connect Bluetooth MIDI keyboards and controllers.
         LSSupportsOpeningDocumentsInPlace: false
         UIFileSharingEnabled: true
+        # firmware packages can be installed from a computer on the same network (plain http)
+        NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
+        NSLocalNetworkUsageDescription: Download firmware packages from a computer on your network.
   FM1UITests:
     type: bundle.ui-testing
     platform: iOS

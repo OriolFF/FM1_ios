@@ -1,5 +1,6 @@
 import AVFoundation
 import CoreMIDI
+import os
 
 /// Hosts the FM engine and FX chain in AVAudioEngine and listens to CoreMIDI / Bluetooth MIDI.
 final class AudioController {
@@ -24,6 +25,14 @@ final class AudioController {
     var onParameterChange: ((Int, Int) -> Void)?
     var onFXControl: ((Int, Int) -> Void)?
     var onConnectionChange: ((Bool) -> Void)?
+    /// While a script firmware runs, channel notes, CCs and program changes go to it (main thread,
+    /// status byte with channel, data 1, data 2) instead of to the FM engine. Off for the stock firmware.
+    var onPackageMIDI: ((UInt8, Int, Int) -> Void)?
+    private let packageRoute = OSAllocatedUnfairLock(initialState: false)
+    var routeMIDIToPackage: Bool {
+        get { packageRoute.withLock { $0 } }
+        set { packageRoute.withLock { $0 = newValue } }
+    }
 
     init() {
         AudioController.configureSession()
@@ -138,6 +147,10 @@ final class AudioController {
                         continue
                     }
                     if midiChannel != 0 && ch != midiChannel { continue }
+                    if [0x80, 0x90, 0xB0, 0xC0].contains(status & 0xF0) && routeMIDIToPackage {
+                        DispatchQueue.main.async { self.onPackageMIDI?(status, d1, d2) }
+                        continue
+                    }
                     switch status & 0xF0 {
                     case 0x90 where d2 > 0:
                         engine.noteOn(d1, velocity: d2)
