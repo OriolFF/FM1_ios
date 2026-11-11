@@ -118,7 +118,7 @@ final class SynthModel: ObservableObject {
     enum Dialog: Equatable { case rename, copy, reset }
 
     // MARK: Groove mode state (see SynthModel+Groove.swift)
-    @Published var grooveMode = SynthModel.storedFirmware == .groove
+    @Published var grooveMode = SynthModel.storedFirmware.isGroove
     // MARK: Firmware
     @Published var firmware: Firmware = SynthModel.storedFirmware
     @Published var flashTarget: Firmware? = nil
@@ -126,9 +126,14 @@ final class SynthModel: ObservableObject {
     @Published var bootFirmware: Firmware? = nil
     @Published var showFirmware = false
     static var storedFirmware: Firmware {
-        if let raw = UserDefaults.standard.string(forKey: "firmware"), let f = Firmware(rawValue: raw) { return f }
-        return UserDefaults.standard.bool(forKey: "grooveMode") ? .groove : .stockV15   // migrate
+        let cat = FirmwareCatalog.shared
+        if let raw = UserDefaults.standard.string(forKey: "firmware"), let f = cat.firmware(id: raw) { return f }
+        return UserDefaults.standard.bool(forKey: "grooveMode") ? (cat.all.first { $0.isGroove } ?? .groove) : cat.stock   // migrate
     }
+    /// Running script firmware (FM1/FirmwareHost), nil for the native ones.
+    var packageHost: PackageHost?
+    /// Package engines detached from the audio thread, kept alive until it can no longer hold them.
+    var retiredPackageEngines: [PackageEngine] = []
     @Published var grooveTrack = 1          // 0 synth, 1 drums
     @Published var grooveLane = 0
     @Published var groovePage = 0           // 16-step page
@@ -167,6 +172,7 @@ final class SynthModel: ObservableObject {
             MainActor.assumeIsolated { self?.tick() }
         }
         boot(firmware, duration: 1.4)
+        if firmware.isScript { startPackage(firmware) }
         #if DEBUG
         if let i = CommandLine.arguments.firstIndex(of: "-demo"), i + 1 < CommandLine.arguments.count {
             demo(CommandLine.arguments[i + 1])
@@ -182,10 +188,10 @@ final class SynthModel: ObservableObject {
         if parts.contains("boot") { bootFirmware = firmware }
         if parts.contains("firmware") { showFirmware = true }
         if let f = parts.first(where: { $0.hasPrefix("install=") }) {
-            let fw = Firmware(rawValue: String(f.dropFirst(8)))!
+            let fw = FirmwareCatalog.shared.firmware(id: String(f.dropFirst(8))) ?? .stockV15
             Task { try? await Task.sleep(for: .seconds(1)); self.installFirmware(fw) }
         }
-        if let f = parts.first(where: { $0.hasPrefix("flash=") }) { flashTarget = Firmware(rawValue: String(f.dropFirst(6))); flashProgress = 0.63 }
+        if let f = parts.first(where: { $0.hasPrefix("flash=") }) { flashTarget = FirmwareCatalog.shared.firmware(id: String(f.dropFirst(6))); flashProgress = 0.63 }
         for p in parts {
             switch p {
             case "fx": mode = .fx; setExtra { $0.fxOn[0] = true; $0.fxOn[5] = true }; fxCursor = 5; fxLastParam = "Freq: 30%"
@@ -204,7 +210,7 @@ final class SynthModel: ObservableObject {
             case let c where c.hasPrefix("alg="): setPatch { $0[.algorithm] = (Int(c.dropFirst(4)) ?? 1) - 1 }
             case "presets": selectPreset(127); popupTask?.cancel()
             case "groove":
-                setGrooveMode(true, quiet: true); firmware = .groove
+                setGrooveMode(true, quiet: true); firmware = FirmwareCatalog.shared.firmware(id: "groove") ?? .groove
                 popupTask?.cancel(); popup = nil
                 press(.seq)
                 let g = audio.groove
@@ -238,6 +244,7 @@ final class SynthModel: ObservableObject {
         let notes = Set(engine.soundingNotes())
         if notes != soundingNotes { soundingNotes = notes }
         if seq.seqOn || audio.groove.on || audio.groove.playing { objectWillChange.send() } // step LED playhead
+        if let h = packageHost, flashTarget == nil { h.tick(); objectWillChange.send() }
     }
 
     // MARK: Factory data
@@ -315,7 +322,7 @@ final class SynthModel: ObservableObject {
         }
     }
     private var globalsSaveTask: Task<Void, Never>?
-    func persistGlobalsNow() { persist() }
+    func persistGlobalsNow() { persist(); packageHost?.save() }
     private func persistGlobalsOnly() {
         // Only globals: re-encode with saved presets (edit buffer is NOT written)
         persist()
@@ -337,9 +344,9 @@ final class SynthModel: ObservableObject {
         audio.groove.tempo = Double(globals.tempo)
     }
 
-    private func pushPatch() { engine.loadPatch(patch); syncGrooveBase() }
+    func pushPatch() { engine.loadPatch(patch); syncGrooveBase() }
 
-    private func pushExtra() {
+    func pushExtra() {
         for i in 0..<6 { fx.order[i] = extra.fxOrder[i]; fx.enabled[i] = extra.fxOn[i] }
         for i in 0..<18 { fx.params[i] = extra.fxParams[i] }
         engine.envOn = extra.envOn
@@ -464,6 +471,7 @@ final class SynthModel: ObservableObject {
         seq.playing = false; seq.seqOn = false; seq.arpOn = false
         groove.playing = false; groove.on = false
         recording = false
+        stopPackage()
         engine.panic()
         dialog = nil; pendingImport = nil; popup = nil
         mode = .home; page = 0; grooveHeld = nil; fxGrabbed = false
@@ -476,11 +484,12 @@ final class SynthModel: ObservableObject {
             }
             try? await Task.sleep(for: .milliseconds(400))
             guard let self else { return }
-            self.setGrooveMode(fw == .groove, quiet: true)
+            self.setGrooveMode(fw.isGroove, quiet: true)
             self.firmware = fw
-            UserDefaults.standard.set(fw.rawValue, forKey: "firmware")
+            UserDefaults.standard.set(fw.id, forKey: "firmware")
             self.flashTarget = nil
             self.boot(fw, duration: 1.6)
+            if fw.isScript { self.startPackage(fw) } else { self.restoreNativeEngine() }
         }
     }
 
@@ -713,6 +722,10 @@ final class SynthModel: ObservableObject {
             s.footer = "Booting"
             return s
         }
+        if let h = packageHost {
+            s.content = .package(h.frame)
+            return s
+        }
         if let pending = pendingImport {
             _ = pending
             s.content = .save(bankName: "", selected: importBank)
@@ -816,6 +829,7 @@ final class SynthModel: ObservableObject {
             return
         }
         if pendingImport != nil { if d > 0 { confirmImport() } else { pendingImport = nil }; return }
+        if let h = packageHost { h.encoder("SELECT", d); return }
         if grooveSelect(d) { return }
         if mode == .seq && recording && recHeld {
             recCursor = cycle(recCursor, d, 0...(seq.patLength[seq.pattern] - 1))
@@ -852,6 +866,7 @@ final class SynthModel: ObservableObject {
 
     func turnPresets(_ d: Int) {
         if isBusyFlashing { return }
+        if let h = packageHost { h.encoder("PRESETS", d); return }
         if groovePresets(d) { return }
         if seq.seqOn { showPopup(.message("Disable SEQ", "Voice bound to pattern"), duration: 1); return }
         selectPreset(current + d)
@@ -859,6 +874,7 @@ final class SynthModel: ObservableObject {
 
     func turnAlgorithm(_ d: Int) {
         if isBusyFlashing { return }
+        if let h = packageHost { h.encoder("ALGORITHM", d); return }
         if grooveAlgorithm(d) { return }
         if !octHeld.isEmpty {
             let sign = octHeld.contains(1) ? 1 : -1
@@ -877,6 +893,7 @@ final class SynthModel: ObservableObject {
 
     func turnKnob(_ k: Int, _ d: Int) {
         if isBusyFlashing { return }
+        if let h = packageHost { h.knob(k, d); return }
         if pendingImport != nil { importBank = k; return }
         if let dlg = dialog {
             switch dlg {
@@ -919,7 +936,7 @@ final class SynthModel: ObservableObject {
     // MARK: Controls — buttons
 
     func press(_ b: PanelButton) {
-        if isBusyFlashing { return }
+        if isBusyFlashing || packageHost != nil { return }
         if pendingImport != nil {
             if b == .home { pendingImport = nil } else if b == .save { confirmImport() }
             return
@@ -973,7 +990,7 @@ final class SynthModel: ObservableObject {
     }
 
     func longPress(_ b: PanelButton) {
-        if isBusyFlashing { return }
+        if isBusyFlashing || packageHost != nil { return }
         switch b {
         case .save: saveCurrent()
         case .home: showBluetooth = true
@@ -987,6 +1004,7 @@ final class SynthModel: ObservableObject {
     private var octTransposeUsed = false
 
     func octDown(_ dir: Int) {
+        if let h = packageHost { if !isBusyFlashing { h.button(dir < 0 ? .octDown : .octUp, down: true) }; return }
         octHeld.insert(dir)
         octTransposeUsed = false
         if grooveOct(dir) { octTransposeUsed = true; return }
@@ -1000,6 +1018,7 @@ final class SynthModel: ObservableObject {
     }
 
     func octUp(_ dir: Int) {
+        if let h = packageHost { if !isBusyFlashing { h.button(dir < 0 ? .octDown : .octUp, down: false) }; return }
         octHeld.remove(dir)
         if !octTransposeUsed {
             globals.octave = cycle(globals.octave, dir, -3...3)
@@ -1054,6 +1073,7 @@ final class SynthModel: ObservableObject {
     func keyDown(_ k: Int, velocity: Int) {
         pressedKeys.insert(k)
         if isBusyFlashing { return }
+        if let h = packageHost { h.key(k, down: true, velocity: velocity); return }
         // Rename: OP1-4 select class, OP5 delete
         if dialog == .rename, let label = SynthModel.editLabels[k] {
             switch label {
@@ -1110,6 +1130,7 @@ final class SynthModel: ObservableObject {
 
     func keyUp(_ k: Int) {
         pressedKeys.remove(k)
+        if let h = packageHost { if !isBusyFlashing { h.key(k, down: false, velocity: 0) }; return }
         if grooveKeyUp(k) { return }
         if mode == .edit, let label = SynthModel.editLabels[k], label.hasPrefix("OP"), let n = Int(label.dropFirst(2)) {
             if let t = keyDownTime[k], Date().timeIntervalSince(t) > 0.6 {
@@ -1139,6 +1160,7 @@ final class SynthModel: ObservableObject {
     // MARK: LEDs
 
     func keyLED(_ k: Int) -> Color? {
+        if let h = packageHost { return pressedKeys.contains(k) ? Color(hex: 0xd9f3ff) : h.keyLEDs[k] }
         if let g = grooveKeyLED(k) { return g }
         let lit = Color(hex: 0xd9f3ff)
         if pressedKeys.contains(k) { return lit }
@@ -1169,6 +1191,7 @@ final class SynthModel: ObservableObject {
     }
 
     func buttonLight(_ b: PanelButton) -> ButtonLight {
+        if let h = packageHost { return h.buttonLight(b) }
         if grooveMode {
             switch b {
             case .seq: return mode == .seq ? .on : (audio.groove.on ? .blue : .off)

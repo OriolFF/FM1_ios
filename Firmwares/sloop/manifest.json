@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "id": "sloop",
+  "name": "SLOOP",
+  "version": "2.8-p1",
+  "bootTitle": "SLOOP",
+  "summary": "Live 4-track groovebox: three synths (ANALOG, FM6, PHASE) and a drum track. Every button is a layer: hold FX for punch-in effects, SEQ for steps (hold a step: note, level, ratchet, nudge, locks, fill), GLO for the mix (mute, solo, fill, tap), SAVE for song sections A–D, SEL for key and chords, EDIT to erase, ARP for note repeat. REC records over the loop.",
+  "credits": "After SLOOP 2.8 by isod89 / 3dSam (github.com/isod89/sloop-fm1). Re-implemented from its published manual; no SLOOP code. Runs on FM Pocket's built-in engines.",
+  "license": "Package: original work. SLOOP itself is GPL-3.0 (not copied).",
+  "source": "https://github.com/isod89/sloop-fm1",
+  "runtime": "script",
+  "scripts": ["lib.js", "main.js"],
+  "engine": {
+    "instruments": [
+      {"id": "t1", "type": "va", "voices": 6},
+      {"id": "t2", "type": "fm"},
+      {"id": "t3", "type": "pd", "voices": 6},
+      {"id": "drums", "type": "drums"}
+    ],
+    "sequencer": {
+      "patterns": 4,
+      "tracks": [
+        {"id": "t1", "instrument": "t1"},
+        {"id": "t2", "instrument": "t2"},
+        {"id": "t3", "instrument": "t3"},
+        {"id": "dr", "instrument": "drums", "lanes": 11}
+      ]
+    }
+  }
+}

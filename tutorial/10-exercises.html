@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Build these sounds · FM-1 Tutorial</title>
+<meta name="description" content="Five guided exercises">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html" aria-current="page"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>10. Build these sounds</h1><p class="lede">Five guided exercises</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<p>These five exercises train the skills in the earlier pages. They use <strong>typical starting values</strong>, not measured ones: treat the numbers as a first guess, then adjust by ear. Do not hold <kbd>SAVE</kbd> until you like the result. If you pick another voice first, your changes vanish (which is also a way to start over).</p>
+<div class="callout"><strong>Before you begin</strong><p>Pick a voice you don’t mind overwriting, for example one in a bank you can reset. Each exercise starts with <strong>Init Voice</strong> so the starting point is always known: <kbd>EDIT</kbd> → black key <strong>GLO</strong> → <kbd>SELECT</kbd> to page 2 → turn <kbd>KNOB 1</kbd> clockwise (<a href="04-voices.html#init">details</a>). We assume the DX7 init template: algorithm 1, only OP1 audible.</p></div>
+
+<h2>Exercise 1: Hear a modulator (the “wah” of FM)</h2>
+<p><strong>Goal:</strong> understand that modulator level = brightness.</p>
+<ol class="steps">
+<li><p>Init Voice. Play a note: a plain sine.</p></li>
+<li><p><kbd>EDIT</kbd> → <strong>OP2</strong> (page 1). In algorithm 1, OP2 modulates OP1.</p><figure><div data-panel='edit:1,editkeys:2' data-opt='{}'></div></figure></li>
+<li><p>Turn <kbd>KNOB 4</kbd> (<em>OutLevel</em>) from 0 slowly up to about 70 while holding a key. The tone gets brighter, then rough.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 INIT VOICE","foot":"1/6 OP2 Tuning","tiles":[["Detune","0"],["FreqCoarse","1"],["FreqFine","0"],["OutLevel","60"]],"hot":[4]}'></div></div></li>
+<li><p>Now turn <kbd>KNOB 2</kbd> (<em>FreqCoarse</em>) to 2, 3, 4. Whole numbers keep the pitch clean. Try FreqFine 50 on top: the tone goes bell-like and slightly out of tune.</p></li>
+</ol>
+<p><strong>What you learned:</strong> OP1 is the carrier (volume), OP2 the modulator (brightness), and the ratio decides the flavour.</p>
+
+<h2>Exercise 2: A bell / electric piano that mellows</h2>
+<p><strong>Goal:</strong> give the modulator an envelope so the brightness fades while the note rings.</p>
+<ol class="steps">
+<li><p>Continue from Exercise 1 with OP2 <em>FreqCoarse</em> 14 (a classic bell-like ratio) and <em>OutLevel</em> about 70.</p></li>
+<li><p>Give OP1 (the carrier) a long ring: OP1 page 2, Rate 1 = 99, Rate 2 = 30, Rate 3 = 30, Rate 4 = 50; page 3, Level 1 = 99, Level 2 = 80, Level 3 = 0, Level 4 = 0. <em>Level 3 = 0</em> makes the note die away on its own, like a struck bell.</p></li>
+<li><p>Give OP2 (the modulator) a <em>faster</em> decay than OP1: OP2 Rate 2 = 50, Rate 3 = 50, with Level 2 = 40 and Level 3 = 0. The sparkle disappears before the note does.</p>
+<figure><div data-env='{"r":[99,50,50,50],"l":[99,40,0,0],"label":"OP2 modulator envelope"}'></div><figcaption>OP2’s envelope: bright start, fast fade of the brightness.</figcaption></figure></li>
+<li><p>Play a few notes and adjust. Lower OP2’s <em>OutLevel</em> a little for a softer electric piano, or raise <em>Coarse</em> for brighter metal.</p></li>
+<li><p>Optional: <kbd>FX</kbd> → Reverb on (K4 clockwise), Mix about 30%. Then <strong>hold SAVE</strong>.</p></li>
+</ol>
+
+<h2>Exercise 3: Feedback, from sine to saw to noise</h2>
+<p><strong>Goal:</strong> hear what Feedback does by itself.</p>
+<ol class="steps">
+<li><p>Init Voice. Turn <kbd>ALGORITHM</kbd> to <strong>32</strong>: all six operators are carriers, and the feedback sits on operator 6.</p>
+<div class="pair wide"><figure><div data-algo="32"></div><figcaption>Algorithm 32</figcaption></figure>
+<div class='tft-wrap'><div data-tft='{"kind":"algo","algo":32,"hdr":"001 INIT VOICE","foot":"OSC"}'></div></div></div></li>
+<li><p>OP1 is the only audible operator after Init. Switch the audible one: <kbd>EDIT</kbd> → <strong>OP6</strong> → page 1: set <em>OutLevel</em> to 99, then OP1 <em>OutLevel</em> to 0 so only OP6 sounds.</p></li>
+<li><p><kbd>EDIT</kbd> → black key <strong>GLO</strong> → page 1 → <kbd>KNOB 2</kbd> <em>Feedback</em>. Turn it from 0 to 7 while playing: sine → buzzy → saw-like → noisy.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 INIT VOICE","foot":"1/2 Globe","tiles":[["Algorithm","32"],["Feedback","5"],["Osc Sync","ON"],["Transpose","24"]],"hot":[2]}'></div></div></li>
+<li><p>For a bass: set Feedback about 4–5, <kbd>EDIT</kbd> → <strong>MONO</strong>, then <kbd>OCT−</kbd> twice. Set OP6 rates for a snappy decay (page 2: Rate 2 about 70).</p></li>
+</ol>
+<div class="callout unk"><strong>Check which operator carries the feedback</strong><p>The algorithm diagram shows a red loop on one operator; our table puts it on operator 6 for algorithm 32. If your sound does not react to Feedback, turn ALGORITHM and look at the popup: the operator with the loop is the one to make audible.</p></div>
+
+<h2>Exercise 4: Movement: vibrato and a slow pad</h2>
+<p><strong>Goal:</strong> use the LFO and the global ADSR.</p>
+<ol class="steps">
+<li><p>Pick a sustained voice, e.g. <code>004 SYN PAD 1</code> (or <code>067 STRING 1</code>).</p></li>
+<li><p><kbd>LFO</kbd> page 1: Wave Sine, Speed about 40, PMD about 20. Page 2: Delay about 30, <strong>Pitch Sens</strong> 3 (it must be above 0), Key Sync on. Play a long note: vibrato fades in after a moment.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"004 SYN PAD 1","foot":"2/2 LFO","tiles":[["Delay","30"],["Pitch Sens","3"],["Key Sync","Sync"],["Osc Sync","ON"]]}'></div></div></li>
+<li><p>Press <kbd>ENV</kbd> (LED on). Attack about 60%, Decay 30%, Sustain 80%, Release about 60%. Notes now swell in and fade out slowly.</p>
+<figure><div data-adsr="[60,30,80,60]"></div></figure></li>
+<li><p>Press <kbd>FX</kbd>: switch on Chorus (K4 clockwise) with Depth about 40 and Mix about 50; add Reverb, Hall type.</p></li>
+<li><p>Hold <kbd>SAVE</kbd>.</p></li>
+</ol>
+
+<h2>Exercise 5: A pattern with the arpeggiator and the sequencer</h2>
+<p><strong>Goal:</strong> make music without playing every note.</p>
+<h3>Arpeggiator (30 seconds)</h3>
+<ol class="steps">
+<li><p>Choose a bell or pluck voice, e.g. <code>121 TUB BELLS</code> or <code>001 PIANO 1</code>.</p></li>
+<li><p>Press <kbd>ARP</kbd>. Mode <strong>Up</strong>, Octave 2, Rate 1/16, Tempo about 110. Hold a minor chord.</p></li>
+<li><p>Page 2 (turn <kbd>SELECT</kbd>): Gate 60%, Swing 60%, Latch ON. Release the keys: the arp keeps going. Change Mode to Inclusive or Random.</p></li>
+<li><p>Press <kbd>ARP</kbd> to switch off.</p></li>
+</ol>
+<h3>Sequencer: an 8-step bassline</h3>
+<ol class="steps">
+<li><p>Choose a bass voice, e.g. <code>035 BASS 1</code>. Press <kbd>SEQ</kbd>.</p></li>
+<li><p>Page 1: Pattern 1, turn Clear if it has old notes, set <strong>Step</strong> to 8.</p></li>
+<li><p>Press <kbd>REC</kbd>. Play, one note per step: C, C, G, C, Bb, C, G, F. The white-key LEDs fill up.</p></li>
+<li><p>For a rest: while recording, hold <kbd>REC</kbd> and turn <kbd>SELECT</kbd> to move past a step without playing anything on it.</p></li>
+<li><p>Press <kbd>REC</kbd> to stop, then <kbd>PLAY/STOP</kbd>. The loop plays. Page 2: Tempo 100, Gate 50%. Page 3: Swing 55%.</p></li>
+</ol>
+<div class="callout"><strong>Experiments</strong><p>Record pattern 2 as a variation and set page 1 <em>Chain</em> to 2 to hear both; give pattern 2 a different <em>Voice</em> on page 2; transpose the whole pattern on page 3.</p></div>
+
+<div class="pager"><a class="prev" href="09-global-midi.html"><small>← Previous</small>GLO, MIDI, Bluetooth, updates</a><a class="next" href="11-reference.html"><small>Next →</small>Reference</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

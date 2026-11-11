@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>FM synthesis in 10 minutes · FM-1 Tutorial</title>
+<meta name="description" content="Operators, algorithms, feedback, envelopes">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html" aria-current="page"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>3. FM synthesis in 10 minutes</h1><p class="lede">Operators, algorithms, feedback, envelopes</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul>
+<li><a href="#idea">The big idea</a></li><li><a href="#ops">Operators</a></li><li><a href="#ratio">Frequency ratios</a></li><li><a href="#level">Level = brightness</a></li><li><a href="#algo">Algorithms</a></li><li><a href="#fb">Feedback</a></li><li><a href="#env">Envelopes</a></li><li><a href="#more">Scaling, velocity, LFO</a></li><li><a href="#try">Try it</a></li></ul></div>
+
+<h2 id="idea">The big idea</h2>
+<p>A normal synthesizer starts with a rich waveform (like a sawtooth) and carves it with a filter. An FM synthesizer starts with the simplest waveform there is, a <strong>sine wave</strong> (a pure tone), and makes it richer by <em>wobbling its pitch extremely fast using another sine wave</em>. That is frequency modulation, the “FM”.</p>
+<p>When the wobble is slow you hear vibrato. When the wobble is in the audio range (hundreds of times a second), the vibrato disappears and new overtones appear: the tone turns bright, metallic or bell-like. Louder wobble = more overtones. Which overtones you get depends on the speed of the wobble relative to the note.</p>
+
+<h2 id="ops">Operators: carriers and modulators</h2>
+<p>The building block is the <strong>operator</strong>: one sine oscillator with its own volume envelope. The FM-1 has six, numbered 1–6. Each operator plays one of two roles:</p>
+<ul>
+<li>A <strong>carrier</strong> is heard. Its output goes to the speaker.</li>
+<li>A <strong>modulator</strong> is not heard directly. Its output wobbles the pitch of another operator.</li>
+</ul>
+<p>A modulator’s <em>level</em> acts as a brightness control for whatever it modulates. A carrier’s level is a volume control.</p>
+<div class="callout"><strong>Operator, voice, preset</strong>
+<p>Roles are decided by the <em>algorithm</em>, not by the operator. The same operator can be a carrier in one algorithm and a modulator in another. A complete sound (algorithm + all settings of the six operators) is called a <strong>voice</strong> in DX7 terms and a <strong>preset</strong> on the FM-1’s panel. In this guide, “voice” and “preset” are the same thing.</p></div>
+
+<h2 id="ratio">Frequency ratios</h2>
+<p>Each operator’s pitch is set as a <strong>ratio</strong> to the note you play. Ratio 1 = the note itself; 2 = an octave up; 0.5 = an octave down; 3 = an octave plus a fifth.</p>
+<ul>
+<li>When a modulator has a <strong>whole-number ratio</strong> (1, 2, 3…) compared with its carrier, the result sounds <em>harmonic</em>: like an organ, a flute or an electric piano.</li>
+<li>When the ratio is <strong>not</strong> a whole number (such as 3.5 or 1.41), the overtones fall between the harmonics and the sound is <em>inharmonic</em>: bells, gongs, metallic percussion.</li>
+</ul>
+<p>On the FM-1 the ratio is built from <strong>FreqCoarse</strong> (the whole part) and <strong>FreqFine</strong> (the decimals), plus a tiny <strong>Detune</strong>. Coarse 0 means ratio 0.5. An operator can also be set to <strong>Fixed</strong> frequency, where it ignores the key you play and stays at one pitch in Hz; that is used for percussion “thumps” and noise-like effects.</p>
+<div class="callout unk"><strong>How the screen shows the frequency</strong><p>Coarse and Fine are shown as separate numbers (0–31 and 0–99). Neither the manual nor the photos show a combined “ratio” readout, so you have to do the arithmetic yourself, using standard DX7 rules: Coarse 1 + Fine 0 = ratio 1.00; each Fine step adds about 1% of the Coarse value.</p></div>
+
+<h2 id="level">Level = brightness</h2>
+<p>This is the most important rule in FM: <strong>the louder a modulator, the brighter (and noisier) the sound</strong>. Take any sound, turn up the modulator’s <em>OutLevel</em> and it gets more metallic; turn it down and it becomes a pure sine again.</p>
+
+<h2 id="algo">Algorithms: who modulates whom</h2>
+<p>An <strong>algorithm</strong> is a wiring diagram for the six operators. The FM-1 has the same 32 as the DX7. Read the diagram top to bottom:</p>
+<ul>
+<li>A line from operator A down to operator B means A modulates B.</li>
+<li>Operators on the bottom row, joined to <code>OUT</code>, are carriers.</li>
+<li>A red arrow looping back on an operator is its <strong>feedback</strong>.</li>
+</ul>
+<div class="pair wide">
+<figure><div data-algo="1"></div><figcaption>Algorithm 1: two stacks. 2→1 and a long chain 6→5→4→3. Carriers are 1 and 3.</figcaption></figure>
+<figure><div data-algo="32"></div><figcaption>Algorithm 32: all six operators are carriers. No modulation (except feedback on 6): organ-like additive sounds.</figcaption></figure>
+</div>
+<div class="legend"><span><i style="background:#ffd36a"></i>carrier (heard)</span><span><i style="background:#78eef5"></i>modulator</span><span><i style="background:none;border-color:#d75f51"></i>red = feedback</span></div>
+<p><strong>Rules of thumb:</strong></p>
+<ul>
+<li><strong>Long chains</strong> (algorithms 1–2, 16–18): complex, evolving, aggressive. Good for bass, brass, electric pianos.</li>
+<li><strong>Several short stacks</strong> (algorithms 5–15): layered sounds, with different timbres in the same voice.</li>
+<li><strong>Many carriers, few modulators</strong> (algorithms 21–32): organ and string-like, close to additive synthesis.</li>
+</ul>
+<p>All 32 diagrams are on the <a href="11-reference.html#algorithms">reference page</a>. To change algorithm: turn <kbd>ALGORITHM</kbd>.</p>
+
+<h2 id="fb">Feedback</h2>
+<p>In every algorithm one operator is wired to <strong>listen to itself</strong> (or, in a few cases, to a neighbour), so its output modulates its own pitch. This is <strong>Feedback</strong>, a single value from 0 to 7 on the voice (<a href="05-edit.html#glo-voice">EDIT → GLO</a>).</p>
+<ul><li><strong>0</strong>: the operator is a pure sine.</li><li><strong>1–3</strong>: it gets brighter, towards a sawtooth.</li><li><strong>5–7</strong>: very bright, rasping and finally noisy.</li></ul>
+<p>Feedback is a cheap way to get “saw”-like and noisy timbres from one operator, which is why it matters for leads and basses.</p>
+
+<h2 id="env">Envelopes</h2>
+<p>Every operator has an <strong>envelope generator (EG)</strong>: a four-stage shape that controls how its level changes while a key is held and after it is released. The DX7-style EG has <strong>four rates</strong> (how fast each stage moves) and <strong>four levels</strong> (where each stage ends).</p>
+<div class="pair wide">
+<div class="txt"><ol>
+<li><strong>Key down:</strong> the level moves from L4 (the starting level) to <strong>L1</strong> at speed <strong>R1</strong>.</li>
+<li>Then from L1 to <strong>L2</strong> at <strong>R2</strong>.</li>
+<li>Then from L2 to <strong>L3</strong> at <strong>R3</strong>. The envelope <em>stays at L3 while you hold the key</em> (this is the sustain level).</li>
+<li><strong>Key up:</strong> the level moves from L3 to <strong>L4</strong> at <strong>R4</strong> (the release).</li>
+</ol>
+<p>Higher rate numbers = faster. Levels run 0–99.</p></div>
+<figure><div data-env='{"r":[85,70,40,55],"l":[99,75,60,0],"label":"A typical four-stage envelope"}'></div><figcaption>A typical four-stage envelope. This is a schematic; the time axis is not to scale.</figcaption></figure>
+</div>
+<p>Two uses of that envelope:</p>
+<ul>
+<li>On a <strong>carrier</strong> it is a volume contour: a piano is quick-attack with a long decay; a pad is slow-attack with a slow release.</li>
+<li>On a <strong>modulator</strong> it is a <em>brightness</em> contour: a bright “pluck” at the start that mellows out (a classic electric piano or bell), or a slow brightness swell.</li>
+</ul>
+<p>The pitch of the whole voice has its own four-stage envelope (the <em>Pitch EG</em>), used for pitch-drop effects. And on top of all that the FM-1 adds one simple <em>global</em> Attack-Decay-Sustain-Release envelope you can switch on with the ENV button (see <a href="06-lfo-env.html#adsr">page 6</a>).</p>
+
+<h2 id="more">Other ingredients</h2>
+<ul>
+<li><strong>Keyboard level scaling</strong> makes an operator quieter or louder towards the top or bottom of the keyboard, around a <em>break point</em> note. Use it so high notes do not get harsh.</li>
+<li><strong>Rate scaling</strong> makes envelopes faster on high notes, like a real instrument (a high piano string dies away sooner than a low one).</li>
+<li><strong>Velocity sensitivity</strong> makes an operator louder when the note is hit harder.</li>
+<li><strong>LFO</strong> (low frequency oscillator): a slow wobble applied to pitch (vibrato) and/or amplitude (tremolo).</li>
+<li><strong>Detune</strong> slightly offsets an operator’s pitch; with two similar operators it creates chorus-like beating.</li>
+</ul>
+
+<h2 id="try">Try it: a two-operator FM scope</h2>
+<p>This little demo is <em>not</em> the FM-1; it is a generic two-operator model so you can see and hear the effect of the three most important settings. The curve is the output waveform.</p>
+<div class="demo" data-demo>
+<canvas aria-label="Waveform of a two-operator FM tone"></canvas>
+<label for="d-r">Modulator ratio: <b data-rv></b></label>
+<input type="range" id="d-r" min="0" max="9" value="3" data-r>
+<label for="d-i">Modulator level (brightness): <b data-iv></b></label>
+<input type="range" id="d-i" min="0" max="99" value="30" data-i>
+<label for="d-f">Modulator feedback: <b data-fv></b></label>
+<input type="range" id="d-f" min="0" max="7" value="0" data-f>
+<div class="row"><button class="btn primary" type="button" data-play>▶ Hear it</button><span>(sound is generated in your browser; keep the volume low)</span></div>
+</div>
+<ul>
+<li>At level 0 the output is a sine wave.</li>
+<li>Raise the level and the shape twists: more overtones.</li>
+<li>Whole-number ratios give a stable, periodic shape; a ratio like 3.5 gives a more complex one.</li>
+<li>Raise feedback to see the modulator itself turn into a saw-like shape.</li>
+</ul>
+
+<div class="pager"><a class="prev" href="02-playing.html"><small>← Previous</small>Playing and octaves</a><a class="next" href="04-voices.html"><small>Next →</small>Voices: choose, save, manage</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>LFO and the ENV button · FM-1 Tutorial</title>
+<meta name="description" content="Vibrato, tremolo and the global ADSR">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html" aria-current="page"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>6. LFO and the ENV button</h1><p class="lede">Vibrato, tremolo and the global ADSR</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#lfo">LFO page 1</a></li><li><a href="#lfo2">LFO page 2</a></li><li><a href="#how">How LFO and operators interact</a></li><li><a href="#adsr">ENV: the global ADSR</a></li></ul></div>
+
+<h2 id="lfo">LFO: vibrato and tremolo</h2>
+<p>The <strong>LFO</strong> (low frequency oscillator) is a slow wave that wobbles the voice. It can wobble the <strong>pitch</strong> (vibrato) and/or the <strong>volume</strong> (tremolo). Its settings are part of each voice.</p>
+<ol class="steps">
+<li><p>Press <kbd>LFO</kbd>. Page 1 appears (<code>1/2</code>).</p><figure><div data-panel='lfo:1,k1:2,k2:2,k3:2,k4:2' data-opt='{}'></div></figure></li>
+<li><p>Set the four values:</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/2 LFO","tiles":[["Wave","Sine"],["Speed","35"],["PMD","10"],["AMD","0"]],"hot":[1]}'></div></div>
+<ul>
+<li><strong>K1 Wave</strong>: Triangle, Saw Down, Saw Up, Square, Sine or Sample &amp; Hold.</li>
+<li><strong>K2 Speed</strong> 0–99. Higher = faster.</li>
+<li><strong>K3 PMD</strong> (pitch modulation depth) 0–99. How much the LFO wobbles pitch.</li>
+<li><strong>K4 AMD</strong> (amplitude modulation depth) 0–99. How much it wobbles volume.</li></ul></li>
+<li><p>Press <kbd>LFO</kbd> again to go home.</p></li>
+</ol>
+<h3>The six waves</h3>
+<div class="agrid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+<figure><div data-lfo="Triangle"></div><figcaption>Triangle: smooth vibrato</figcaption></figure>
+<figure><div data-lfo="Sine"></div><figcaption>Sine: smoothest</figcaption></figure>
+<figure><div data-lfo="Square"></div><figcaption>Square: trill between two pitches</figcaption></figure>
+<figure><div data-lfo="Saw Down"></div><figcaption>Saw Down: falling ramps</figcaption></figure>
+<figure><div data-lfo="Saw Up"></div><figcaption>Saw Up: rising ramps</figcaption></figure>
+<figure><div data-lfo="S&Hold"></div><figcaption>Sample &amp; Hold: random steps</figcaption></figure>
+</div>
+
+<h2 id="lfo2">LFO page 2</h2>
+<p>Turn <kbd>SELECT</kbd> clockwise.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/2 LFO","tiles":[["Delay","25"],["Pitch Sens","3"],["Key Sync","Sync"],["Osc Sync","ON"]]}'></div></div>
+<ul>
+<li><strong>K1 Delay</strong> 0–99. How long after you press a key before the LFO fades in. A little delay gives the natural “start straight, then add vibrato” of a singer.</li>
+<li><strong>K2 Pitch Sens</strong> 0–7. How strongly pitch follows the LFO’s PMD. <strong>At 0 there is no vibrato</strong> even with PMD turned up.</li>
+<li><strong>K3 Key Sync</strong> (the manual calls it “Lfo Sync”) Free or Sync. Sync restarts the LFO at every new note so each note wobbles the same; Free lets it run continuously.</li>
+<li><strong>K4 Osc Sync</strong> On/Off. Whether operator oscillators restart for each note. This is the same setting as on EDIT → GLO page 1.</li>
+</ul>
+
+<h2 id="how">How the LFO reaches the sound</h2>
+<ul>
+<li><strong>Vibrato</strong>: set PMD above 0 <em>and</em> Pitch Sens above 0. Wave sine or triangle, Speed about 30–50.</li>
+<li><strong>Tremolo</strong>: set AMD above 0 <em>and</em> raise <em>AmpMod</em> on the operators you want to wobble (EDIT → OPn → page 4). Operators with AmpMod 0 ignore the LFO’s amplitude wobble.</li>
+<li>The <strong>mod wheel</strong> of an external keyboard (MIDI CC1) controls LFO pitch depth, scaled by Pitch Sens. See <a href="09-global-midi.html#midi">MIDI</a>.</li>
+</ul>
+<div class="callout unk"><strong>Speed values in Hz</strong><p>The screen shows Speed as 0–99 with no unit. Per research notes the speeds follow the DX7 (Dexed) table, but the FM-1 does not print Hz.</p></div>
+
+<h2 id="adsr">ENV: the global ADSR</h2>
+<figure class="photo"><img src="images/env-page.jpg" alt="FM-1 showing the ENV page with Attack, Decay, Sustain, Release" loading="lazy"><figcaption>The ENV page: Attack, Decay, Sustain and Release on K1 to K4. Photo of a unit with older firmware (V14): the page layout may differ slightly from V15, and a few names and numbers differ from V15. </figcaption></figure>
+<p>On top of the six DX7-style operator envelopes, the FM-1 has <strong>one extra, simpler envelope</strong> that shapes the volume of the finished sound. It is <strong>off by default</strong>. It is a quick way to soften attacks or lengthen releases without touching the operators.</p>
+<ol class="steps">
+<li><p>Press <kbd>ENV</kbd>. Its LED lights and the ADSR is switched <strong>on</strong>.</p><figure><div data-panel='env:1' data-opt='{}'></div></figure></li>
+<li><p>Set the four bars:</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"ENV","tiles":[["Attack","30","bars"],["Decay","40","bars"],["Sustain","70","bars"],["Release","50","bars"]],"hot":[1]}'></div></div>
+<ul>
+<li><strong>K1 Attack</strong> 0–100%. How long the sound takes to reach full volume. 0 = instant, 100 = very slow fade-in.</li>
+<li><strong>K2 Decay</strong> 0–100%. How quickly it falls from the peak to the sustain level.</li>
+<li><strong>K3 Sustain</strong> 0–100%. The level held while the key is down. Higher = louder.</li>
+<li><strong>K4 Release</strong> 0–100%. The fade-out after you let go. 0 = cut off, 100 = long.</li></ul></li>
+<li><p>Press <kbd>ENV</kbd> again to <strong>switch it off</strong> (LED goes out). Your values are kept.</p></li>
+</ol>
+<figure><div data-adsr="[30,40,70,50]"></div><figcaption>The ADSR shape of the example values above (schematic).</figcaption></figure>
+<div class="callout"><strong>Settings per voice; range changed in V15</strong><p>The ADSR on/off and values are stored with each voice (hold SAVE). In V09 the range was 0–8, later 0–10, and from V15 it is 0–100%. If you are following an older tutorial that mentions 0–10, multiply by ten.</p></div>
+<div class="callout"><strong>ENV vs operator envelopes</strong><p>The ADSR multiplies the whole voice. The operator envelopes (EDIT → OPn → pages 2–3) shape each operator separately, including the brightness of modulators. Use ENV for broad strokes; use operator envelopes for character.</p></div>
+
+<div class="pager"><a class="prev" href="05-edit.html"><small>← Previous</small>EDIT: shaping a voice</a><a class="next" href="07-effects.html"><small>Next →</small>Effects chain</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

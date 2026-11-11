@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "id": "stock-v15",
+  "name": "FM-1 Stock",
+  "version": "V15",
+  "bootTitle": "FM-1",
+  "summary": "The original M-VAVE firmware (V15): 6-op FM, 128 voices, FX chain, ENV, arpeggiator and the 16 × 16-step sequencer. Restores the factory behaviour.",
+  "credits": "Behaviour from M-VAVE's V15 manual and release notes. Factory voices from M-VAVE's Apache-2.0 recovery image.",
+  "license": "App code; factory voices Apache-2.0 (m-vave/fm1_open)",
+  "source": "https://www.m-vave.com/download",
+  "runtime": "native",
+  "native": "stockV15"
+}

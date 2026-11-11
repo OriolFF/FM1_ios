@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Effects chain · FM-1 Tutorial</title>
+<meta name="description" content="Six effects, their order and every knob">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html" aria-current="page"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>7. Effects chain</h1><p class="lede">Six effects, their order and every knob</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#grid">The FX page</a></li><li><a href="#onoff">Turning an effect on and off</a></li><li><a href="#reorder">Changing the order</a></li><li><a href="#fx">The six effects</a></li><li><a href="#signal">Where the effects sit</a></li><li><a href="#save">Saving</a></li></ul></div>
+
+<h2 id="grid">The FX page</h2>
+<figure class="photo"><img src="images/fx-page.jpg" alt="FM-1 showing the FX page with six effect boxes" loading="lazy"><figcaption>The FX page on a real FM-1. Photo of a unit with older firmware (V14): the page layout may differ slightly from V15, and a few names and numbers differ from V15. </figcaption></figure>
+<p>The FM-1 has six built-in effects connected in a row, a <strong>chain</strong>. The sound passes through them left to right (slot 1 to slot 6), and you can choose the order.</p>
+<ol class="steps">
+<li><p>Press <kbd>FX</kbd>. The screen shows a 3 × 2 grid.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"fx","hdr":"001 PIANO 1","foot":"Type: Low Pass","on":[1,1,0,0,1,0],"sel":0,"num":false}'></div></div>
+<ul><li>A <strong>bright</strong> box = effect on; a <strong>dim</strong> box = off.</li><li>A <strong>blinking dot</strong> under a box marks the selected effect.</li></ul></li>
+<li><p>Turn <kbd>SELECT</kbd> to move the dot between the six slots.</p></li>
+<li><p>Turn <kbd>KNOB 1–4</kbd> to edit the selected effect. The footer shows the exact value you are changing (for example <code>CutOff: 1004Hz</code>).</p></li>
+<li><p>Press <kbd>FX</kbd> again to leave.</p></li>
+</ol>
+
+<h2 id="onoff">Turning an effect on and off</h2>
+<p><kbd>KNOB 4</kbd> is always the on/off switch of the selected effect: <strong>clockwise = on, counter-clockwise = off</strong>. The box brightens or dims to confirm.</p>
+
+<h2 id="reorder">Changing the order</h2>
+<p>Order matters: distortion <em>before</em> reverb makes a distorted sound with a reverb tail; reverb <em>before</em> distortion distorts the reverb itself.</p>
+<ol class="steps">
+<li><p>On the FX page, turn <kbd>SELECT</kbd> to put the dot on the effect you want to move.</p></li>
+<li><p>Press <kbd>SEL</kbd>. The <strong>SEL LED lights</strong> and the dot stops blinking and stays solid: the effect is “grabbed”.</p><figure><div data-panel='sel:1,select:2' data-opt='{}'></div></figure></li>
+<li><p>Turn <kbd>SELECT</kbd>. The grabbed effect swaps places with its neighbours.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"fx","hdr":"001 PIANO 1","foot":"Type: Low Pass","on":[1,1,0,0,1,0],"sel":2,"grab":2,"order":["Filter","Reverb","Distortion","Delay","Chorus","Phaser"]}'></div></div></li>
+<li><p>Press <kbd>SEL</kbd> again to drop it in its new place (LED off).</p></li>
+</ol>
+<div class="callout"><strong>MIDI and order</strong><p>The MIDI control numbers belong to each effect, not to its slot, so reordering the chain never changes which MIDI CC controls which effect (see <a href="09-global-midi.html#midi">MIDI</a>).</p></div>
+
+<h2 id="fx">The six effects, knob by knob</h2>
+<p>Every effect uses K1–K3 for sound parameters and <strong>K4 for on/off</strong>. Filter and reverb use K1 to choose a <em>type</em>.</p>
+<div class="table-wrap"><table>
+<tr><th>Effect</th><th>K1</th><th>K2</th><th>K3</th><th>K4</th></tr>
+<tr><td><strong>Filter</strong></td><td>Type: Low Pass / Band Pass / High Pass</td><td>CutOff 100 Hz–20 kHz (100 log steps)</td><td>Q (resonance) 0–100</td><td>On/Off</td></tr>
+<tr><td><strong>Reverb</strong></td><td>Type: Room / Hall / Plate</td><td>Decay 0–100%</td><td>Mix 0–100%</td><td>On/Off</td></tr>
+<tr><td><strong>Delay</strong></td><td>Decay 0–100%</td><td>Rate 0–100%</td><td>Mix 0–100%</td><td>On/Off</td></tr>
+<tr><td><strong>Distortion</strong></td><td>Gain 0–100%</td><td>Tone 0–100%</td><td>Level 0–100%</td><td>On/Off</td></tr>
+<tr><td><strong>Chorus</strong></td><td>Freq 0–100%</td><td>Depth 0–100%</td><td>Mix 0–100%</td><td>On/Off</td></tr>
+<tr><td><strong>Phaser</strong></td><td>Freq 0–100%</td><td>Depth 0–100%</td><td>Mix 0–100%</td><td>On/Off</td></tr>
+</table></div>
+
+<h3>Filter</h3>
+<div class="pair"><div class="txt"><p>Removes part of the spectrum. <strong>Low Pass</strong> cuts highs (dark), <strong>High Pass</strong> cuts lows (thin), <strong>Band Pass</strong> keeps a middle band (nasal). Move <em>CutOff</em> to sweep it and raise <em>Q</em> for a pointed resonance at the cut-off.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"CutOff: 1004Hz","tiles":[["Type","Low Pass"],["CutOff","1004Hz"],["Q","20"],["On/Off","ON"]],"hot":[2]}'></div></div></div>
+<h3>Reverb</h3>
+<p>Adds space. <em>Room</em> is small, <em>Hall</em> is large, <em>Plate</em> is bright and metallic. <em>Decay</em> sets how long the tail lasts and <em>Mix</em> how much you hear compared with the dry sound.</p>
+<h3>Delay</h3>
+<p>Echoes. <em>Decay</em> here is the number of repeats (feedback), <em>Rate</em> is the time between echoes, <em>Mix</em> the level.</p>
+<h3>Distortion</h3>
+<p><em>Gain</em> is how hard the sound is pushed, <em>Tone</em> brightens or darkens it, <em>Level</em> compensates the volume.</p>
+<h3>Chorus</h3>
+<p>A doubled, slightly detuned copy that thickens the sound. <em>Freq</em> is the speed of the wobble, <em>Depth</em> its amount.</p>
+<h3>Phaser</h3>
+<p>A sweeping, swooshing comb effect. <em>Freq</em> is the sweep speed, <em>Depth</em> the width.</p>
+<div class="callout"><strong>Honest expectations</strong><p>These effects are simple and mono. Reviewers describe them as usable but low-fi, good for adding colour or space. For polished results many players use external pedals or computer plug-ins with the FM-1’s stereo jack (both channels carry the same mono signal).</p></div>
+<div class="callout unk"><strong>What is not documented</strong><ul>
+<li>The exact algorithm of each effect (e.g. what “Rate” of the delay means in milliseconds) is not published.</li>
+<li>The manual lists Filter Q as 0–100 on the panel, but the MIDI chart lists 0–10 for the same control. The panel mapping is not documented.</li>
+<li>Delay K1 is labelled <em>Decay</em> in the manual; we describe it as repeats (feedback), which is how MIDI documentation treats it, but M-VAVE does not define it.</li></ul></div>
+
+<h2 id="signal">Where the effects sit</h2>
+<p>The signal path is: the six operators → (optional global ADSR if ENV is on) → the six-slot effects chain in your chosen order → MASTER volume → output and speaker. This path is inferred from the manual rather than documented in a diagram, but it matches how the controls behave.</p>
+
+<h2 id="save">Saving effects</h2>
+<p>The effect settings and their order are stored <strong>with each voice</strong> (hold <kbd>SAVE</kbd>). So voice 001 can have a long reverb while voice 033 is dry. The value range of the effects was 0–10 on older firmware; from V15 it is 0–100.</p>
+
+<div class="pager"><a class="prev" href="06-lfo-env.html"><small>← Previous</small>LFO and the ENV button</a><a class="next" href="08-arp-seq.html"><small>Next →</small>Arpeggiator and sequencer</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

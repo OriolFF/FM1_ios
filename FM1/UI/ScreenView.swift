@@ -19,6 +19,8 @@ enum ScreenContent: Equatable {
     case groove(GrooveScreen)
     case flash(String, String, Double)
     case boot(String, String)
+    /// A script firmware's own frame (FM1/FirmwareHost), drawn edge to edge.
+    case package(PackageFrame)
 }
 
 struct ScreenState: Equatable {
@@ -39,6 +41,17 @@ struct TFTScreen: View {
 
     var body: some View {
         let s = side / 240
+        if case .package(let f) = state.content {
+            PackageScreenView(frame: f, s: s, scope: scope)
+                .frame(width: side, height: side)
+                .background(Color.black)
+                .clipShape(RoundedRectangle(cornerRadius: 3 * s))
+        } else {
+            nativeBody(s)
+        }
+    }
+
+    private func nativeBody(_ s: CGFloat) -> some View {
         ZStack(alignment: .top) {
             background
             VStack(spacing: 0) {
@@ -165,6 +178,8 @@ struct TFTScreen: View {
                     .foregroundStyle(.white.opacity(0.6))
             }
             .padding(.horizontal, 10 * s)
+        case .package:
+            EmptyView()
         case let .boot(title, sub):
             VStack(spacing: 8 * s) {
                 Text(title)

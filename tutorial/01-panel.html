@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Meet the panel · FM-1 Tutorial</title>
+<meta name="description" content="Every knob, button and what the screen shows">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html" aria-current="page"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>1. Meet the panel</h1><p class="lede">Every knob, button and what the screen shows</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul>
+<li><a href="#layout">The panel at a glance</a></li><li><a href="#left">Left side: MASTER, SELECT, PRESETS, ALGORITHM, OCT</a></li><li><a href="#right">Right side: K1–K4 and the button pad</a></li>
+<li><a href="#screen">Reading the screen</a></li><li><a href="#popups">Popups and messages</a></li><li><a href="#leds">LEDs</a></li><li><a href="#rear">Rear connections</a></li></ul></div>
+
+<h2 id="layout">The panel at a glance</h2>
+<p>The FM-1 is about 16 cm wide and weighs 250 g. The controls are arranged in three blocks: a <strong>left block</strong> of four knobs and two octave buttons, the <strong>screen</strong> in the middle, a <strong>right block</strong> of four parameter knobs and twelve buttons, and the 27-key <strong>keyboard</strong> underneath.</p>
+<figure class="photo"><img src="images/panel-top.jpg" alt="Top view of the FM-1 showing the screen, knobs, button pad and keys" loading="lazy"><figcaption>The real FM-1 seen from above. The drawing below numbers the same controls. Product image from the maker.</figcaption></figure>
+<figure><div data-panel='master:1,select:2,presets:3,algorithm:4,oct-:5,oct+:5,screen:6,k1:7,k2:7,k3:7,k4:7,fx:8,sel:8,env:8,lfo:8,edit:8,glo:8,home:9,save:9,arp:9,seq:9,play:9,rec:9,keys:10' data-opt='{"alt":"FM-1 panel with ten numbered callouts"}'></div></figure>
+<ol class="callouts-list">
+<li><strong>MASTER</strong>, the volume pot.</li>
+<li><strong>SELECT</strong>, turns pages.</li>
+<li><strong>PRESETS</strong>, chooses one of 128 voices.</li>
+<li><strong>ALGORITHM</strong>, chooses one of 32 algorithms.</li>
+<li><strong>OCT− / OCT+</strong>, octave shift.</li>
+<li><strong>Screen</strong>, 240 × 240 pixels, 1.54 inch.</li>
+<li><strong>KNOB 1–4</strong>, context-dependent parameters.</li>
+<li><strong>Top button row</strong>: FX, SEL, ENV, LFO, EDIT, GLO.</li>
+<li><strong>Bottom button row</strong>: HOME, SAVE, ARP, SEQ, PLAY/STOP, REC.</li>
+<li><strong>Keyboard</strong>, 27 silicone keys with an LED each.</li>
+</ol>
+
+<h2 id="left">Left side</h2>
+<div class="table-wrap"><table>
+<tr><th>Control</th><th>What it does</th></tr>
+<tr><td><kbd>MASTER</kbd></td><td>The only real potentiometer (300° of travel). Sets output volume; the screen briefly shows <em>Volume</em>.</td></tr>
+<tr><td><kbd>SELECT</kbd></td><td>An endless encoder. Clockwise = next page, counter-clockwise = previous page of the current mode. The footer shows where you are, e.g. <code>1/2 Arpeggio</code>. In FX mode it moves between the six effect slots instead. It also confirms dialogs (rename, copy, reset).</td></tr>
+<tr><td><kbd>PRESETS</kbd></td><td>Steps through voices 001–128, wrapping round. Each click <strong>loads the voice at once</strong>, so you hear it immediately. A list pops up for about one second. Disabled while the sequencer is on (the pattern chooses the voice).</td></tr>
+<tr><td><kbd>ALGORITHM</kbd></td><td>Turn: choose algorithm 01–32, with a diagram popup. <strong>Hold <kbd>OCT−</kbd> or <kbd>OCT+</kbd> and turn:</strong> transpose (see <a href="02-playing.html">Playing</a>).</td></tr>
+<tr><td><kbd>OCT−</kbd> <kbd>OCT+</kbd></td><td>Shift the keyboard one octave per press, from −3 to +3. Press both together to reset octave and transpose to zero.</td></tr>
+</table></div>
+<div class="callout"><strong>Endless encoders</strong><p>SELECT, PRESETS, ALGORITHM and K1–K4 turn forever and have no end stops, so their position tells you nothing. Always read the value on the screen. Only MASTER has a pointer.</p></div>
+
+<h2 id="right">Right side</h2>
+<h3>KNOB 1–4</h3>
+<p>These four encoders change whatever the screen shows. The four tiles on screen are laid out like this:</p>
+<div class="pair"><div class="txt"><p>K1 = top left, K2 = top right, K3 = bottom left, K4 = bottom right. The tile shows the parameter's name and value. Two details to remember:</p>
+<ul><li>If a tile is blank, that knob does nothing on this page.</li><li>Values are bounded: they stop at the minimum and maximum (except a few switches, which wrap).</li></ul></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/2 Arpeggio","tiles":[["Mode","Up"],["Octave","1"],["Rate","1/16"],["Tempo","120"]]}'></div></div></div>
+
+<h3>The button pad</h3>
+<div class="table-wrap"><table>
+<tr><th>Button</th><th>Press</th><th>Where it is covered</th></tr>
+<tr><td><kbd>FX</kbd></td><td>Opens the effect chain page. Again = back to Home.</td><td><a href="07-effects.html">7</a></td></tr>
+<tr><td><kbd>SEL</kbd></td><td>Only on the FX page: grab an effect so you can move it.</td><td><a href="07-effects.html#reorder">7</a></td></tr>
+<tr><td><kbd>ENV</kbd></td><td>Switches the global ADSR envelope on (LED lit) and opens its page. Press again to switch it off. Off by default.</td><td><a href="06-lfo-env.html#adsr">6</a></td></tr>
+<tr><td><kbd>LFO</kbd></td><td>Opens the two LFO pages. Again = Home.</td><td><a href="06-lfo-env.html">6</a></td></tr>
+<tr><td><kbd>EDIT</kbd></td><td>Opens the voice editor. The black keys become selectors (OP1–OP6, PIT, GLO, MONO, POLY).</td><td><a href="05-edit.html">5</a></td></tr>
+<tr><td><kbd>GLO</kbd></td><td>Global settings (MIDI channels, pitch-bend range, velocity, glide, reset). The screen calls it “Global” (and some pages “Globe”).</td><td><a href="09-global-midi.html">9</a></td></tr>
+<tr><td><kbd>HOME</kbd></td><td>Back to the oscilloscope screen from anywhere. <strong>Hold</strong> to toggle Bluetooth.</td><td><a href="09-global-midi.html#bt">9</a></td></tr>
+<tr><td><kbd>SAVE</kbd></td><td><strong>Press and hold</strong> to write everything you changed to memory.</td><td><a href="04-voices.html#save">4</a></td></tr>
+<tr><td><kbd>ARP</kbd></td><td>Toggles the arpeggiator and opens its page.</td><td><a href="08-arp-seq.html">8</a></td></tr>
+<tr><td><kbd>SEQ</kbd></td><td>Toggles the sequencer and opens its page.</td><td><a href="08-arp-seq.html#seq">8</a></td></tr>
+<tr><td><kbd>PLAY/STOP</kbd></td><td>Starts and stops the sequencer.</td><td><a href="08-arp-seq.html#seq">8</a></td></tr>
+<tr><td><kbd>REC</kbd></td><td>Starts and stops step recording.</td><td><a href="08-arp-seq.html#rec">8</a></td></tr>
+</table></div>
+<div class="callout"><strong>One page at a time</strong><p>Modes are exclusive pages: FX, ENV, LFO, EDIT, GLO, ARP and SEQ each take over the screen. Pressing the same button again (or HOME) leaves. ARP and SEQ cannot both be on; if you try, the screen says <em>Disable SEQ to enter</em> or <em>Disable ARP to enter</em>.</p></div>
+
+<h2 id="screen">Reading the screen</h2>
+<div class="pair">
+<div class="txt"><p>Every page uses the same frame:</p>
+<ul><li><strong>Top bar</strong>: the loaded voice, number then name (<code>001 PIANO 1</code>), and a <strong>battery icon</strong> at the right.</li>
+<li><strong>Middle</strong>: the page content: four tiles, the effect grid, a diagram, or the oscilloscope.</li>
+<li><strong>Bottom bar</strong>: the mode and page (<code>1/6 OP1 Tuning</code>). On the effects page it shows the value being edited (<code>CutOff: 1004Hz</code>).</li></ul>
+<p>Values in ENV are drawn as block bars (more blocks = more); everything else is a number or word in a box.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"003 SYN LEAD 1","foot":"ENV","tiles":[["Attack","20","bars"],["Decay","50","bars"],["Sustain","70","bars"],["Release","30","bars"]]}'></div></div>
+</div>
+<h3>The Home screen</h3>
+<div class="pair">
+<div class="txt"><p>The Home screen is an <strong>oscilloscope</strong>: a yellow line that wiggles with the sound you play, flat when silent. Footer: <code>OSC</code>.</p><p>HOME always returns here.</p></div>
+<div class='tft-wrap'><div data-tft='{"kind":"osc","wave":true,"hdr":"001 PIANO 1","foot":"OSC"}'></div></div>
+</div>
+
+<h2 id="popups">Popups and messages</h2>
+<p>Short overlays (about one second) confirm what you just did:</p>
+<div class="table-wrap"><table>
+<tr><th>You do</th><th>Screen shows</th></tr>
+<tr><td>Turn PRESETS</td><td>List with number and name, current voice highlighted</td></tr>
+<tr><td>Turn ALGORITHM</td><td>Algorithm diagram: carriers, modulators, feedback loop</td></tr>
+<tr><td>Press OCT− / OCT+</td><td><code>Octave</code> and the offset (e.g. −2)</td></tr>
+<tr><td>Hold OCT and turn ALGORITHM</td><td><code>Transpose</code> and the value</td></tr>
+<tr><td>Turn MASTER</td><td><code>Volume</code> and the level</td></tr>
+<tr><td>Hold SAVE</td><td><code>Preset Saved</code></td></tr>
+<tr><td>Press PLAY/STOP or REC with SEQ off</td><td><code>Enable SEQ first</code></td></tr>
+<tr><td>Press ARP while SEQ is on / SEQ while ARP is on</td><td><code>Disable SEQ to enter</code> / <code>Disable ARP to enter</code></td></tr>
+<tr><td>Confirm a bank reset</td><td><code>Reset Success</code></td></tr>
+<tr><td>Battery critically low</td><td>Full-screen <code>LOW BATTERY</code> that stays until you charge or switch off</td></tr>
+</table></div>
+<div class="pair">
+<div class='tft-wrap'><div data-tft='{"kind":"list","hdr":"006 Organ 2","foot":"OSC","items":["004 SYN PAD 1","005 PIANO 2","006 Organ 2","007 SYN LEAD 2","008 SYN PAD 2"],"cur":2}'></div></div>
+<div class='tft-wrap'><div data-tft='{"kind":"algo","algo":8,"hdr":"006 Organ 2","foot":"OSC"}'></div></div>
+</div>
+<p><small>Left: the PRESETS popup. Right: the ALGORITHM popup (algorithm 8).</small></p>
+
+<h2 id="leds">LEDs</h2>
+<ul>
+<li><strong>Button legends are backlit.</strong> A mode’s button lights when that mode is active.</li>
+<li><strong>OCT LEDs</strong>: both off at 0; slow blink at ±1; fast blink at ±2; solid at ±3. The LED on the OCT− side is lit for negative shifts, OCT+ for positive.</li>
+<li><strong>Key LEDs</strong> light while a key is held, or while the arpeggiator or sequencer plays it.</li>
+<li><strong>HOME LED</strong> shows Bluetooth: blinking = on but not connected, solid = connected, off = Bluetooth off.</li>
+<li><strong>SEQ transport</strong>: PLAY lights green while playing, STOP orange when stopped, REC red when recording.</li>
+</ul>
+<div class="callout unk"><strong>PLAY/STOP colour</strong><p>The manual says green for play and orange for stop. A few photos show it red. We follow the manual.</p></div>
+
+<h2 id="rear">Rear connections</h2>
+<figure class="photo"><img src="images/rear-ports.jpg" alt="Rear edge of the FM-1 with audio out, MIDI in, USB-C and power switch" loading="lazy"><figcaption>The rear edge, left to right: audio out, MIDI IN, USB-C, power switch. Product image from the maker.</figcaption></figure>
+<div class="table-wrap"><table>
+<tr><th>Port</th><th>Use</th></tr>
+<tr><td>3.5 mm audio out (TRS)</td><td>Headphones or line out. The engine and effects are mono, so left and right are identical. Plugging in headphones mutes the built-in speaker. Use a proper TRS plug, or the speaker may not mute and noise can appear.</td></tr>
+<tr><td>3.5 mm MIDI IN (TRS)</td><td>Receives MIDI from another instrument with a 3.5 mm-to-5-pin-DIN adapter (not included).</td></tr>
+<tr><td>USB-C</td><td>MIDI, audio, charging and firmware updates.</td></tr>
+<tr><td>Power switch</td><td>On/off. Runs on the 2000 mAh battery (about 12 hours) or USB power.</td></tr>
+</table></div>
+<p>There is no MIDI <em>out</em> socket. The FM-1 sends MIDI notes over USB and Bluetooth only.</p>
+
+<div class="pager"><a class="prev" href="index.html"><small>← Previous</small>Start here</a><a class="next" href="02-playing.html"><small>Next →</small>Playing and octaves</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

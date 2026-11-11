@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Playing and octaves · FM-1 Tutorial</title>
+<meta name="description" content="Keys, octave, transpose, mono and poly">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html" aria-current="page"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>2. Playing and octaves</h1><p class="lede">Keys, octave, transpose, mono and poly</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#keys">The keys</a></li><li><a href="#oct">Octave shift</a></li><li><a href="#trans">Transpose</a></li><li><a href="#vol">Volume</a></li><li><a href="#monopoly">Mono and poly</a></li><li><a href="#vel">Velocity</a></li></ul></div>
+
+<h2 id="keys">The keys</h2>
+<p>Switch on and press any key: you hear the loaded voice (the first one is <code>001 PIANO 1</code>). The 27 keys are not velocity sensitive: they are simple switches, so every note has the same loudness (see <a href="#vel">Velocity</a>).</p>
+<div class="pair">
+<div class="txt">
+<p>The keyboard has two rows. The lower row has 16 “white” keys, the upper row 11 “black” keys, arranged like a piano in groups of 3-2-3-2-1. The lowest key is <strong>F</strong> and the highest <strong>G</strong>; at octave 0 the range is about F3 to G5.</p>
+<p>Each key has a thin LED stripe that lights while you hold it.</p>
+</div>
+<figure><div data-panel='keys:1' data-opt='{"alt":"FM-1 keyboard with two rows of keys"}'></div></figure>
+</div>
+<div class="callout"><strong>The keys change meaning with the mode</strong>
+<ul><li><strong>Normal / Home:</strong> they play notes.</li><li><strong>ARP on:</strong> held keys feed the arpeggiator.</li><li><strong>SEQ on:</strong> notes you play are recorded into steps, and the 16 white keys light up as step indicators.</li><li><strong>EDIT on:</strong> the black keys become OP1–OP6, PIT, GLO, MONO and POLY selectors. Notes are not played.</li></ul></div>
+
+<h2 id="oct">Octave shift</h2>
+<ol class="steps">
+<li><p>Press <kbd>OCT+</kbd> to move the whole keyboard up one octave, or <kbd>OCT−</kbd> to move it down. The range is −3 to +3 octaves.</p>
+<figure><div data-panel='oct+:1,oct-:1,screen:2' data-opt='{}'></div></figure>
+<p>The screen briefly shows <code>Octave</code> and the value.</p></li>
+<li><p>Read the LED next to the button:</p>
+<div class="table-wrap"><table><tr><th>Octave</th><th>LED</th></tr><tr><td>0</td><td>both off</td></tr><tr><td>±1</td><td>slow blink</td></tr><tr><td>±2</td><td>fast blink</td></tr><tr><td>±3</td><td>solid</td></tr></table></div>
+<p>If the lit LED is on the OCT− side, the octave is negative.</p></li>
+<li><p>Press <kbd>OCT−</kbd> and <kbd>OCT+</kbd> together to reset the octave <em>and</em> the transpose to 0.</p></li>
+</ol>
+
+<h2 id="trans">Transpose (up to ±12 semitones)</h2>
+<ol class="steps">
+<li><p><strong>Hold</strong> <kbd>OCT+</kbd> (to go up) or <kbd>OCT−</kbd> (to go down).</p></li>
+<li><p>While holding it, <strong>turn <kbd>ALGORITHM</kbd></strong>. The screen shows <code>Transpose</code> and the value, between −12 and +12 semitones.</p>
+<figure><div data-panel='oct+:1,algorithm:2,screen:3' data-opt='{}'></div></figure></li>
+<li><p>Release the button. Transpose is stored in the global settings automatically and survives a restart.</p></li>
+</ol>
+<div class="callout"><strong>Two different “transposes”</strong>
+<p>This front-panel transpose (±12, global) is not the same as <em>Transpose</em> on the voice’s <a href="05-edit.html#glo-voice">EDIT → GLO page</a> (0–48, part of each voice, 24 = no shift) or the sequencer’s per-pattern Transpose (±24). They add up.</p></div>
+<p>For the curious: the MIDI note number for a key is its position (0–26) + 53 + octave × 12 + transpose, so the lowest key at octave 0 is note 53 (F3).</p>
+
+<h2 id="vol">Volume</h2>
+<p>Turn <kbd>MASTER</kbd>. It controls the final output of everything including effects. If a voice sounds quiet, check MASTER, then the <em>OutLevel</em> of the operators (<a href="05-edit.html">page 5</a>).</p>
+
+<h2 id="monopoly">Mono and poly</h2>
+<p>Normally the FM-1 is <strong>polyphonic</strong>: up to 12 notes at once. In EDIT mode you can switch to <strong>MONO</strong>, where only one note plays at a time (the last one you pressed wins). Mono is for basses and leads, and it is the only mode where <strong>Glide</strong> works (<a href="09-global-midi.html#glide">page 9</a>).</p>
+<ol class="steps">
+<li><p>Press <kbd>EDIT</kbd>.</p></li>
+<li><p>Press the black key labelled <strong>MONO</strong> or <strong>POLY</strong>. The active one’s LED is solid, the other one blinks.</p>
+<figure><div data-panel='edit:1,editkeys:2' data-opt='{}'></div></figure></li>
+<li><p>Press <kbd>EDIT</kbd> again to leave.</p></li>
+</ol>
+<div class="callout unk"><strong>Is mono/poly saved with the voice?</strong><p>The manual does not say whether the mono/poly choice is stored per voice or globally. Check by switching voices on your unit.</p></div>
+
+<h2 id="vel">Velocity</h2>
+<p>The keys cannot sense how hard you press. The firmware has a <strong>Velocity</strong> setting on the GLO page (1–127) that fixes the loudness of every key press; incoming MIDI notes keep the velocity they carry. Operators can respond to velocity: that is the <em>Key Velo</em> setting on each operator’s Sens page.</p>
+
+<div class="pager"><a class="prev" href="01-panel.html"><small>← Previous</small>Meet the panel</a><a class="next" href="03-fm-primer.html"><small>Next →</small>FM synthesis in 10 minutes</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

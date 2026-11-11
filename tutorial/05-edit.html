@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>EDIT: shaping a voice · FM-1 Tutorial</title>
+<meta name="description" content="Algorithm, operators, pitch EG, voice common, mono/poly">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html" aria-current="page"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>5. EDIT: shaping a voice</h1><p class="lede">Algorithm, operators, pitch EG, voice common, mono/poly</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#enter">Entering EDIT</a></li><li><a href="#algo">Algorithm</a></li><li><a href="#ops">Operator pages OP1–OP6</a></li><li><a href="#mute">Muting an operator</a></li><li><a href="#pit">PIT: pitch envelope</a></li><li><a href="#glo-voice">GLO: voice common</a></li><li><a href="#monopoly">MONO / POLY</a></li></ul></div>
+
+<h2 id="enter">Entering EDIT</h2>
+<ol class="steps">
+<li><p>Press <kbd>EDIT</kbd>. The black keys on the keyboard stop playing notes and become section selectors; their LEDs blink to show they can be pressed.</p>
+<figure><div data-panel='edit:1,editkeys:2' data-opt='{"alt":"EDIT mode with ten labelled black keys"}'></div></figure></li>
+<li><p>Press a labelled black key to choose what to edit. The chosen key stays solid.</p>
+<div class="table-wrap"><table><tr><th>Black key (left to right)</th><th>Edits</th></tr>
+<tr><td>OP1 · OP2 · OP3 · OP4 · OP5 · OP6</td><td>Operator 1…6 (6 pages each)</td></tr>
+<tr><td>PIT</td><td>Pitch envelope (2 pages)</td></tr>
+<tr><td>GLO</td><td>Voice-wide settings: algorithm, feedback, sync, transpose; plus Init/Rename/Copy (2 pages)</td></tr>
+<tr><td>MONO · POLY</td><td>Switch voice mode. Active = solid LED, other = blinking</td></tr></table></div>
+<p>The last black key at the right end has no label.</p></li>
+<li><p>Turn <kbd>SELECT</kbd> to flip through that section’s pages, <kbd>KNOB 1–4</kbd> to change the four values.</p></li>
+<li><p>Press <kbd>EDIT</kbd> again (or <kbd>HOME</kbd>) to leave. <strong>Hold SAVE</strong> to keep your changes.</p></li>
+</ol>
+<div class="callout"><strong>The editor remembers</strong><p>Since V13 each operator remembers which page you were on, and the unit remembers which operator you were editing, so you can hop between OP2 and OP3 without losing your place.</p></div>
+
+<h2 id="algo">Algorithm</h2>
+<figure class="photo"><img src="images/algorithm-page.jpg" alt="FM-1 showing an algorithm diagram on screen" loading="lazy"><figcaption>The algorithm diagram on a real FM-1 (algorithm 8). Photo of a unit with older firmware (V14): the page layout may differ slightly from V15, and a few names and numbers differ from V15. </figcaption></figure>
+<p>You can change the algorithm at any time, in any mode, by turning <kbd>ALGORITHM</kbd>. A diagram appears for a second. The same value is also on the first EDIT → GLO page.</p>
+<div class="pair"><div class="txt"><p>Look at the picture before you edit operators: it tells you which operators are carriers (volume) and which are modulators (brightness). See all 32 on the <a href="11-reference.html#algorithms">reference page</a>.</p></div>
+<div class='tft-wrap'><div data-tft='{"kind":"algo","algo":5,"hdr":"001 PIANO 1","foot":"OSC"}'></div></div></div>
+
+<h2 id="ops">Operator pages OP1–OP6</h2>
+<figure class="photo"><img src="images/edit-pages.jpg" alt="Three FM-1 screens: OP1 Envelope, OP1 Tuning and the Globe voice page" loading="lazy"><figcaption>Composite photo: OP1 Envelope, OP1 Tuning and the GLO page. Note the older (V14) page order here: V15 starts with Tuning.</figcaption></figure>
+<p>Each operator has <strong>six pages</strong>, flipped with <kbd>SELECT</kbd> (<code>1/6</code> … <code>6/6</code>). All six operators have identical pages. The footer shows e.g. <code>1/6 OP1 Tuning</code>.</p>
+<div class="callout"><strong>V14 vs V15 page order</strong><p>The V15 manual and M-VAVE’s own page table agree on the order below. Some V14-era photos and older manuals show Envelope first and Tuning third. If your unit is on V14 or older, the order of pages 1–3 may differ.</p></div>
+
+<h3>Page 1: Tuning &amp; Level</h3>
+<div class="pair">
+<div class="txt">
+<ul>
+<li><strong>K1 Detune</strong> −7…+7. Tiny pitch offset in cents-like steps. Use it to thicken (detune a copy of the same ratio).</li>
+<li><strong>K2 FreqCoarse</strong> 0–31. The ratio’s whole part (0 = ½).</li>
+<li><strong>K3 FreqFine</strong> 0–99. The decimals of the ratio.</li>
+<li><strong>K4 OutLevel</strong> 0–99. For a carrier = volume; for a modulator = brightness.</li>
+</ul></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/6 OP1 Tuning","tiles":[["Detune","0"],["FreqCoarse","1"],["FreqFine","0"],["OutLevel","99"]]}'></div></div>
+</div>
+
+<h3>Page 2: Envelope (rates)</h3>
+<div class="pair">
+<div class="txt"><ul><li><strong>K1–K4: Rate 1 … Rate 4</strong>, each 0–99. Higher = faster.</li></ul>
+<p>R1 is the attack speed, R2 and R3 are the following stages (usually a decay), R4 is the release speed after you let go.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/6 OP1 Envelope","tiles":[["Rate 1","95"],["Rate 2","40"],["Rate 3","25"],["Rate 4","50"]]}'></div></div>
+</div>
+
+<h3>Page 3: Env Level</h3>
+<div class="pair">
+<div class="txt"><ul><li><strong>K1–K4: Level 1 … Level 4</strong>, each 0–99. Where each stage ends.</li></ul>
+<p>L3 is the level held while the key is down (sustain). L4 is the level after release, normally 0 = silent.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"3/6 OP1 Env Level","tiles":[["Level 1","99"],["Level 2","75"],["Level 3","50"],["Level 4","0"]]}'></div></div>
+</div>
+<figure><div data-env='{"r":[95,40,25,50],"l":[99,75,50,0],"label":"Envelope from the example values on pages 2 and 3"}'></div><figcaption>The envelope those example Rate and Level values produce, in outline. Real times are not to scale.</figcaption></figure>
+<div class="callout"><strong>Tip: a pluck</strong><p>Set L1 high, L2 medium-low, L3 low or 0, with R2 fairly fast. The sound hits and dies away like a plucked string even when you hold the key.</p></div>
+
+<h3>Page 4: Sens (sensitivity &amp; mode)</h3>
+<div class="pair">
+<div class="txt">
+<ul><li><strong>K1 AmpMod</strong> 0–3. How much the LFO’s amplitude wobble (AMD) affects this operator.</li>
+<li><strong>K2 Key Velo</strong> 0–7. How much key velocity changes this operator’s level.</li>
+<li><strong>K3 OscMode</strong> Ratio or Fixed. <em>Ratio</em> follows the keyboard; <em>Fixed</em> stays at one frequency whatever key you press.</li></ul></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"4/6 OP1 Sens","tiles":[["AmpMod","0"],["Key Velo","0"],["OscMode","Ratio"],null]}'></div></div>
+</div>
+
+<h3>Page 5: Scaling</h3>
+<div class="pair">
+<div class="txt">
+<ul><li><strong>K1 L Depth</strong> 0–99. How much the operator’s level changes for keys <em>below</em> the break point.</li>
+<li><strong>K2 R Depth</strong> 0–99. Same for keys <em>above</em> it.</li>
+<li><strong>K3 BreakPoint</strong> A-1 to C7. The note where the two sides meet.</li></ul></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"5/6 OP1 Scaling","tiles":[["L Depth","0"],["R Depth","0"],["BreakPoint","C3"],null]}'></div></div>
+</div>
+
+<h3>Page 6: Curves</h3>
+<div class="pair">
+<div class="txt">
+<ul><li><strong>K1 L Curve</strong> and <strong>K2 R Curve</strong>: the shape of the scaling on each side: <code>−LN</code>, <code>−EX</code>, <code>+LN</code>, <code>+EX</code> (LN = linear, EX = exponential).</li>
+<li><strong>K3 RateScale</strong> 0–7. How much envelopes speed up on higher notes.</li></ul>
+<p>On the DX7, “−” makes that side quieter and “+” louder as you move away from the break point; the FM-1 manual does not spell this out.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"6/6 OP1 Curves","tiles":[["L Curve","-LN"],["R Curve","-LN"],["Rate Scale","0"],null]}'></div></div>
+</div>
+<div class="callout unk"><strong>Page titles</strong><p>The footer text on pages 2, 3, 5 and 6 (Envelope, Env Level, Scaling, Curves) is how this guide’s reference app names them. The manual only names them by content. Photos confirm “Envelope” and “Tuning”.</p></div>
+
+<h2 id="mute">Muting an operator</h2>
+<p>While in EDIT, <strong>long-press an OP key</strong> (OP1–OP6) to mute that operator, which is a quick way to hear what each operator contributes. Audio returns when you switch to another voice (that is how you un-mute).</p>
+<div class="callout unk"><strong>Which operator is muted?</strong><p>A third-party firmware manual reports that on stock firmware the mute was “mirrored” (OP1 muted OP6, and so on). This was not confirmed by M-VAVE. If the wrong operator goes silent on your unit, that is why.</p></div>
+
+<h2 id="pit">PIT: the pitch envelope</h2>
+<p>PIT is a four-stage envelope for the <strong>pitch of the whole voice</strong>: it starts at one pitch and slides to another when you press a key. Subtle values give a fingerprint of “real” instruments; large values give pitch drops for drums, zaps and plucks.</p>
+<div class="pair">
+<div class="txt"><ul><li><strong>Page 1:</strong> Rate 1–4 (0–99).</li><li><strong>Page 2:</strong> Level 1–4 (0–99).</li></ul>
+<p>On the DX7, level 50 means “no change from the note pitch”, higher is sharper and lower is flatter. With every level at 50 the pitch envelope has no effect, which is the default.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/2 Pitch EG Level","tiles":[["Level 1","50"],["Level 2","50"],["Level 3","50"],["Level 4","50"]]}'></div></div>
+</div>
+<div class="callout unk"><strong>PIT level scale</strong><p>The FM-1 manual lists the range as 0–99 but does not say what value means “no change”. 50 is the DX7 standard.</p></div>
+
+<h2 id="glo-voice">GLO: voice common settings</h2>
+<p>Press <kbd>EDIT</kbd>, then the black key <strong>GLO</strong>. This section holds settings that apply to the whole voice. Do not confuse it with the <kbd>GLO</kbd> <em>button</em>, which holds device-wide settings (<a href="09-global-midi.html">page 9</a>).</p>
+<h3>Page 1</h3>
+<div class="pair">
+<div class="txt">
+<ul>
+<li><strong>K1 Algorithm</strong> 1–32 (same as the ALGORITHM knob).</li>
+<li><strong>K2 Feedback</strong> 0–7. How strongly the feedback operator modulates itself.</li>
+<li><strong>K3 Osc Sync</strong> On/Off. On = each operator’s waveform restarts at the same point for every note, so the attack is consistent. Off = free-running, so notes can differ slightly. This is the same parameter that appears on the LFO’s page 2.</li>
+<li><strong>K4 Transpose</strong> 0–48. Shifts the voice in semitones; <strong>24 is no shift</strong> (48 = two octaves up, 0 = two octaves down).</li>
+</ul></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"128 WHAT IF","foot":"1/2 Globe","tiles":[["Algorithm","1"],["Feedback","0"],["Osc Sync","ON"],["Transpose","18"]]}'></div></div>
+</div>
+<h3>Page 2: Init, Rename, Copy</h3>
+<p>Covered in <a href="04-voices.html#init">Voices</a>: K1 Init Voice, K2 Rename, K3 Copy Voice.</p>
+
+<h2 id="monopoly">MONO / POLY</h2>
+<p>These two black keys switch the voice between playing one note at a time (<strong>MONO</strong>, last note wins) and up to 12 notes at once (<strong>POLY</strong>). See <a href="02-playing.html#monopoly">Playing</a>.</p>
+
+<div class="pager"><a class="prev" href="04-voices.html"><small>← Previous</small>Voices: choose, save, manage</a><a class="next" href="06-lfo-env.html"><small>Next →</small>LFO and the ENV button</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

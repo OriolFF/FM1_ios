@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Arpeggiator and sequencer · FM-1 Tutorial</title>
+<meta name="description" content="ARP, SEQ, recording, patterns, chain">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html" aria-current="page"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>8. Arpeggiator and sequencer</h1><p class="lede">ARP, SEQ, recording, patterns, chain</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#arp">Arpeggiator</a></li><li><a href="#seq">Sequencer: overview</a></li><li><a href="#rec">Recording steps</a></li><li><a href="#long">Long notes, rests, replacing</a></li><li><a href="#play">Playback</a></li><li><a href="#pages">Sequencer pages</a></li><li><a href="#seqvoice">Voice per pattern</a></li><li><a href="#chain">Chain and Step length</a></li><li><a href="#limits">Limits</a></li></ul></div>
+
+<h2 id="arp">Arpeggiator</h2>
+<figure class="photo"><img src="images/arp-page.jpg" alt="FM-1 showing the arpeggiator page" loading="lazy"><figcaption>ARP page 1 on a real FM-1: mode, Octave, Rate and Tempo. Photo of a unit with older firmware (V14): the page layout may differ slightly from V15, and a few names and numbers differ from V15. </figcaption></figure>
+<p>An <strong>arpeggiator</strong> plays the notes you hold one after another, automatically, in a pattern. Hold a chord; hear a pattern.</p>
+<ol class="steps">
+<li><p>Press <kbd>ARP</kbd>. The ARP LED lights and page 1 appears.</p><figure><div data-panel='arp:1' data-opt='{}'></div></figure></li>
+<li><p><strong>Hold one or more keys.</strong> The arpeggiator plays them. The key LEDs light as each note sounds.</p></li>
+<li><p>Set the page 1 values:</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/2 Arpeggio","tiles":[["Mode","Up"],["Octave","1"],["Rate","1/16"],["Tempo","120"]],"hot":[1]}'></div></div>
+<ul>
+<li><strong>K1 Mode</strong>: the order of notes (table below).</li>
+<li><strong>K2 Octave</strong> 1–4. How many octaves the pattern spans before repeating.</li>
+<li><strong>K3 Rate</strong>: note length of each step (1/16 = sixteenth notes).</li>
+<li><strong>K4 Tempo</strong> 30–300 BPM.</li></ul></li>
+<li><p>Turn <kbd>SELECT</kbd> for page 2:</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/2 Arpeggio","tiles":[["Gate","50%"],["Swing","50%"],["Latch","OFF"],["Sync","OFF"]]}'></div></div>
+<ul>
+<li><strong>K1 Gate</strong> 20–100%. How long each note is held within its step. Low = short, staccato; 100% = connected.</li>
+<li><strong>K2 Swing</strong> 50–75%. 50% is straight; higher pushes every second step late for a shuffle.</li>
+<li><strong>K3 Latch</strong> On/Off. On = notes keep playing after you let go; new keys replace the set. Off = the arp stops when you release.</li>
+<li><strong>K4 Sync</strong> On/Off. On = follow the tempo of an external MIDI clock instead of Tempo.</li></ul></li>
+<li><p>Press <kbd>ARP</kbd> again to switch the arpeggiator off. It returns to Home.</p></li>
+</ol>
+<h3>Modes</h3>
+<div class="table-wrap"><table>
+<tr><th>Mode</th><th>Order</th></tr>
+<tr><td>Up</td><td>Lowest to highest, then repeat</td></tr>
+<tr><td>Down</td><td>Highest to lowest, then repeat</td></tr>
+<tr><td>Inclusive</td><td>Up then down, <strong>repeating</strong> the top and bottom notes</td></tr>
+<tr><td>Exclusive</td><td>Up then down, <strong>not</strong> repeating the top and bottom notes</td></tr>
+<tr><td>Random</td><td>Random order</td></tr>
+<tr><td>Order</td><td>The order in which you pressed the keys</td></tr>
+<tr><td>Repeat</td><td>Each note is repeated before moving to the next</td></tr>
+</table></div>
+<div class="callout warn"><strong>ARP and SEQ exclude each other</strong><p>If the sequencer is on, pressing ARP shows <em>Disable SEQ to enter</em>. Turn SEQ off first (press SEQ).</p></div>
+<div class="callout unk"><strong>Rate values</strong><p>The manual does not list the Rate options. V13 added 1/1 and 1/2. Common sense and the unit’s behaviour suggest values from whole notes down to 1/32 with triplets (1/4T, 1/8T…), but the exact list is not published.</p></div>
+<div class="callout unk"><strong>Octave order</strong><p>The manual does not say how the Octave setting combines with each Mode (e.g. whether Down starts from the top octave). Listen on your unit.</p></div>
+
+<h2 id="seq">Sequencer: overview</h2>
+<figure class="photo"><img src="images/seq-page.jpg" alt="FM-1 showing the sequencer page with step keys lit" loading="lazy"><figcaption>SEQ page 1 on a real FM-1. The lit white keys are the steps; PLAY/STOP is lit. Photo of a unit with older firmware (V14): the page layout may differ slightly from V15, and a few names and numbers differ from V15. </figcaption></figure>
+<p>The sequencer records a loop of up to <strong>16 steps</strong>; each step can hold one note or a chord. There are <strong>16 patterns</strong> to store loops in, and all are kept when the power is off.</p>
+<ol class="steps">
+<li><p>Press <kbd>SEQ</kbd>. The SEQ LED and an orange STOP LED light, and the page appears.</p><figure><div data-panel='seq:1,steps:2' data-opt='{"stepOn":[0,2,4,6],"playhead":-1}'></div></figure></li>
+<li><p><strong>The 16 white keys now show the steps.</strong> Solid = the step has a note. Off = empty. Blinking = the step being played right now.</p></li>
+</ol>
+<div class="callout"><strong>Step LEDs</strong>
+<div class="table-wrap"><table><tr><th>LED</th><th>Meaning</th></tr><tr><td>Solid</td><td>Step has notes</td></tr><tr><td>Off</td><td>Empty step</td></tr><tr><td>Flashing</td><td>Currently playing this step</td></tr></table></div></div>
+
+<h2 id="rec">Recording steps (step entry)</h2>
+<ol class="steps">
+<li><p>Press <kbd>SEQ</kbd>. Turn <kbd>SELECT</kbd> to choose page 1 and set <strong>K1 Pattern</strong> (1–16). If it already has notes and you want a fresh start, turn <strong>K2 Clear</strong>.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/3 Sequencer","tiles":[["Pattern","1"],["Clear",""],["Chain","1"],["Step","16"]],"hot":[1]}'></div></div></li>
+<li><p>Press <kbd>REC</kbd>. The red REC LED lights.</p><figure><div data-panel='rec:1' data-opt='{}'></div></figure></li>
+<li><p><strong>Play a note or chord.</strong> It is placed in the next step and that step’s key LED lights. Play the next, and the next…</p></li>
+<li><p>Press <kbd>REC</kbd> again to stop recording (this switches to playback mode; the STOP LED stays lit).</p></li>
+</ol>
+<p>Recording is “step” style: the timing comes from the step position, not from when you pressed. You can take as long as you like for each note.</p>
+
+<h2 id="long">Long notes, rests and replacing notes</h2>
+<ul>
+<li><strong>Long note</strong>: while recording, on the current step <strong>hold the note and turn <kbd>SELECT</kbd></strong> to the step where it should end, then release. The note is held over those steps and does not erase notes that were already there.</li>
+<li><strong>Rest / move around</strong>: while recording, <strong>press and hold <kbd>REC</kbd> and turn <kbd>SELECT</kbd></strong> to move the step position without recording. Move to an empty step and leave it empty for a rest.</li>
+<li><strong>Replace</strong>: move to the step (as above), then hold the new keys on that step to add or replace notes.</li>
+<li><strong>Per-step rate</strong>: on SEQ page 2, K2 <em>Rate</em> can be changed <em>while recording</em>. It then applies to that step only.</li>
+</ul>
+<div class="callout unk"><strong>Details the manual leaves open</strong><ul>
+<li>Whether replacing a step first clears the old notes or adds to them.</li>
+<li>How a long note appears in the step LEDs.</li>
+<li>Whether the ±step cursor is shown on the screen.</li></ul>
+<p>Try it on your unit, since the manual only gives the gestures above.</p></div>
+
+<h2 id="play">Playback</h2>
+<ol class="steps">
+<li><p>Press <kbd>PLAY/STOP</kbd>. The PLAY LED lights green and the pattern loops. The step LED of the current step blinks.</p><figure><div data-panel='play:1,steps:2' data-opt='{"stepOn":[0,2,4,6,8,10],"playhead":3}'></div></figure></li>
+<li><p>Press <kbd>PLAY/STOP</kbd> again to stop; the STOP LED lights orange.</p></li>
+<li><p>Press <kbd>SEQ</kbd> to leave sequencer mode (the LEDs go off and you return to Home).</p></li>
+</ol>
+<p>If SEQ is not on, PLAY/STOP and REC show <em>Enable SEQ first</em>.</p>
+
+<h2 id="pages">The three sequencer pages</h2>
+<h3>Page 1: pattern</h3>
+<ul><li><strong>K1 Pattern</strong> 1–16 · <strong>K2 Clear</strong> (turn to clear the pattern) · <strong>K3 Chain</strong> 1–16 · <strong>K4 Step</strong> 1–16 (pattern length)</li></ul>
+<h3>Page 2: sound and timing</h3>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/3 Sequencer","tiles":[["Voice","001"],["Rate","1/16"],["Tempo","106"],["Gate","50%"]]}'></div></div>
+<ul><li><strong>K1 Voice</strong> 1–128 · <strong>K2 Rate</strong> · <strong>K3 Tempo</strong> 30–300 BPM · <strong>K4 Gate</strong> 20–100%</li></ul>
+<h3>Page 3: feel</h3>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"3/3 Sequencer","tiles":[["Swing","50%"],["Sync","OFF"],["Transpose","0"],null]}'></div></div>
+<ul><li><strong>K1 Swing</strong> 50–75% · <strong>K2 Sync</strong> On/Off (external MIDI clock) · <strong>K3 Transpose</strong> −24…+24 semitones, for the whole pattern</li></ul>
+<p>Tempo is shared with the arpeggiator.</p>
+
+<h2 id="seqvoice">A voice for each pattern</h2>
+<p>On page 2, <strong>Voice</strong> ties the pattern to one of the 128 voices. When you select the pattern, that voice loads. This is why the PRESETS knob is disabled while SEQ is on: the pattern, not PRESETS, picks the sound. Patterns and their voices are stored automatically.</p>
+
+<h2 id="chain">Chain and Step length</h2>
+<ul>
+<li><strong>Step</strong> (page 1, K4) sets the loop length from 1 to 16 steps. A pattern of 12 steps loops after step 12 (good for odd lengths).</li>
+<li><strong>Chain</strong> (page 1, K3), 1–16, plays several patterns <em>one after another</em>, starting with the current one. Chain 3 on pattern 5 should play patterns 5, 6 and 7.</li>
+</ul>
+<div class="callout unk"><strong>Chain behaviour</strong><p>The release notes say the chain starts “from the current pattern” and plays “several patterns continuously”. Whether it loops back to the first one, and how the chain interacts with different Voices per pattern, is not documented. The wrap-around described here is an assumption; verify on your unit.</p></div>
+
+<h2 id="limits">What the V15 sequencer does not do</h2>
+<p>It has no per-step probability, ratchets, parameter locks or motion recording. These arrived only in the later V16 firmware, which this guide does not cover. Sync with an external MIDI clock uses clock messages: start, stop and clock.</p>
+
+<div class="pager"><a class="prev" href="07-effects.html"><small>← Previous</small>Effects chain</a><a class="next" href="09-global-midi.html"><small>Next →</small>GLO, MIDI, Bluetooth, updates</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

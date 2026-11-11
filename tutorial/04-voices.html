@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Voices: choose, save, manage · FM-1 Tutorial</title>
+<meta name="description" content="Presets, saving, init, rename, copy, SysEx import">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html" aria-current="page"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>4. Voices: choose, save, manage</h1><p class="lede">Presets, saving, init, rename, copy, SysEx import</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#banks">128 voices in four banks</a></li><li><a href="#choose">Choosing a voice</a></li><li><a href="#edit-buffer">Edits are temporary until you save</a></li><li><a href="#save">Saving</a></li><li><a href="#init">Init Voice</a></li><li><a href="#rename">Rename</a></li><li><a href="#copy">Copy Voice</a></li><li><a href="#reset">Reset a bank</a></li><li><a href="#sysex">Importing DX7 banks (SysEx)</a></li></ul></div>
+
+<h2 id="banks">128 voices in four banks</h2>
+<p>The FM-1 stores 128 voices, numbered 001–128, in four banks of 32:</p>
+<div class="table-wrap"><table><tr><th>Bank</th><th>Voices</th><th>Factory content (V15)</th></tr>
+<tr><td>A</td><td>001–032</td><td>Pianos, organs, synth leads, synth pads</td></tr><tr><td>B</td><td>033–064</td><td>Guitars, “DS” guitars, basses, synth basses</td></tr><tr><td>C</td><td>065–096</td><td>Brass, woodwinds, strings, voices</td></tr><tr><td>D</td><td>097–128</td><td>Percussion and effects (bells, gongs, drums…)</td></tr></table></div>
+<p>Every slot is rewritable. The full factory list is on the <a href="11-reference.html#factory">reference page</a>.</p>
+
+<h2 id="choose">Choosing a voice</h2>
+<ol class="steps">
+<li><p>Turn <kbd>PRESETS</kbd> clockwise for the next voice, counter-clockwise for the previous one. It wraps from 128 to 001.</p><figure><div data-panel='presets:1,screen:2' data-opt='{}'></div></figure></li>
+<li><p>The voice <strong>loads instantly</strong> on every click, so play a few notes while you scroll. A list shows the number and name for about a second.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"list","hdr":"033 GUITAR 1","foot":"OSC","items":["031 SYN LEAD 8","032 SYN PAD 8","033 GUITAR 1","034 DS GUITAR1","035 BASS 1"],"cur":2}'></div></div></li>
+<li><p>The top bar of every screen always shows the loaded number and name.</p></li>
+</ol>
+<div class="callout"><strong>From a computer or keyboard</strong><p>MIDI Program Change messages 0–127 also select voices 001–128.</p></div>
+<div class="callout warn"><strong>Not while the sequencer is on</strong><p>With SEQ switched on, <kbd>PRESETS</kbd> does nothing. Each sequencer pattern is tied to a voice (<a href="08-arp-seq.html#seqvoice">page 8</a>).</p></div>
+
+<h2 id="edit-buffer">Edits are temporary until you save</h2>
+<p>When you edit a sound (EDIT, LFO, ENV, FX…), the change is held in a working copy. <strong>If you choose another voice before saving, your unsaved edits are lost.</strong> This is the number one surprise for new users.</p>
+
+<h2 id="save">Saving</h2>
+<ol class="steps">
+<li><p><strong>Press and hold <kbd>SAVE</kbd></strong> until the SAVE LED lights. Do not just tap it.</p><figure><div data-panel='save:1' data-opt='{}'></div></figure></li>
+<li><p>The screen shows <code>Preset Saved</code>. Let go; the LED goes out.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"popup","hdr":"001 PIANO 1","foot":"OSC","lines":["Preset Saved"]}'></div></div></li>
+</ol>
+<p>SAVE writes <em>all</em> pending changes at once: the voice, its effect settings and ENV settings, sequencer patterns and global settings. It writes into the slot you are on. There is no “save as” step on this firmware; to keep the original and your variation, first <a href="#copy">copy the voice</a> into another slot.</p>
+<div class="callout"><strong>A routine for safe experimenting</strong>
+<ol><li>Pick an empty-ish slot you don’t mind overwriting (or a bank you can restore).</li><li><a href="#copy">Copy</a> a voice you like into it.</li><li>Edit, listen, and <strong>hold SAVE</strong> when happy.</li></ol></div>
+
+<h2 id="init">Init Voice (start from scratch)</h2>
+<p>Init Voice resets the current voice to a basic template, a good starting point for building a sound. It is on the second page of <kbd>EDIT</kbd> → <strong>GLO</strong>.</p>
+<ol class="steps">
+<li><p>Press <kbd>EDIT</kbd>, then press the black key labelled <strong>GLO</strong>.</p></li>
+<li><p>Turn <kbd>SELECT</kbd> clockwise to reach page 2 (<code>2/2</code>).</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/2 Globe","tiles":[["Init Voice",""],["Rename",""],["Copy Voice",""],null],"hot":[1]}'></div></div></li>
+<li><p>Turn <kbd>KNOB 1</kbd> clockwise. All parameters of the voice are reset.</p></li>
+</ol>
+<div class="callout unk"><strong>What exactly is the template?</strong><p>The manual says “all parameters will become a basic numerical value” without listing them. The DX7’s standard init voice is: algorithm 1, only operator 1 audible (Output level 99), all other operators at 0, ratio 1, flat envelopes, no feedback. The exercises in this guide assume that, but check on your own unit by playing a note after Init.</p></div>
+
+<h2 id="rename">Rename</h2>
+<p>Voice names are up to 10 characters.</p>
+<ol class="steps">
+<li><p>EDIT → GLO → page 2 (as above). Turn <kbd>KNOB 2</kbd> clockwise to open the rename screen.</p></li>
+<li><p>Choose the type of character with the first four operator keys (black keys):</p>
+<div class="table-wrap"><table><tr><th>Key</th><th>Characters</th></tr><tr><td>OP1</td><td>A–Z</td></tr><tr><td>OP2</td><td>a–z</td></tr><tr><td>OP3</td><td>symbols</td></tr><tr><td>OP4</td><td>digits</td></tr><tr><td>OP5</td><td>delete</td></tr></table></div></li>
+<li><p>Turn <kbd>KNOB 3</kbd> to pick the character.</p></li>
+<li><p>Press <kbd>SELECT</kbd> (turn it) to confirm the character and move on. To cancel, turn <kbd>KNOB 2</kbd> counter-clockwise.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"rename","hdr":"001 PIANO 1","foot":"Rename","cls":"A–Z","name":"MY BELL","cur":6,"hint":"OP1 A–Z · OP2 a–z · OP3 sym · OP4 0–9 · OP5 del"}'></div></div></li>
+<li><p>Finish with a hold on <kbd>SAVE</kbd> to keep the new name.</p></li>
+</ol>
+<div class="callout unk"><strong>Rename screen details</strong><p>The manual gives the keys and knobs above but not exactly how confirming works (it says “SELECT to confirm”). The V15 release note lists OP1 = A–Z, OP2 = a–z, OP3 = symbol, OP4 = number, OP5 = delete. The screen drawn here is a sketch of the idea.</p></div>
+
+<h2 id="copy">Copy Voice</h2>
+<p>Copy Voice overwrites the voice you are on with another one, so it is how you duplicate a sound into a different slot.</p>
+<ol class="steps">
+<li><p>First go to the <strong>destination</strong> slot with <kbd>PRESETS</kbd>.</p></li>
+<li><p>EDIT → GLO → page 2. Turn <kbd>KNOB 3</kbd> clockwise to open the voice picker.</p></li>
+<li><p>Turn <kbd>KNOB 4</kbd> to choose the <strong>source</strong> voice.</p></li>
+<li><p>Use <kbd>SELECT</kbd> to confirm: the destination is overwritten. To leave without copying, turn <kbd>KNOB 3</kbd> counter-clockwise.</p></li>
+<li><p>Hold <kbd>SAVE</kbd> to make it permanent.</p></li>
+</ol>
+
+<h2 id="reset">Reset Patches (restore a bank)</h2>
+<p>On the second GLO page (<kbd>GLO</kbd> button, not EDIT), <strong>Reset Patches</strong> restores one bank. Turn <kbd>KNOB 1</kbd> clockwise to open it, turn knobs 1–4 to pick bank A, B, C or D, then turn <kbd>SELECT</kbd> clockwise to confirm (counter-clockwise cancels). The screen says <code>Reset Success</code>.</p>
+<div class="callout warn"><strong>“Reset” does not always mean “factory”</strong><p>In V15 the bank is restored to the <em>most recently imported</em> voices. Until you import something, that is the factory set. After importing a bank, resetting restores your imported one, not the factory one.</p></div>
+
+<h2 id="sysex">Importing DX7 banks (SysEx)</h2>
+<figure class="photo"><img src="images/save-dialog.jpg" alt="FM-1 screen asking which bank A to D to save 32 voices to" loading="lazy"><figcaption>The "32 Voice Save To…" choice of banks A to D. Dim room photo from a review video.</figcaption></figure>
+<p>Because the FM-1 uses the DX7 voice format, you can load classic DX7 sound banks (the 32-voice <code>.syx</code> files that exist in their thousands).</p>
+<ol class="steps">
+<li><p>Connect the FM-1 to a computer or tablet by USB-C, Bluetooth, or the TRS MIDI input.</p></li>
+<li><p>Send a standard DX7 <strong>32-voice bank dump</strong> from a MIDI utility (for example SysEx Librarian on Mac or MIDI-OX on Windows).</p></li>
+<li><p>A <strong>bank selection screen</strong> appears on the FM-1. Turn any of <kbd>KNOB 1–4</kbd> to choose A, B, C or D.</p>
+<div class='tft-wrap'><div data-tft='{"kind":"popup","hdr":"001 PIANO 1","foot":"OSC","lines":["32 Voice Save To ..."],"letters":["A","B","C","D"]}'></div></div></li>
+<li><p>After a short delay the bank is written. The previous voices in that bank are overwritten.</p></li>
+</ol>
+<div class="callout"><strong>Good to know</strong><ul>
+<li>The factory bank files used by this tutorial’s research are standard DX7 dumps, so they work with any DX7 tool.</li>
+<li>Very large dumps over the TRS MIDI cable can need a small delay between packets; USB is the easiest route.</li>
+<li>Stock V15 cannot send voices back out (no export), so keep copies of banks you care about <em>before</em> overwriting them.</li>
+<li>DX7 data holds only the sound, not the FM-1 extras (effects, global ADSR). The effect and ENV settings are not part of a DX7 bank, so a bank import cannot carry them.</li></ul></div>
+<div class="callout unk"><strong>Single-voice dumps</strong><p>A single DX7 voice dump is reported to replace the current voice. Whether it is saved automatically or needs a hold on SAVE is not documented; hold SAVE to be safe.</p></div>
+
+<div class="pager"><a class="prev" href="03-fm-primer.html"><small>← Previous</small>FM synthesis in 10 minutes</a><a class="next" href="05-edit.html"><small>Next →</small>EDIT: shaping a voice</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

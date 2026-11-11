@@ -13,6 +13,8 @@ struct PanelView: View {
     static let aspect: CGFloat = 161.5 / 96.5
 
     @State private var knobAngles: [Double] = Array(repeating: 0, count: 7)
+    @AppStorage(TutorialSettings.key) private var tutorialMode = false
+    @State private var tutorialTopic: TutorialControl? = nil
 
     private var W: CGFloat { width }
     private var H: CGFloat { height ?? width / PanelView.aspect }
@@ -42,6 +44,47 @@ struct PanelView: View {
             screen
             buttonTray(cw)
             keyboard(cw)
+            if tutorialMode { tutorialBadges.transition(.opacity) }
+        }
+        .frame(width: W, height: H)
+        .animation(.easeInOut(duration: 0.2), value: tutorialMode)
+        .sheet(item: $tutorialTopic) { c in
+            TutorialCardView(topic: TutorialContent.topic(c, model: model))
+        }
+    }
+
+    // MARK: Tutorial badges
+
+    /// One badge per knob and button (the piano keys have none), at each control's top-right.
+    private var tutorialBadges: some View {
+        let s = max(16, W * 0.017)
+        let d = W * 0.044                      // knob diameter
+        let kOff = CGSize(width: d * 0.72, height: -d * 0.72)
+        let b = W * 0.051                      // function button side
+        let bOff = CGSize(width: b * 0.5, height: -b * 0.5)
+        let oct = CGSize(width: W * 0.064, height: H * 0.058)
+        let oOff = CGSize(width: oct.width * 0.5, height: -oct.height * 0.5)
+        let cols: [CGFloat] = [57.5, 63.7, 69.8, 76.1, 82.3, 88.5]
+        let row1: [TutorialControl] = [.fx, .sel, .env, .lfo, .edit, .glo]
+        let row2: [TutorialControl] = [.home, .save, .arp, .seq, .play, .rec]
+        var items: [(TutorialControl, CGPoint, CGSize)] = [
+            (.master, CGPoint(x: 9.0, y: 16.5), kOff),
+            (.select, CGPoint(x: 19.4, y: 16.5), kOff),
+            (.presets, CGPoint(x: 9.0, y: 33.6), kOff),
+            (.algorithm, CGPoint(x: 19.4, y: 33.6), kOff),
+            (.octDown, CGPoint(x: 10.4, y: 47.0), oOff),
+            (.octUp, CGPoint(x: 17.8, y: 47.0), oOff),
+        ]
+        for k in 0..<4 { items.append((.knob(k), CGPoint(x: [56.3, 67.3, 78.3, 89.4][k], y: 16.5), kOff)) }
+        for i in 0..<6 {
+            items.append((row1[i], CGPoint(x: cols[i], y: 34.6), bOff))
+            items.append((row2[i], CGPoint(x: cols[i], y: 44.7), bOff))
+        }
+        return ZStack {
+            ForEach(items, id: \.0) { c, p, off in
+                TutorialBadge(control: c, size: s) { tutorialTopic = c }
+                    .position(x: x(p.x) + off.width, y: y(p.y) + off.height)
+            }
         }
         .frame(width: W, height: H)
     }
@@ -229,7 +272,7 @@ struct PanelView: View {
         return RubberButton(lines: lines, size: size, colorway: cw, light: model.buttonLight(b), underline: b == .play,
                             action: { model.press(b) },
                             onLongPress: { model.longPress(b) },
-                            onHoldChange: b == .rec ? { model.recHeld = $0 } : (b == .glo ? { model.gloHeld = $0; if !$0 { model.audio.groove.fill = false } } : nil))
+                            onHoldChange: { model.buttonHold(b, $0) })
     }
 
     // MARK: Keyboard

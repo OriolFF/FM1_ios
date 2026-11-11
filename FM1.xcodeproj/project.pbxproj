@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A2D6505B27E07AABBD90BEB /* SynthModel+Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1325FE4934B049E88763D3F0 /* SynthModel+Package.swift */; };
 		0CE8B17EB05DB0292289836A /* DrumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */; };
+		0D3F2F9BAAC6D3C57CC4C57E /* FirmwarePackageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBAD32D8F760E724131191F0 /* FirmwarePackageTests.swift */; };
+		1424FDC623CDEE5667D4E7F6 /* MasterBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C032BB19A77C15DD2299768C /* MasterBus.swift */; };
+		1ED810AD45EB1E1CC8C6B02D /* TutorialBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC8FD513033F5C4E216FF7F /* TutorialBrowser.swift */; };
 		1F95CA4629A73A55429B7B73 /* PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B035B24749FE1CDD959B7F47 /* PanelComponents.swift */; };
 		3199450D8C990597B7DA928E /* FM1App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */; };
 		31EF7BBF7536F168BA6391F5 /* ArpSeq.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EA898544FE056718BD4048 /* ArpSeq.swift */; };
@@ -16,21 +20,38 @@
 		391BA8E0E78A2B6413378EC6 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0248C86784AF3C606BC261FB /* PanelView.swift */; };
 		3ED103508A78479658BA9647 /* FirmwareMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */; };
 		4369D1D1698A19D442567D05 /* FM1_V15_factory_bank_C.syx in Resources */ = {isa = PBXBuildFile; fileRef = 838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */; };
+		440F5AF68870519D54A25700 /* PackageHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72FB159A4B130AEEF461DB9B /* PackageHost.swift */; };
+		468D2ADFF239C2E4F5D9AC15 /* Firmwares in Resources */ = {isa = PBXBuildFile; fileRef = 2FF0B769A52F86AD5EA10AB1 /* Firmwares */; };
 		4767088C1D6F881104D05A6D /* Algorithms.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D6FC05344FB3AA7031164C /* Algorithms.swift */; };
+		4805EB60F98126FBEE10AA0C /* TutorialMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E96FC4B19532E48691A9F29 /* TutorialMode.swift */; };
+		4B853A9A8B129069EF2FDB8A /* Prelude.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9187682186F2555D1E6E7619 /* Prelude.swift */; };
 		4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EBEB3921BB73FD5B6F50984 /* Theme.swift */; };
+		4C76F50CD834D19815079A6F /* TutorialBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A44131962A8BE7CE9C3BAED /* TutorialBrowserTests.swift */; };
+		53B89F4FCECAEFB7ED7CA178 /* FirmwareCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBC1472A6D1F9D762E531 /* FirmwareCatalog.swift */; };
+		553AE540E0907976AA61C142 /* PkgInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57766E331279ED700CDB03AE /* PkgInstrument.swift */; };
 		566D29ECA701A4F8DD80F7EB /* Nunito.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9B1C03D65236759C2FE18EC /* Nunito.ttf */; };
+		5EE13F69DC2778693CC9CB97 /* FirmwareMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2AC389BC32BFED60A40C6C /* FirmwareMenuView.swift */; };
 		62EB8A5F52651A6B5D9EF82D /* Orbitron.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 05DA32C16124D15968674A16 /* Orbitron.ttf */; };
+		638118931F6957C415CAF7CD /* PkgArp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39AF4F3F1174F1F9BF191098 /* PkgArp.swift */; };
 		6A77E4004B46E1F0F9067895 /* SynthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747B220C7D8797C754B32CFC /* SynthModel.swift */; };
-		6CCE5C54A86DF878502A5345 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = F917216FDF2D594D72CEF090 /* Firmware.swift */; };
 		6F8DA89347CE535CFD069EF1 /* Aldrich-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ECDB95F013915318D9D6608E /* Aldrich-Regular.ttf */; };
 		702BFA2271E0017AFB224755 /* GrooveScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */; };
+		7FBC4BE5F58BE8D3E15AFE0D /* PDSynth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16A670BF32476A6FBC734CC /* PDSynth.swift */; };
+		825B88DA660EC67DDB926A0F /* VASynth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74D1711E8329D3DC8882FEC3 /* VASynth.swift */; };
+		879D5E4DB5D80C1D7DC5053B /* PackageScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B0F9893DA44B050AE74E351 /* PackageScreenView.swift */; };
+		8EF6B5E1BC74E0836203372A /* tutorial in Resources */ = {isa = PBXBuildFile; fileRef = E61C4B4F21B443B6349C8B25 /* tutorial */; };
 		98C8041214DCA3EE6274B699 /* FMPatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B79A6F69E0739B3AF01FBC1 /* FMPatch.swift */; };
 		9F2D3EB850300D2B17555CFB /* GrooveSeq.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA84C0C1DA2446FFF83B113 /* GrooveSeq.swift */; };
 		A6310899F151A94D49E767CA /* FXChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A40BD6D67294FF8811CA520 /* FXChain.swift */; };
+		ADD294089693AF509C7613A3 /* HostInstruments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386F7587D17D811CBBA88AEF /* HostInstruments.swift */; };
 		AF9219A623DF2BD9E20E1780 /* ScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606C1AC0584CCFA7691508E5 /* ScreenView.swift */; };
 		B055E5B0F66F964FBC6E86C6 /* FM1_V15_factory_bank_B.syx in Resources */ = {isa = PBXBuildFile; fileRef = D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */; };
 		C2220721645F1DE699C92156 /* FMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D81475E10ED87FA8398F785 /* FMEngine.swift */; };
+		E1769FF6D301C45DC3F28CE5 /* TutorialModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9611966F4C1C530B08E516CF /* TutorialModeTests.swift */; };
 		E65A73134E14D1E3A9449C44 /* SynthModel+Groove.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025D95527C83C02F1D517316 /* SynthModel+Groove.swift */; };
+		E88AD7ECDE219E062C56532D /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190C8801E905F2E866100FF0 /* Firmware.swift */; };
+		EA9BD9B919BC71AB6D31E7C5 /* PkgSequencer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79577CFF27758EAA058E6513 /* PkgSequencer.swift */; };
+		F0278DAF1397A469CEEF5921 /* PackageEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5E9C5853087F058318C547 /* PackageEngine.swift */; };
 		F30CB2A7434E2C74E04FD7CB /* FM1_V15_factory_bank_D.syx in Resources */ = {isa = PBXBuildFile; fileRef = BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */; };
 		F59916053C2F39EAE29EAE7D /* AudioController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D96734BD75547B9F97552E5 /* AudioController.swift */; };
 		FAF25FF31B01E3717F6F573A /* ShareTech-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23CF3185944CE38E33AD2606 /* ShareTech-Regular.ttf */; };
@@ -51,31 +72,52 @@
 		025D95527C83C02F1D517316 /* SynthModel+Groove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SynthModel+Groove.swift"; sourceTree = "<group>"; };
 		05DA32C16124D15968674A16 /* Orbitron.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Orbitron.ttf; sourceTree = "<group>"; };
 		09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FM1App.swift; sourceTree = "<group>"; };
+		1325FE4934B049E88763D3F0 /* SynthModel+Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SynthModel+Package.swift"; sourceTree = "<group>"; };
+		190C8801E905F2E866100FF0 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		1B79A6F69E0739B3AF01FBC1 /* FMPatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMPatch.swift; sourceTree = "<group>"; };
 		23CF3185944CE38E33AD2606 /* ShareTech-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ShareTech-Regular.ttf"; sourceTree = "<group>"; };
+		2FF0B769A52F86AD5EA10AB1 /* Firmwares */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Firmwares; sourceTree = SOURCE_ROOT; };
+		386F7587D17D811CBBA88AEF /* HostInstruments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostInstruments.swift; sourceTree = "<group>"; };
+		39AF4F3F1174F1F9BF191098 /* PkgArp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PkgArp.swift; sourceTree = "<group>"; };
+		3DC8FD513033F5C4E216FF7F /* TutorialBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialBrowser.swift; sourceTree = "<group>"; };
 		4D81475E10ED87FA8398F785 /* FMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMEngine.swift; sourceTree = "<group>"; };
+		4E96FC4B19532E48691A9F29 /* TutorialMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialMode.swift; sourceTree = "<group>"; };
 		4FA84C0C1DA2446FFF83B113 /* GrooveSeq.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrooveSeq.swift; sourceTree = "<group>"; };
+		57766E331279ED700CDB03AE /* PkgInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PkgInstrument.swift; sourceTree = "<group>"; };
+		5A44131962A8BE7CE9C3BAED /* TutorialBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialBrowserTests.swift; sourceTree = "<group>"; };
 		606C1AC0584CCFA7691508E5 /* ScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenView.swift; sourceTree = "<group>"; };
 		6A40BD6D67294FF8811CA520 /* FXChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FXChain.swift; sourceTree = "<group>"; };
+		6B0F9893DA44B050AE74E351 /* PackageScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageScreenView.swift; sourceTree = "<group>"; };
 		6D96734BD75547B9F97552E5 /* AudioController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioController.swift; sourceTree = "<group>"; };
+		72FB159A4B130AEEF461DB9B /* PackageHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageHost.swift; sourceTree = "<group>"; };
 		747B220C7D8797C754B32CFC /* SynthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthModel.swift; sourceTree = "<group>"; };
+		74D1711E8329D3DC8882FEC3 /* VASynth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VASynth.swift; sourceTree = "<group>"; };
+		79577CFF27758EAA058E6513 /* PkgSequencer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PkgSequencer.swift; sourceTree = "<group>"; };
 		7EBEB3921BB73FD5B6F50984 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		838EEE484357906B1062F9FF /* FM1_V15_factory_bank_C.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_C.syx; sourceTree = "<group>"; };
+		866EBC1472A6D1F9D762E531 /* FirmwareCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareCatalog.swift; sourceTree = "<group>"; };
+		9187682186F2555D1E6E7619 /* Prelude.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prelude.swift; sourceTree = "<group>"; };
+		9611966F4C1C530B08E516CF /* TutorialModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialModeTests.swift; sourceTree = "<group>"; };
 		98A44789EE2FCA93DFD09411 /* GrooveScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrooveScreenView.swift; sourceTree = "<group>"; };
 		A1ABDE6305EC9C75E2A05800 /* DrumKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumKit.swift; sourceTree = "<group>"; };
 		A93FB98F46F65CD2C2950CDF /* FM1.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FM1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A95811FA66C19DCD0A3D8155 /* FM1UITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FM1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
 		B035B24749FE1CDD959B7F47 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
+		BBAD32D8F760E724131191F0 /* FirmwarePackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwarePackageTests.swift; sourceTree = "<group>"; };
 		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
+		C032BB19A77C15DD2299768C /* MasterBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterBus.swift; sourceTree = "<group>"; };
+		D16A670BF32476A6FBC734CC /* PDSynth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDSynth.swift; sourceTree = "<group>"; };
 		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
 		DE6DD706EB043B9819F88985 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E61C4B4F21B443B6349C8B25 /* tutorial */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tutorial; sourceTree = SOURCE_ROOT; };
 		ECDB95F013915318D9D6608E /* Aldrich-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Aldrich-Regular.ttf"; sourceTree = "<group>"; };
 		F0D6FC05344FB3AA7031164C /* Algorithms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithms.swift; sourceTree = "<group>"; };
 		F6EA898544FE056718BD4048 /* ArpSeq.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArpSeq.swift; sourceTree = "<group>"; };
-		F917216FDF2D594D72CEF090 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		F9B1C03D65236759C2FE18EC /* Nunito.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Nunito.ttf; sourceTree = "<group>"; };
 		FC0DFFF97DED49CA1E36E91E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FC2AC389BC32BFED60A40C6C /* FirmwareMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareMenuView.swift; sourceTree = "<group>"; };
+		FF5E9C5853087F058318C547 /* PackageEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageEngine.swift; sourceTree = "<group>"; };
 		FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareMenuTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,7 +125,6 @@
 		18306374CC5A1268C355E3B1 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				F917216FDF2D594D72CEF090 /* Firmware.swift */,
 				09B2C96DDCC8785C1C0E30E7 /* FM1App.swift */,
 				FC0DFFF97DED49CA1E36E91E /* Info.plist */,
 				747B220C7D8797C754B32CFC /* SynthModel.swift */,
@@ -117,10 +158,27 @@
 		48D24222DC7E2E27DE5866AF = {
 			isa = PBXGroup;
 			children = (
+				2FF0B769A52F86AD5EA10AB1 /* Firmwares */,
+				E61C4B4F21B443B6349C8B25 /* tutorial */,
 				9D53655685CE3714FF6A0253 /* FM1 */,
 				F8BFB4BF1C0A200EB193AD94 /* FM1UITests */,
 				3C6A08B272BE7AB20692EFEE /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		4D8528D611615CC7563C26E8 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				386F7587D17D811CBBA88AEF /* HostInstruments.swift */,
+				C032BB19A77C15DD2299768C /* MasterBus.swift */,
+				FF5E9C5853087F058318C547 /* PackageEngine.swift */,
+				D16A670BF32476A6FBC734CC /* PDSynth.swift */,
+				39AF4F3F1174F1F9BF191098 /* PkgArp.swift */,
+				57766E331279ED700CDB03AE /* PkgInstrument.swift */,
+				79577CFF27758EAA058E6513 /* PkgSequencer.swift */,
+				74D1711E8329D3DC8882FEC3 /* VASynth.swift */,
+			);
+			path = Audio;
 			sourceTree = "<group>";
 		};
 		9B35180C790C80270A45EBE6 /* UI */ = {
@@ -131,6 +189,8 @@
 				0248C86784AF3C606BC261FB /* PanelView.swift */,
 				606C1AC0584CCFA7691508E5 /* ScreenView.swift */,
 				7EBEB3921BB73FD5B6F50984 /* Theme.swift */,
+				3DC8FD513033F5C4E216FF7F /* TutorialBrowser.swift */,
+				4E96FC4B19532E48691A9F29 /* TutorialMode.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -140,10 +200,33 @@
 			children = (
 				18306374CC5A1268C355E3B1 /* App */,
 				C2E9A0B87B5012B2CE9D55B0 /* Engine */,
+				A39B0D3BDD4FA6A761645204 /* FirmwareHost */,
 				3F6923775A78CF4513A96821 /* Resources */,
 				9B35180C790C80270A45EBE6 /* UI */,
 			);
 			path = FM1;
+			sourceTree = "<group>";
+		};
+		A39B0D3BDD4FA6A761645204 /* FirmwareHost */ = {
+			isa = PBXGroup;
+			children = (
+				190C8801E905F2E866100FF0 /* Firmware.swift */,
+				866EBC1472A6D1F9D762E531 /* FirmwareCatalog.swift */,
+				1325FE4934B049E88763D3F0 /* SynthModel+Package.swift */,
+				4D8528D611615CC7563C26E8 /* Audio */,
+				F3FC27B3B5D9BF0E7BDB78C5 /* Script */,
+				B1C980DC623C1427CF2C560C /* UI */,
+			);
+			path = FirmwareHost;
+			sourceTree = "<group>";
+		};
+		B1C980DC623C1427CF2C560C /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				FC2AC389BC32BFED60A40C6C /* FirmwareMenuView.swift */,
+				6B0F9893DA44B050AE74E351 /* PackageScreenView.swift */,
+			);
+			path = UI;
 			sourceTree = "<group>";
 		};
 		B2CC708EAC067EA6E84A7541 /* Banks */ = {
@@ -172,10 +255,22 @@
 			path = Engine;
 			sourceTree = "<group>";
 		};
+		F3FC27B3B5D9BF0E7BDB78C5 /* Script */ = {
+			isa = PBXGroup;
+			children = (
+				72FB159A4B130AEEF461DB9B /* PackageHost.swift */,
+				9187682186F2555D1E6E7619 /* Prelude.swift */,
+			);
+			path = Script;
+			sourceTree = "<group>";
+		};
 		F8BFB4BF1C0A200EB193AD94 /* FM1UITests */ = {
 			isa = PBXGroup;
 			children = (
 				FFAE4550DDD51FFB68385A9A /* FirmwareMenuTests.swift */,
+				BBAD32D8F760E724131191F0 /* FirmwarePackageTests.swift */,
+				5A44131962A8BE7CE9C3BAED /* TutorialBrowserTests.swift */,
+				9611966F4C1C530B08E516CF /* TutorialModeTests.swift */,
 			);
 			path = FM1UITests;
 			sourceTree = "<group>";
@@ -270,9 +365,11 @@
 				B055E5B0F66F964FBC6E86C6 /* FM1_V15_factory_bank_B.syx in Resources */,
 				4369D1D1698A19D442567D05 /* FM1_V15_factory_bank_C.syx in Resources */,
 				F30CB2A7434E2C74E04FD7CB /* FM1_V15_factory_bank_D.syx in Resources */,
+				468D2ADFF239C2E4F5D9AC15 /* Firmwares in Resources */,
 				566D29ECA701A4F8DD80F7EB /* Nunito.ttf in Resources */,
 				62EB8A5F52651A6B5D9EF82D /* Orbitron.ttf in Resources */,
 				FAF25FF31B01E3717F6F573A /* ShareTech-Regular.ttf in Resources */,
+				8EF6B5E1BC74E0836203372A /* tutorial in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +381,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				3ED103508A78479658BA9647 /* FirmwareMenuTests.swift in Sources */,
+				0D3F2F9BAAC6D3C57CC4C57E /* FirmwarePackageTests.swift in Sources */,
+				4C76F50CD834D19815079A6F /* TutorialBrowserTests.swift in Sources */,
+				E1769FF6D301C45DC3F28CE5 /* TutorialModeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,15 +399,31 @@
 				C2220721645F1DE699C92156 /* FMEngine.swift in Sources */,
 				98C8041214DCA3EE6274B699 /* FMPatch.swift in Sources */,
 				A6310899F151A94D49E767CA /* FXChain.swift in Sources */,
-				6CCE5C54A86DF878502A5345 /* Firmware.swift in Sources */,
+				E88AD7ECDE219E062C56532D /* Firmware.swift in Sources */,
+				53B89F4FCECAEFB7ED7CA178 /* FirmwareCatalog.swift in Sources */,
+				5EE13F69DC2778693CC9CB97 /* FirmwareMenuView.swift in Sources */,
 				702BFA2271E0017AFB224755 /* GrooveScreenView.swift in Sources */,
 				9F2D3EB850300D2B17555CFB /* GrooveSeq.swift in Sources */,
+				ADD294089693AF509C7613A3 /* HostInstruments.swift in Sources */,
+				1424FDC623CDEE5667D4E7F6 /* MasterBus.swift in Sources */,
+				7FBC4BE5F58BE8D3E15AFE0D /* PDSynth.swift in Sources */,
+				F0278DAF1397A469CEEF5921 /* PackageEngine.swift in Sources */,
+				440F5AF68870519D54A25700 /* PackageHost.swift in Sources */,
+				879D5E4DB5D80C1D7DC5053B /* PackageScreenView.swift in Sources */,
 				1F95CA4629A73A55429B7B73 /* PanelComponents.swift in Sources */,
 				391BA8E0E78A2B6413378EC6 /* PanelView.swift in Sources */,
+				638118931F6957C415CAF7CD /* PkgArp.swift in Sources */,
+				553AE540E0907976AA61C142 /* PkgInstrument.swift in Sources */,
+				EA9BD9B919BC71AB6D31E7C5 /* PkgSequencer.swift in Sources */,
+				4B853A9A8B129069EF2FDB8A /* Prelude.swift in Sources */,
 				AF9219A623DF2BD9E20E1780 /* ScreenView.swift in Sources */,
 				E65A73134E14D1E3A9449C44 /* SynthModel+Groove.swift in Sources */,
+				0A2D6505B27E07AABBD90BEB /* SynthModel+Package.swift in Sources */,
 				6A77E4004B46E1F0F9067895 /* SynthModel.swift in Sources */,
 				4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */,
+				1ED810AD45EB1E1CC8C6B02D /* TutorialBrowser.swift in Sources */,
+				4805EB60F98126FBEE10AA0C /* TutorialMode.swift in Sources */,
+				825B88DA660EC67DDB926A0F /* VASynth.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

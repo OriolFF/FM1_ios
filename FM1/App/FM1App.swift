@@ -27,8 +27,10 @@ struct ContentView: View {
     @State private var exporting = false
     @State private var exportBank = 0
     @State private var showHelp = false
+    @State private var showWebTutorial = false
     /// Full-screen mode: no case, no toolbar — the iPad is the device.
     @AppStorage("fullScreenPanel") private var fullScreen = false
+    @AppStorage(TutorialSettings.key) private var tutorialMode = false
 
     var body: some View {
         GeometryReader { geo in
@@ -78,6 +80,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showHelp) { HelpView() }
         .sheet(isPresented: $model.showFirmware) { FirmwareView(model: model) }
+        .fullScreenCover(isPresented: $showWebTutorial) { TutorialBrowser() }
     }
 
     private var backdrop: some View {
@@ -118,6 +121,18 @@ struct ContentView: View {
                 .background(Capsule().fill(Color.white.opacity(0.08)))
             }
             .accessibilityLabel("Firmware")
+            Button { tutorialMode.toggle() } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: tutorialMode ? "graduationcap.fill" : "graduationcap").font(.system(size: 16, weight: .medium))
+                    Text("TUTORIAL").font(PanelFont.silkscreen(12))
+                }
+                .foregroundStyle(tutorialMode ? Color(hex: 0x2a2000) : .white.opacity(0.75))
+                .padding(.horizontal, 10).frame(height: 32)
+                .background(Capsule().fill(tutorialMode ? Color(hex: 0xffc83d) : Color.white.opacity(0.08)))
+            }
+            .accessibilityLabel("Tutorial mode")
+            .accessibilityValue(tutorialMode ? "On" : "Off")
+            .accessibilityIdentifier("tutorial.toggle")
             Button { fullScreen = true } label: {
                 Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.white.opacity(0.75))
@@ -148,6 +163,7 @@ struct ContentView: View {
                     }
                 }
                 Button { showHelp = true } label: { Label("Controls", systemImage: "questionmark.circle") }
+                Toggle(isOn: $tutorialMode) { Label("Tutorial Mode", systemImage: "graduationcap") }
                 Button { model.showFirmware = true } label: { Label("Firmware… (\(model.firmware.name))", systemImage: "cpu") }
                 Divider()
             } else {
@@ -155,6 +171,8 @@ struct ContentView: View {
                 Button { model.showFirmware = true } label: { Label("Firmware… (\(model.firmware.name))", systemImage: "cpu") }
                 Divider()
             }
+            Button { showWebTutorial = true } label: { Label("FM-1 Tutorial (web guide)", systemImage: "book") }
+            Divider()
             Button { importing = true } label: { Label("Import SysEx (.syx)…", systemImage: "square.and.arrow.down") }
                 Menu("Export Bank") {
                     ForEach(0..<4, id: \.self) { b in
@@ -167,6 +185,7 @@ struct ContentView: View {
                 Button { model.showBluetooth = true } label: { Label("Bluetooth MIDI…", systemImage: "dot.radiowaves.left.and.right") }
                 Button(role: .destructive) { model.engine.panic() } label: { Label("Panic (all notes off)", systemImage: "exclamationmark.octagon") }
         } label: { label() }
+        .accessibilityIdentifier("options.menu")
     }
 }
 
@@ -206,7 +225,7 @@ struct HelpView: View {
         ("SAVE", "Hold to save the current preset"),
         ("ARP / SEQ", "Arpeggiator / 16-step sequencer (white keys show steps)"),
         ("PLAY/STOP · REC", "Sequencer transport and step recording · hold PLAY = panic"),
-        ("FIRMWARE", "Toolbar Firmware chip: switch between FM-1 Stock V15 (original) and FM Pocket Groove. In Groove, SEQ opens the groovebox: synth track + 11-lane 808-style drums, 8 patterns × 64 steps"),
+        ("FIRMWARE", "Toolbar Firmware chip: switch between FM-1 Stock V15 (original), FM Pocket Groove and the package firmwares (SLOOP, Felucca, Melodee). Install more packages from a URL or the Files app in the same menu, no rebuild needed. In Groove, SEQ opens the groovebox: synth track + 11-lane 808-style drums, 8 patterns × 64 steps"),
         ("Groove · steps", "White keys = 16 steps (tap to toggle) · OCT−/OCT+ = step page · black keys = drum lane · SEL = synth/drum track"),
         ("Groove · hold a step", "K1–K4: note/velocity, velocity/chance, chance/ratchet … · SELECT = gate/TIE · ALGORITHM = lock parameter · PRESETS = lock value"),
         ("Groove · pages", "SELECT: Pattern (pattern, length, tempo, swing) · Euclid (hits, steps, rotate, velocity) · Kit (level, tune, decay, tone) · Tools (clear, copy, density fill, drum level)"),
@@ -224,74 +243,5 @@ struct HelpView: View {
             .navigationTitle("Controls")
             .toolbar { Button("Done") { dismiss() } }
         }
-    }
-}
-
-
-/// Firmware updater: pick which ported firmware the panel runs.
-struct FirmwareView: View {
-    @ObservedObject var model: SynthModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var selected: Firmware? = nil
-
-    var body: some View {
-        let choice = selected ?? model.firmware
-        NavigationStack {
-            List {
-                Section {
-                    ForEach(Firmware.allCases) { fw in
-                        Button { selected = fw } label: {
-                            HStack(alignment: .top, spacing: 14) {
-                                Image(systemName: fw == choice ? "largecircle.fill.circle" : "circle")
-                                    .font(.title2)
-                                    .foregroundStyle(fw == choice ? Color.accentColor : .secondary)
-                                VStack(alignment: .leading, spacing: 5) {
-                                    HStack {
-                                        Text(fw.name).font(.headline)
-                                        Text(fw.version).font(.subheadline.monospaced()).foregroundStyle(.secondary)
-                                        if fw.isStock { badge("ORIGINAL", .blue) }
-                                        if fw == model.firmware { badge("INSTALLED", .green) }
-                                    }
-                                    Text(fw.summary).font(.subheadline).foregroundStyle(.primary.opacity(0.85))
-                                    Text(fw.credits).font(.caption).foregroundStyle(.secondary)
-                                }
-                                Spacer(minLength: 0)
-                            }
-                            .padding(.vertical, 6)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                } footer: {
-                    Text("Switching firmware stops playback and reboots the panel. Presets, sequencer patterns and global settings are kept. Choose FM-1 Stock V15 to restore the original firmware.")
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                Button {
-                    let fw = choice
-                    dismiss()
-                    // start flashing once the sheet has gone
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(450))
-                        model.installFirmware(fw)
-                    }
-                } label: {
-                    Text(choice == model.firmware ? "\(choice.name) is installed" : "Install \(choice.name) \(choice.version)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(choice == model.firmware)
-                .padding()
-                .background(.bar)
-            }
-            .navigationTitle("Firmware")
-            .toolbar { Button("Cancel") { dismiss() } }
-        }
-    }
-
-    private func badge(_ t: String, _ c: Color) -> some View {
-        Text(t).font(.caption2.bold()).padding(.horizontal, 6).padding(.vertical, 2).background(Capsule().fill(c.opacity(0.25)))
     }
 }

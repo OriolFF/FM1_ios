@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "id": "felucca",
+  "name": "Felucca",
+  "version": "1.8.1-p1",
+  "bootTitle": "FELUCCA",
+  "summary": "Multi-engine synth and sequencer: four tracks (ANALOG, FM6, PHASE, DRUM) with 64-step patterns in project slots A–D, piano roll and drum grid, DETAIL lanes (chance, ratchet, nudge, velocity), parameter locks and an AUTOMATION list, SEQ TOOLS (random, cook, euclid, double, half…), songs of 16 sections, scale keyboard, MOMENTARY (hold LFO), quick layers (hold or double-tap).",
+  "credits": "After Felucca 1.8.1 by Leo Kuroshita / Hügelton Instruments (github.com/hugelton/Felucca). Re-implemented from its wiki manual; no Felucca code. Runs on FM Pocket's built-in engines.",
+  "license": "Package: original work. Felucca itself is GPL-3.0-only (engines MIT, BSP MPL-2.0); not copied.",
+  "source": "https://github.com/hugelton/Felucca",
+  "runtime": "script",
+  "scripts": ["lib.js", "main.js"],
+  "engine": {
+    "instruments": [
+      {"id": "t1", "type": "va", "voices": 4},
+      {"id": "t2", "type": "fm"},
+      {"id": "t3", "type": "pd", "voices": 4},
+      {"id": "drums", "type": "drums"}
+    ],
+    "sequencer": {
+      "patterns": 4,
+      "tracks": [
+        {"id": "t1", "instrument": "t1"},
+        {"id": "t2", "instrument": "t2"},
+        {"id": "t3", "instrument": "t3"},
+        {"id": "dr", "instrument": "drums", "lanes": 11}
+      ]
+    }
+  }
+}

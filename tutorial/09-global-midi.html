@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>GLO, MIDI, Bluetooth, updates · FM-1 Tutorial</title>
+<meta name="description" content="Global settings, MIDI, firmware update">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html" aria-current="page"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>9. GLO, MIDI, Bluetooth, updates</h1><p class="lede">Global settings, MIDI, firmware update</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#glo">GLO page 1: MIDI &amp; Pitch</a></li><li><a href="#glo2">GLO page 2: System</a></li><li><a href="#glide">Glide</a></li><li><a href="#midi">MIDI</a></li><li><a href="#bt">Bluetooth</a></li><li><a href="#cc">Effect CC chart</a></li><li><a href="#fw">Firmware update</a></li><li><a href="#power">Battery and speaker</a></li></ul></div>
+
+<h2 id="glo">GLO page 1: MIDI &amp; Pitch</h2>
+<p>Press <kbd>GLO</kbd>. These settings belong to the instrument, not to a voice. The screen title reads “Global” (or “Globe”).</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/2 Global","tiles":[["MIDI Ch","ALL"],["Effect Ch","2"],["Bend Up","2"],["Bend Down","2"]]}'></div></div>
+<div class="table-wrap"><table>
+<tr><th>Knob</th><th>Setting</th><th>Range</th><th>Meaning</th></tr>
+<tr><td>K1</td><td>MIDI Ch</td><td>ALL, 1–16</td><td>Which channel the FM-1 listens to for notes, pitch bend and program changes. ALL listens to every channel (omni). Called “Note Channel” before V13.</td></tr>
+<tr><td>K2</td><td>Effect Ch</td><td>1–16</td><td>The channel on which MIDI CC messages control the effects. Default 2. There is no ALL.</td></tr>
+<tr><td>K3</td><td>Bend Up</td><td>1–24</td><td>Maximum upward pitch bend, in semitones.</td></tr>
+<tr><td>K4</td><td>Bend Down</td><td>1–24</td><td>Maximum downward pitch bend, in semitones.</td></tr>
+</table></div>
+<div class="callout warn"><strong>Mod wheel conflict</strong><p>A MIDI CC1 (mod wheel) message sent on the <em>effect</em> channel (default 2) does not move the LFO: it changes the Filter Type. Send your keyboard’s mod wheel on another channel, or change Effect Ch.</p></div>
+
+<h2 id="glo2">GLO page 2: System</h2>
+<p>Turn <kbd>SELECT</kbd> clockwise.</p>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"2/2 Global","tiles":[["Reset","Patches"],["Velocity","100"],["Glide Mode","Full Time"],["Glide Val","0"]]}'></div></div>
+<div class="table-wrap"><table>
+<tr><th>Knob</th><th>Setting</th><th>Range</th><th>Meaning</th></tr>
+<tr><td>K1</td><td>Reset Patches</td><td>—</td><td>Clockwise opens a bank-restore dialog; see <a href="04-voices.html#reset">Voices</a>.</td></tr>
+<tr><td>K2</td><td>Velocity</td><td>1–127</td><td>Fixed velocity for the on-board keys (V13+). Lower = softer for operators that respond to velocity.</td></tr>
+<tr><td>K3</td><td>Glide Mode</td><td>Full Time / Fingered</td><td>When glide applies (below).</td></tr>
+<tr><td>K4</td><td>Glide Val</td><td>0–100</td><td>Glide time, 0 to about 1 second.</td></tr>
+</table></div>
+
+<h2 id="glide">Glide (portamento)</h2>
+<p>Glide makes the pitch slide from one note to the next instead of jumping. It <strong>only works in MONO</strong> (<a href="02-playing.html#monopoly">switch with EDIT → MONO</a>).</p>
+<ul>
+<li><strong>Full Time</strong>: every new note glides from the previous one.</li>
+<li><strong>Fingered</strong>: it glides only when you play legato, i.e. press the new key while still holding the old one.</li>
+<li><strong>Glide Val</strong>: 0 = no glide, 100 = about one second.</li>
+</ul>
+
+<h2 id="midi">MIDI</h2>
+<p>The FM-1 has three MIDI inputs that all work at the same time: <strong>USB</strong> (appears as a standard USB MIDI device), <strong>Bluetooth LE MIDI</strong>, and the <strong>3.5 mm TRS MIDI IN</strong> (31,250 baud). Notes you play, the arpeggiator and the sequencer are sent out over USB and Bluetooth, so the FM-1 can also be a MIDI keyboard.</p>
+<h3>What it understands</h3>
+<div class="table-wrap"><table>
+<tr><th>Message</th><th>Effect</th></tr>
+<tr><td>Note On / Note Off</td><td>Plays notes. Note On with velocity 0 counts as Note Off.</td></tr>
+<tr><td>Program Change 0–127</td><td>Selects voice 001–128</td></tr>
+<tr><td>Pitch Bend</td><td>Bend, within the GLO Bend Up/Down range</td></tr>
+<tr><td>Channel Aftertouch</td><td>Listed as “channel aftertouch”</td></tr>
+<tr><td>CC 1 (mod wheel)</td><td>Listed as “modulation”; only on the MIDI Ch channel</td></tr>
+<tr><td>CC 64 (sustain)</td><td>Sustain pedal</td></tr>
+<tr><td>CC 0–23 on Effect Ch</td><td>Effect controls (chart below)</td></tr>
+<tr><td>Clock (F8), Start (FA), Continue (FB), Stop (FC)</td><td>Used when ARP or SEQ Sync is on. Continue acts as Start.</td></tr>
+<tr><td>System Exclusive</td><td>DX7 32-voice bank (import to A/B/C/D), DX7 single voice, DX7 parameter changes</td></tr>
+</table></div>
+<div class="callout unk"><strong>Aftertouch and mod wheel</strong><p>The official MIDI guide lists “Modulation” and “Channel aftertouch” but does not say which parameter they control. In a DX7-style engine they drive the LFO’s pitch and amplitude depth; that is not confirmed for the FM-1.</p></div>
+
+<h2 id="bt">Bluetooth</h2>
+<ol class="steps">
+<li><p><strong>Long-press <kbd>HOME</kbd></strong> to switch Bluetooth on. Do the same to switch it off.</p><figure><div data-panel='home:1' data-opt='{}'></div></figure></li>
+<li><p>Read the HOME LED: <strong>blinking</strong> = on, waiting for a connection; <strong>solid</strong> = connected; <strong>off</strong> = Bluetooth is off.</p></li>
+<li><p>On the other device, connect to the FM-1 as a <strong>Bluetooth MIDI</strong> device from inside a MIDI app (on iPad: the app’s Bluetooth MIDI menu; on Mac: Audio MIDI Setup → Bluetooth).</p></li>
+</ol>
+<div class="callout unk"><strong>The name it advertises</strong><p>Not documented. Look for the model name in your app’s Bluetooth MIDI list.</p></div>
+
+<h2 id="cc">Effect channel CC chart (V15)</h2>
+<p>On the <strong>Effect Ch</strong> channel, CCs 0–23 control the effects. Values above the maximum are clamped.</p>
+<div class="table-wrap"><table>
+<tr><th>Effect</th><th>On/Off</th><th>Param 1</th><th>Param 2</th><th>Param 3</th></tr>
+<tr><td>Filter</td><td>CC 0</td><td>CC 1 Type (0 LP, 1 BP, 2 HP)</td><td>CC 2 Cutoff 0–107</td><td>CC 3 Q 0–10</td></tr>
+<tr><td>Reverb</td><td>CC 4</td><td>CC 5 Type (0 Room, 1 Hall, 2 Plate)</td><td>CC 6 Decay 0–100</td><td>CC 7 Mix 0–100</td></tr>
+<tr><td>Delay</td><td>CC 8</td><td>CC 9 Decay</td><td>CC 10 Rate</td><td>CC 11 Mix</td></tr>
+<tr><td>Distortion</td><td>CC 12</td><td>CC 13 Gain</td><td>CC 14 Tone</td><td>CC 15 Level</td></tr>
+<tr><td>Chorus</td><td>CC 16</td><td>CC 17 Freq</td><td>CC 18 Depth</td><td>CC 19 Mix</td></tr>
+<tr><td>Phaser</td><td>CC 20</td><td>CC 21 Freq</td><td>CC 22 Depth</td><td>CC 23 Mix</td></tr>
+</table></div>
+<p>On/Off: 0 = off, 1 or higher = on. Delay, Distortion, Chorus and Phaser values are 0–100.</p>
+<div class="callout"><strong>Careful: CC 7 is Reverb Mix here, not volume</strong><p>On the effect channel, CC 7 does not control volume.</p></div>
+
+<h2 id="fw">Firmware update</h2>
+<p>M-VAVE publishes firmware on its <a href="https://www.m-vave.com/download.html" rel="noopener">download page</a>, and updates are installed from a computer with M-VAVE’s updater (<em>M-UPGRADE</em>, for Windows and Mac). What the official pages tell us:</p>
+<ul>
+<li>The page says that if the upgrade reports <em>“Failed to enter upgrade mode!”</em>, keep the upgrade software open, unplug and re-plug the USB cable, then continue.</li>
+<li>Every firmware has release notes (V09, V13, V15 and V16 exist). V13’s notes say it is delivered as a “major update”, which updates the whole firmware.</li>
+<li>V15 is the version this guide covers. V16 (October 2026) is a bigger change: multitimbral, a new FX system, a SAVE menu, a new MIDI map.</li>
+</ul>
+<div class="callout unk"><strong>The actual steps are not documented</strong><p>We could not find an official step-by-step for the FM-1 (for example, whether a button must be held at power-up) in the manual or on M-VAVE’s pages. Follow the instructions that come with the updater download. Back up any voices you care about first; stock V15 cannot export them.</p></div>
+<div class="callout warn"><strong>Going to V16 changes this guide</strong><p>The panel basics stay the same, but the effects, SAVE, sequencer, GLO and MIDI pages differ in V16. This guide is about V15.</p></div>
+
+<h2 id="power">Battery and speaker</h2>
+<ul>
+<li>The battery icon is at the top right of the screen. A full-screen <code>LOW BATTERY</code> warning appears when it is critically low and stays until you charge (USB-C) or power off.</li>
+<li>The built-in speaker is for monitoring; plugging headphones into the audio jack mutes it.</li>
+</ul>
+
+<div class="pager"><a class="prev" href="08-arp-seq.html"><small>← Previous</small>Arpeggiator and sequencer</a><a class="next" href="10-exercises.html"><small>Next →</small>Build these sounds</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

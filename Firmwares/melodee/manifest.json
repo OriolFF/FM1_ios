@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "id": "melodee",
+  "name": "Melodee",
+  "version": "1.6.1-p1",
+  "bootTitle": "MELODEE",
+  "summary": "Song-centric synth and sequencer: Prophet-style poly, FM6, CZ-1-style phase distortion and a drum kit on four coloured tracks, 16 patterns each. Stage with every track's lane, chord wheel, sound browser by category, NOTES piano roll, PATTERNS grid (hold SEQ), SONG sections with jam-to-song, REC that waits for the loop, Capture (hold REC), AUTO / AUTO2 chords, eight palettes.",
+  "credits": "After Melodee 1.6.1 by Ellic Studio / Kerem Kilic (github.com/keremimo/melodee), itself based on Felucca. Re-implemented from its README and manual; no Melodee code and no third-party preset banks. Runs on FM Pocket's built-in engines.",
+  "license": "Package: original work. Melodee itself is GPL-3.0-only (not copied).",
+  "source": "https://github.com/keremimo/melodee",
+  "runtime": "script",
+  "scripts": ["lib.js", "main.js"],
+  "engine": {
+    "instruments": [
+      {"id": "t1", "type": "va", "voices": 8},
+      {"id": "t2", "type": "fm"},
+      {"id": "t3", "type": "pd", "voices": 6},
+      {"id": "drums", "type": "drums"}
+    ],
+    "sequencer": {
+      "patterns": 16,
+      "tracks": [
+        {"id": "t1", "instrument": "t1"},
+        {"id": "t2", "instrument": "t2"},
+        {"id": "t3", "instrument": "t3"},
+        {"id": "dr", "instrument": "drums", "lanes": 11}
+      ]
+    }
+  }
+}

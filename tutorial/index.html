@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Start here · FM-1 Tutorial</title>
+<meta name="description" content="What the FM-1 is and how to use this guide">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html" aria-current="page"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<h1>The M-VAVE FM-1, step by step</h1>
+<p class="lede">A hands-on guide to the pocket FM synthesizer: every knob, every button, every screen, written for a musician who has never programmed an FM synth.</p>
+
+<div class="pair wide">
+<div class="txt">
+<p>The FM-1 is a small battery-powered synthesizer with 27 keys, a tiny colour screen, seven endless knobs and a volume knob. Inside is a six-operator FM engine of the kind made famous by the Yamaha DX7, with 32 algorithms, 128 voice memories (called <em>presets</em> on the panel and in the manual, <em>voices</em> in DX7 language), six effects, an arpeggiator and a 16-pattern step sequencer.</p>
+<p>The screen is small and the buttons do many things, so the instrument looks harder than it is. Almost everything follows one pattern: <strong>press a mode button, turn <kbd>SELECT</kbd> to flip pages, turn <kbd>KNOB 1–4</kbd> to change the four values on screen.</strong></p>
+</div>
+<figure><div data-panel='select:1,k1:2,k2:2,k3:2,k4:2,screen:3,fx:4,home:4' data-opt='{"alt":"FM-1 panel showing SELECT, the four knobs, the screen and the mode buttons"}'></div></figure>
+</div>
+<ol class="callouts-list">
+<li><strong>SELECT</strong> flips pages.</li>
+<li><strong>KNOB 1–4</strong> change the four values on screen, top-left to bottom-right.</li>
+<li><strong>The screen</strong> names each value and shows what it is set to.</li>
+<li><strong>Mode buttons</strong> (FX, ENV, LFO, EDIT, GLO, ARP, SEQ…) decide what the knobs do. <kbd>HOME</kbd> always takes you back.</li>
+</ol>
+
+<div class="callout"><strong>Which firmware does this guide cover?</strong>
+<p>The stock M-VAVE firmware, <strong>version V15</strong> (released 30 July 2026): one voice at a time, 12-note polyphony, a 16-step sequencer. It does <em>not</em> cover the later V16 (multitimbral) firmware, the open <em>FM1 Open</em> groovebox firmware, or any third-party firmware. Where V14 and V15 differ, a blue note like this one says so.</p></div>
+
+<h2>Where to go</h2>
+<ul class="cards">
+<li><a href="01-panel.html"><b>1. Meet the panel</b><span>Every control, the screen layout, LEDs and popups.</span></a></li>
+<li><a href="02-playing.html"><b>2. Playing and octaves</b><span>Keys, octave, transpose, mono and poly.</span></a></li>
+<li><a href="03-fm-primer.html"><b>3. FM synthesis in 10 minutes</b><span>Operators, carriers, modulators, algorithms, feedback, envelopes.</span></a></li>
+<li><a href="04-voices.html"><b>4. Voices</b><span>Choose, save, init, rename, copy, import DX7 banks.</span></a></li>
+<li><a href="05-edit.html"><b>5. EDIT</b><span>Algorithm, six operators, pitch envelope, voice common, mono/poly.</span></a></li>
+<li><a href="06-lfo-env.html"><b>6. LFO and ENV</b><span>Vibrato, tremolo, a global ADSR.</span></a></li>
+<li><a href="07-effects.html"><b>7. Effects</b><span>Filter, reverb, delay, distortion, chorus, phaser, and their order.</span></a></li>
+<li><a href="08-arp-seq.html"><b>8. ARP and SEQ</b><span>Arpeggiator modes, 16-step recording, chains.</span></a></li>
+<li><a href="09-global-midi.html"><b>9. GLO, MIDI, updates</b><span>Global settings, USB/Bluetooth/TRS MIDI, firmware.</span></a></li>
+<li><a href="10-exercises.html"><b>10. Build these sounds</b><span>Five guided exercises.</span></a></li>
+<li><a href="11-reference.html"><b>11. Reference</b><span>All 32 algorithms, the 128 factory voices, glossary, open questions.</span></a></li>
+</ul>
+
+<h2>How to read the pictures</h2>
+<div class="pair">
+<div class="txt"><p>Each step shows a redrawn <strong>screen mock-up</strong>. The four tiles carry small <code>K1</code>–<code>K4</code> badges telling you which knob changes which tile. The footer bar (like <code>1/6 OP1 Tuning</code>) is the page indicator: page 1 of 6.</p>
+<p>On the <strong>panel drawings</strong>, orange rings with numbers show which control to touch, in order.</p>
+<p>The numbers on the mock-ups are examples, not factory settings.</p></div>
+<div class='tft-wrap'><div data-tft='{"hdr":"001 PIANO 1","foot":"1/6 OP1 Tuning","tiles":[["Detune","0"],["FreqCoarse","1"],["FreqFine","0"],["OutLevel","99"]],"hot":[4]}'></div></div>
+</div>
+
+<div class="callout unk"><strong>What this guide could not confirm</strong>
+<p>A few details are not written down anywhere we could find: for example the exact firmware-update button sequence and the full list of arpeggiator rates. Purple boxes like this one mark those places, and <a href="11-reference.html#unknowns">the reference page</a> collects them all.</p></div>
+
+<div class="callout warn"><strong>A note on the pictures</strong>
+<p>All diagrams and screens are redrawn from the manual's page tables. They are close to the real screen but not photographs, and exact fonts and colours differ slightly.</p></div>
+
+<div class="pager"><span></span><a class="next" href="01-panel.html"><small>Next →</small>Meet the panel</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>

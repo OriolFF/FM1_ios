@@ -32,12 +32,29 @@ Apache-2.0 recovery image in github.com/m-vave/fm1_open).
 
 Research notes and reference photos used for the recreation are in `research/`.
 
-## Firmware menu
+## Firmware menu and firmware packages
 
-Toolbar **Firmware** chip (or ⋯ → Firmware… in full-screen mode) lists the ported firmwares, like the
-hardware updater: **FM-1 Stock V15** (original — always available to restore) and **FM Pocket Groove G1.0**.
-Installing shows a flashing progress screen on the TFT and reboots the panel; presets, patterns and globals
-are kept. Add new ports in `FM1/App/Firmware.swift`.
+The toolbar **Firmware** chip (or ⋯ → Firmware… in full-screen mode) works like the hardware
+updater. It lists:
+
+* **FM-1 Stock V15**, the original firmware, always available to restore;
+* **FM Pocket Groove**;
+* the package firmwares **SLOOP**, **Felucca** and **Melodee**, ports of the three most used
+  community firmwares (see `research/FIRMWARES.md`).
+
+Installing shows a flashing progress screen on the TFT and reboots the panel. Presets, patterns
+and globals are kept.
+
+You can install more firmwares **without rebuilding the app**: **Install from URL…** takes a
+`.fm1fw` bundle or a `manifest.json`, and **Install from Files…** takes a local file. A
+package is data plus JavaScript (run in JavaScriptCore) that drives the app's native sound
+blocks. It never contains native code.
+
+| Area | Where |
+|---|---|
+| Packages (one folder each), the format documentation and the pack tool | `Firmwares/` (start with `Firmwares/README.md`) |
+| Host: catalog and installer, script runtime, screen renderer, menu | `FM1/FirmwareHost/` |
+| Native blocks for packages: VA and phase-distortion synths, master bus and punch FX, step sequencer | `FM1/FirmwareHost/Audio/` |
 
 ## Groove firmware (groovebox)
 

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Reference · FM-1 Tutorial</title>
+<meta name="description" content="All 32 algorithms, factory voices, glossary, unknowns">
+<link rel="stylesheet" href="style.css">
+<script src="fm1.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site"><div class="bar">
+<a class="brand" href="index.html">FM-1 Tutorial</a>
+<button class="btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav">Contents ☰</button>
+<button class="btn" id="theme-btn" aria-label="Toggle light or dark mode">◐ Theme</button>
+<nav class="main" id="main-nav" aria-label="Tutorial contents"><ol><li><a href="index.html"><span class="n">★</span>Start here</a></li><li><a href="01-panel.html"><span class="n">1</span>Meet the panel</a></li><li><a href="02-playing.html"><span class="n">2</span>Playing and octaves</a></li><li><a href="03-fm-primer.html"><span class="n">3</span>FM synthesis in 10 minutes</a></li><li><a href="04-voices.html"><span class="n">4</span>Voices: choose, save, manage</a></li><li><a href="05-edit.html"><span class="n">5</span>EDIT: shaping a voice</a></li><li><a href="06-lfo-env.html"><span class="n">6</span>LFO and the ENV button</a></li><li><a href="07-effects.html"><span class="n">7</span>Effects chain</a></li><li><a href="08-arp-seq.html"><span class="n">8</span>Arpeggiator and sequencer</a></li><li><a href="09-global-midi.html"><span class="n">9</span>GLO, MIDI, Bluetooth, updates</a></li><li><a href="10-exercises.html"><span class="n">10</span>Build these sounds</a></li><li><a href="11-reference.html" aria-current="page"><span class="n">11</span>Reference</a></li></ol></nav>
+</div></header>
+<main id="content">
+<h1>11. Reference</h1><p class="lede">All 32 algorithms, factory voices, glossary, unknowns</p>
+<noscript><div class="callout warn"><strong>JavaScript is off.</strong><p>The screen mock-ups and diagrams in this guide are drawn by a small script. The text still works without it.</p></div></noscript>
+<div class="toc"><strong>On this page</strong><ul><li><a href="#cheat">Control cheat sheet</a></li><li><a href="#pages">All parameter pages</a></li><li><a href="#algorithms">The 32 algorithms</a></li><li><a href="#factory">Factory voices</a></li><li><a href="#glossary">Glossary</a></li><li><a href="#trouble">Troubleshooting</a></li><li><a href="#history">Firmware history</a></li><li><a href="#unknowns">What we could not confirm</a></li></ul></div>
+
+<h2 id="cheat">Control cheat sheet</h2>
+<div class="table-wrap"><table>
+<tr><th>I want to…</th><th>Do this</th></tr>
+<tr><td>Change voice</td><td>Turn PRESETS</td></tr>
+<tr><td>Change algorithm</td><td>Turn ALGORITHM</td></tr>
+<tr><td>Octave up / down</td><td>OCT+ / OCT−. Both = reset</td></tr>
+<tr><td>Transpose ±12</td><td>Hold OCT+ or OCT− and turn ALGORITHM</td></tr>
+<tr><td>Edit an operator</td><td>EDIT → black key OP1–OP6 → SELECT pages → K1–K4</td></tr>
+<tr><td>Mute an operator</td><td>EDIT → long-press its OP key</td></tr>
+<tr><td>Mono / poly</td><td>EDIT → MONO / POLY black key</td></tr>
+<tr><td>Rename / copy / init a voice</td><td>EDIT → GLO black key → page 2 → K2 / K3 / K1</td></tr>
+<tr><td>Vibrato</td><td>LFO: PMD up and Pitch Sens (page 2) up</td></tr>
+<tr><td>Global ADSR</td><td>ENV (toggle)</td></tr>
+<tr><td>Effects on/off</td><td>FX → select with SELECT → K4</td></tr>
+<tr><td>Reorder effects</td><td>FX → SEL → turn SELECT → SEL</td></tr>
+<tr><td>Save</td><td>Hold SAVE</td></tr>
+<tr><td>Bluetooth on/off</td><td>Hold HOME</td></tr>
+<tr><td>Return to Home</td><td>HOME</td></tr>
+<tr><td>Arpeggiator</td><td>ARP, then hold keys</td></tr>
+<tr><td>Record a sequence</td><td>SEQ → REC → play notes → REC → PLAY/STOP</td></tr>
+</table></div>
+
+<h2 id="pages">All parameter pages</h2>
+<div class="table-wrap"><table>
+<tr><th>Mode</th><th>Page</th><th>K1</th><th>K2</th><th>K3</th><th>K4</th></tr>
+<tr><td rowspan="6">EDIT → OP1–6</td><td>1 Tuning</td><td>Detune −7…7</td><td>FreqCoarse 0–31</td><td>FreqFine 0–99</td><td>OutLevel 0–99</td></tr>
+<tr><td>2 Envelope</td><td>Rate 1</td><td>Rate 2</td><td>Rate 3</td><td>Rate 4 (0–99)</td></tr>
+<tr><td>3 Env Level</td><td>Level 1</td><td>Level 2</td><td>Level 3</td><td>Level 4 (0–99)</td></tr>
+<tr><td>4 Sens</td><td>AmpMod 0–3</td><td>Key Velo 0–7</td><td>OscMode Ratio/Fixed</td><td>–</td></tr>
+<tr><td>5 Scaling</td><td>L Depth 0–99</td><td>R Depth 0–99</td><td>BreakPoint A-1…C7</td><td>–</td></tr>
+<tr><td>6 Curves</td><td>L Curve</td><td>R Curve</td><td>RateScale 0–7</td><td>–</td></tr>
+<tr><td rowspan="2">EDIT → PIT</td><td>1 Rate</td><td>Rate 1</td><td>Rate 2</td><td>Rate 3</td><td>Rate 4</td></tr>
+<tr><td>2 Level</td><td>Level 1</td><td>Level 2</td><td>Level 3</td><td>Level 4</td></tr>
+<tr><td rowspan="2">EDIT → GLO</td><td>1</td><td>Algorithm 1–32</td><td>Feedback 0–7</td><td>Osc Sync On/Off</td><td>Transpose 0–48</td></tr>
+<tr><td>2</td><td>Init Voice</td><td>Rename</td><td>Copy Voice</td><td>source (in Copy)</td></tr>
+<tr><td rowspan="2">LFO</td><td>1</td><td>Wave</td><td>Speed 0–99</td><td>PMD 0–99</td><td>AMD 0–99</td></tr>
+<tr><td>2</td><td>Delay 0–99</td><td>Pitch Sens 0–7</td><td>Key Sync</td><td>Osc Sync</td></tr>
+<tr><td>ENV</td><td>1</td><td>Attack 0–100%</td><td>Decay 0–100%</td><td>Sustain 0–100%</td><td>Release 0–100%</td></tr>
+<tr><td rowspan="2">GLO button</td><td>1</td><td>MIDI Ch ALL/1–16</td><td>Effect Ch 1–16</td><td>Bend Up 1–24</td><td>Bend Down 1–24</td></tr>
+<tr><td>2</td><td>Reset Patches</td><td>Velocity 1–127</td><td>Glide Mode</td><td>Glide Val 0–100</td></tr>
+<tr><td rowspan="2">ARP</td><td>1</td><td>Mode</td><td>Octave 1–4</td><td>Rate</td><td>Tempo 30–300</td></tr>
+<tr><td>2</td><td>Gate 20–100%</td><td>Swing 50–75%</td><td>Latch</td><td>Sync</td></tr>
+<tr><td rowspan="3">SEQ</td><td>1</td><td>Pattern 1–16</td><td>Clear</td><td>Chain 1–16</td><td>Step 1–16</td></tr>
+<tr><td>2</td><td>Voice 1–128</td><td>Rate</td><td>Tempo 30–300</td><td>Gate 20–100%</td></tr>
+<tr><td>3</td><td>Swing 50–75%</td><td>Sync</td><td>Transpose −24…24</td><td>–</td></tr>
+<tr><td>FX</td><td>per effect</td><td colspan="4">See <a href="07-effects.html#fx">page 7</a>. K4 is always On/Off.</td></tr>
+</table></div>
+
+<h2 id="algorithms">The 32 algorithms</h2>
+<p>Yellow boxes are <strong>carriers</strong> (heard), blue boxes are <strong>modulators</strong>. A line from one operator down to another means “modulates”. A red arrow is feedback: on a single operator it means it modulates itself; in algorithms 4 and 6 the feedback loop runs from a higher operator back to a lower one.</p>
+<div class="legend"><span><i style="background:#ffd36a"></i>carrier</span><span><i style="background:#78eef5"></i>modulator</span><span><i style="background:none;border-color:#d75f51"></i>feedback</span></div>
+<div class="agrid" data-all></div>
+<div class="callout"><strong>About these drawings</strong><p>The routing (who modulates whom, which operators are carriers, where feedback sits) matches the DX7 algorithm table that the FM-1 uses. The boxes are laid out by a simple program, so they do not copy the FM-1 screen’s exact positions.</p></div>
+
+<h2 id="factory">Factory voices (V15)</h2>
+<p>The 128 factory voices, in V15 order, with their algorithm and feedback. If an older manual shows names like “PIANO 3” in other positions, it describes an earlier bank.</p>
+<details><summary>Bank A (voices 001–032)</summary><div class="table-wrap"><table><tr><th>No</th><th>Name</th><th>Algorithm</th><th>Feedback</th></tr><tr><td>001</td><td>PIANO 1</td><td>5</td><td>6</td></tr><tr><td>002</td><td>ORGAN 1</td><td>32</td><td>0</td></tr><tr><td>003</td><td>SYN LEAD 1</td><td>5</td><td>0</td></tr><tr><td>004</td><td>SYN PAD 1</td><td>15</td><td>7</td></tr><tr><td>005</td><td>PIANO 2</td><td>5</td><td>7</td></tr><tr><td>006</td><td>Organ 2</td><td>22</td><td>7</td></tr><tr><td>007</td><td>SYN LEAD 2</td><td>22</td><td>7</td></tr><tr><td>008</td><td>SYN PAD 2</td><td>2</td><td>3</td></tr><tr><td>009</td><td>PIANO3</td><td>6</td><td>4</td></tr><tr><td>010</td><td>ORGAN 3</td><td>32</td><td>6</td></tr><tr><td>011</td><td>SYN LEAD 3</td><td>7</td><td>7</td></tr><tr><td>012</td><td>SYN PAD 3</td><td>2</td><td>6</td></tr><tr><td>013</td><td>PIANO 4</td><td>5</td><td>7</td></tr><tr><td>014</td><td>ORGAN 4</td><td>32</td><td>5</td></tr><tr><td>015</td><td>SYN LEAD 4</td><td>7</td><td>0</td></tr><tr><td>016</td><td>SYN PAD 4</td><td>5</td><td>7</td></tr><tr><td>017</td><td>PIANO 5</td><td>5</td><td>6</td></tr><tr><td>018</td><td>ORGAN 5</td><td>29</td><td>0</td></tr><tr><td>019</td><td>SYN LEAD 5</td><td>2</td><td>7</td></tr><tr><td>020</td><td>SYN PAD 5</td><td>9</td><td>6</td></tr><tr><td>021</td><td>PIANO 6</td><td>9</td><td>6</td></tr><tr><td>022</td><td>ORGAN 6</td><td>29</td><td>0</td></tr><tr><td>023</td><td>SYN LEAD 6</td><td>14</td><td>7</td></tr><tr><td>024</td><td>SYN PAD 6</td><td>6</td><td>0</td></tr><tr><td>025</td><td>PIANO 7</td><td>5</td><td>6</td></tr><tr><td>026</td><td>ORGAN 7</td><td>5</td><td>7</td></tr><tr><td>027</td><td>SYN LEAD 7</td><td>7</td><td>4</td></tr><tr><td>028</td><td>SYN PAD 7</td><td>18</td><td>6</td></tr><tr><td>029</td><td>PIANO 8</td><td>5</td><td>6</td></tr><tr><td>030</td><td>ORGAN 8</td><td>32</td><td>2</td></tr><tr><td>031</td><td>SYN LEAD 8</td><td>3</td><td>7</td></tr><tr><td>032</td><td>SYN PAD 8</td><td>2</td><td>7</td></tr></table></div></details>
+<details><summary>Bank B (voices 033–064)</summary><div class="table-wrap"><table><tr><th>No</th><th>Name</th><th>Algorithm</th><th>Feedback</th></tr><tr><td>033</td><td>GUITAR 1</td><td>8</td><td>7</td></tr><tr><td>034</td><td>DS GUITAR1</td><td>14</td><td>2</td></tr><tr><td>035</td><td>BASS 1</td><td>16</td><td>6</td></tr><tr><td>036</td><td>SYN BASS1</td><td>17</td><td>6</td></tr><tr><td>037</td><td>GUITAR 2</td><td>15</td><td>7</td></tr><tr><td>038</td><td>DS GUITAR2</td><td>4</td><td>7</td></tr><tr><td>039</td><td>BASS 2</td><td>14</td><td>7</td></tr><tr><td>040</td><td>SYN BASS2</td><td>1</td><td>7</td></tr><tr><td>041</td><td>GUITAR 3</td><td>8</td><td>7</td></tr><tr><td>042</td><td>DS GUITAR3</td><td>4</td><td>5</td></tr><tr><td>043</td><td>BASS 3</td><td>17</td><td>7</td></tr><tr><td>044</td><td>SYN BASS3</td><td>16</td><td>7</td></tr><tr><td>045</td><td>GUITAR 4</td><td>8</td><td>7</td></tr><tr><td>046</td><td>DS GUITAR4</td><td>20</td><td>7</td></tr><tr><td>047</td><td>BASS 4</td><td>21</td><td>0</td></tr><tr><td>048</td><td>SYN BASS4</td><td>18</td><td>6</td></tr><tr><td>049</td><td>GUITAR 5</td><td>8</td><td>7</td></tr><tr><td>050</td><td>DS GUITAR5</td><td>16</td><td>7</td></tr><tr><td>051</td><td>BASS 5</td><td>16</td><td>7</td></tr><tr><td>052</td><td>SYN BASS5</td><td>5</td><td>6</td></tr><tr><td>053</td><td>GUITAR 6</td><td>14</td><td>4</td></tr><tr><td>054</td><td>DS GUITAR6</td><td>14</td><td>2</td></tr><tr><td>055</td><td>BASS 6</td><td>9</td><td>5</td></tr><tr><td>056</td><td>SYN BASS6</td><td>16</td><td>7</td></tr><tr><td>057</td><td>GUITAR 7</td><td>14</td><td>4</td></tr><tr><td>058</td><td>DS GUITAR7</td><td>1</td><td>7</td></tr><tr><td>059</td><td>BASS 7</td><td>5</td><td>4</td></tr><tr><td>060</td><td>SYN BASS7</td><td>14</td><td>5</td></tr><tr><td>061</td><td>GUITAR 8</td><td>12</td><td>7</td></tr><tr><td>062</td><td>DS GUITAR8</td><td>4</td><td>5</td></tr><tr><td>063</td><td>BASS 8</td><td>3</td><td>7</td></tr><tr><td>064</td><td>SYN BASS8</td><td>2</td><td>6</td></tr></table></div></details>
+<details><summary>Bank C (voices 065–096)</summary><div class="table-wrap"><table><tr><th>No</th><th>Name</th><th>Algorithm</th><th>Feedback</th></tr><tr><td>065</td><td>BRASS 1</td><td>18</td><td>7</td></tr><tr><td>066</td><td>WOODWIND 1</td><td>3</td><td>5</td></tr><tr><td>067</td><td>STRING 1</td><td>2</td><td>7</td></tr><tr><td>068</td><td>VOICE 1</td><td>5</td><td>0</td></tr><tr><td>069</td><td>BRASS 2</td><td>5</td><td>7</td></tr><tr><td>070</td><td>WOODWIND 2</td><td>23</td><td>5</td></tr><tr><td>071</td><td>STRING 2</td><td>15</td><td>7</td></tr><tr><td>072</td><td>VOICE 2</td><td>8</td><td>7</td></tr><tr><td>073</td><td>BRASS 3</td><td>2</td><td>7</td></tr><tr><td>074</td><td>WOODWIND 3</td><td>6</td><td>7</td></tr><tr><td>075</td><td>STRING 3</td><td>2</td><td>4</td></tr><tr><td>076</td><td>VOICE 3</td><td>7</td><td>7</td></tr><tr><td>077</td><td>BRASS 4</td><td>15</td><td>6</td></tr><tr><td>078</td><td>WOODWIND 4</td><td>3</td><td>4</td></tr><tr><td>079</td><td>STRING 4</td><td>2</td><td>7</td></tr><tr><td>080</td><td>VOICE 4</td><td>5</td><td>0</td></tr><tr><td>081</td><td>BRASS 5</td><td>9</td><td>7</td></tr><tr><td>082</td><td>WOODWIND 5</td><td>1</td><td>5</td></tr><tr><td>083</td><td>STRING 5</td><td>2</td><td>7</td></tr><tr><td>084</td><td>VOICE 5</td><td>1</td><td>4</td></tr><tr><td>085</td><td>BRASS 6</td><td>18</td><td>7</td></tr><tr><td>086</td><td>WOODWIND 6</td><td>5</td><td>7</td></tr><tr><td>087</td><td>STRING 6</td><td>9</td><td>7</td></tr><tr><td>088</td><td>VOICE 6</td><td>5</td><td>7</td></tr><tr><td>089</td><td>BRASS 7</td><td>4</td><td>6</td></tr><tr><td>090</td><td>WOODWIND 7</td><td>3</td><td>7</td></tr><tr><td>091</td><td>STRING 7</td><td>2</td><td>7</td></tr><tr><td>092</td><td>VOICE 7</td><td>27</td><td>6</td></tr><tr><td>093</td><td>BRASS 8</td><td>18</td><td>7</td></tr><tr><td>094</td><td>WOODWIND 8</td><td>31</td><td>6</td></tr><tr><td>095</td><td>STRING 8</td><td>2</td><td>7</td></tr><tr><td>096</td><td>VOICE 8</td><td>27</td><td>5</td></tr></table></div></details>
+<details><summary>Bank D (voices 097–128)</summary><div class="table-wrap"><table><tr><th>No</th><th>Name</th><th>Algorithm</th><th>Feedback</th></tr><tr><td>097</td><td>BOWOAN</td><td>18</td><td>7</td></tr><tr><td>098</td><td>BDWHOCARES</td><td>17</td><td>7</td></tr><tr><td>099</td><td>BLOCK</td><td>18</td><td>7</td></tr><tr><td>100</td><td>WAVES</td><td>1</td><td>7</td></tr><tr><td>101</td><td>FROGBELL</td><td>2</td><td>7</td></tr><tr><td>102</td><td>ELECT.GONG</td><td>8</td><td>7</td></tr><tr><td>103</td><td>TORIMTORA2</td><td>9</td><td>7</td></tr><tr><td>104</td><td>MONO M</td><td>3</td><td>0</td></tr><tr><td>105</td><td>TIBET</td><td>3</td><td>6</td></tr><tr><td>106</td><td>LOG DRUM</td><td>14</td><td>5</td></tr><tr><td>107</td><td>COWBELL</td><td>6</td><td>0</td></tr><tr><td>108</td><td>MONO Z</td><td>18</td><td>7</td></tr><tr><td>109</td><td>FINGERCYM</td><td>20</td><td>7</td></tr><tr><td>110</td><td>TIMPANI</td><td>16</td><td>7</td></tr><tr><td>111</td><td>TAMBOURINE</td><td>18</td><td>7</td></tr><tr><td>112</td><td>DESCENT</td><td>1</td><td>7</td></tr><tr><td>113</td><td>CLANG BELL</td><td>5</td><td>7</td></tr><tr><td>114</td><td>STEEL DRUM</td><td>15</td><td>5</td></tr><tr><td>115</td><td>CONGA</td><td>2</td><td>0</td></tr><tr><td>116</td><td>SAW EM UP</td><td>15</td><td>7</td></tr><tr><td>117</td><td>BI  BEN</td><td>6</td><td>0</td></tr><tr><td>118</td><td>KALIMBA</td><td>4</td><td>7</td></tr><tr><td>119</td><td>GAMALONG</td><td>12</td><td>5</td></tr><tr><td>120</td><td>SAW EM UP2</td><td>15</td><td>7</td></tr><tr><td>121</td><td>TUB BELLS</td><td>5</td><td>7</td></tr><tr><td>122</td><td>BRUSHES</td><td>7</td><td>7</td></tr><tr><td>123</td><td>TOM TOMS</td><td>16</td><td>7</td></tr><tr><td>124</td><td>SAW EM UP3</td><td>15</td><td>7</td></tr><tr><td>125</td><td>ECHO</td><td>6</td><td>7</td></tr><tr><td>126</td><td>TIMBALI</td><td>16</td><td>7</td></tr><tr><td>127</td><td>PERCUSSION</td><td>11</td><td>0</td></tr><tr><td>128</td><td>WHAT IF</td><td>1</td><td>0</td></tr></table></div></details>
+
+<h2 id="glossary">Glossary</h2>
+<dl class="glossary">
+<dt>Algorithm</dt><dd>The wiring diagram that decides which operators modulate which, and which are heard. 32 choices.</dd>
+<dt>AMD / PMD</dt><dd>Amplitude / Pitch Modulation Depth: how strongly the LFO wobbles volume / pitch.</dd>
+<dt>Bank</dt><dd>A group of 32 voices; the FM-1 has A, B, C, D.</dd>
+<dt>Break point</dt><dd>The key at which keyboard level scaling changes direction.</dd>
+<dt>Carrier</dt><dd>An operator whose output you hear.</dd>
+<dt>Coarse / Fine</dt><dd>The whole and decimal parts of an operator’s frequency ratio.</dd>
+<dt>Detune</dt><dd>A very small pitch offset of one operator.</dd>
+<dt>EG</dt><dd>Envelope generator: the 4-rate, 4-level contour of an operator or of the pitch.</dd>
+<dt>Feedback</dt><dd>An operator modulating itself; makes sine → saw → noise.</dd>
+<dt>Fixed frequency</dt><dd>An operator that ignores the key and plays one set pitch.</dd>
+<dt>Gate</dt><dd>Length of each arpeggiator or sequencer note within its step.</dd>
+<dt>Glide</dt><dd>A slide between notes (mono mode only).</dd>
+<dt>LFO</dt><dd>Low frequency oscillator, for vibrato or tremolo.</dd>
+<dt>Modulator</dt><dd>An operator that changes the pitch of another one and is not itself heard.</dd>
+<dt>Operator</dt><dd>One sine oscillator with an envelope. The FM-1 has six.</dd>
+<dt>Preset / Voice / Patch</dt><dd>One complete sound. The panel says “preset”; DX7 literature says “voice”.</dd>
+<dt>Ratio</dt><dd>An operator’s frequency relative to the note played.</dd>
+<dt>SysEx</dt><dd>System Exclusive: MIDI messages that carry data such as sound banks.</dd>
+<dt>VMEM / VCED</dt><dd>The DX7’s 32-voice bank format / single-voice format.</dd>
+</dl>
+
+<h2 id="trouble">Troubleshooting</h2>
+<div class="table-wrap"><table>
+<tr><th>Problem</th><th>Try</th></tr>
+<tr><td>No sound</td><td>Raise MASTER; check headphones/speaker; check operator OutLevels and that carriers are not muted (long-press mutes; changing voice un-mutes).</td></tr>
+<tr><td>Keys do not play notes</td><td>You may be in EDIT mode (black keys are selectors) or in ARP/SEQ mode. Press HOME.</td></tr>
+<tr><td>My edits disappeared</td><td>You changed voice before holding SAVE.</td></tr>
+<tr><td>PRESETS does nothing</td><td>SEQ is on. Press SEQ to leave, or change the pattern’s Voice.</td></tr>
+<tr><td>“Disable SEQ to enter” / “Disable ARP to enter”</td><td>Switch off the other one first.</td></tr>
+<tr><td>No vibrato</td><td>LFO: both PMD and Pitch Sens (page 2) must be above 0.</td></tr>
+<tr><td>Glide does nothing</td><td>Glide needs MONO and Glide Val above 0.</td></tr>
+<tr><td>Mod wheel changes the filter</td><td>The mod wheel is on the Effect channel (default 2). Use another channel.</td></tr>
+<tr><td>Bluetooth not found</td><td>Long-press HOME; the LED should blink. Connect from a MIDI app, not the system Bluetooth list (iPad).</td></tr>
+<tr><td>Notes stuck or doubled</td><td>Check that only one MIDI source plays the same notes; USB, Bluetooth and TRS work at once.</td></tr>
+<tr><td>Updater says “Failed to enter upgrade mode!”</td><td>Keep the updater open, unplug and replug USB, continue (M-VAVE’s advice).</td></tr>
+</table></div>
+
+<h2 id="history">Firmware history (stock)</h2>
+<div class="table-wrap"><table>
+<tr><th>Version</th><th>Date</th><th>Main changes</th></tr>
+<tr><td>V09</td><td>24 Jun 2026</td><td>ENV on/off switch; Rate change while recording SEQ; empty steps and note replacement in SEQ</td></tr>
+<tr><td>V13</td><td>3 Jul 2026</td><td>BPM sync for ARP and SEQ; OP page memory; voice per SEQ pattern; level-matched factory voices; global Velocity; MIDI Ch with ALL; Program Change 0–127; rates 1/1 and 1/2</td></tr>
+<tr><td>V15</td><td>30 Jul 2026</td><td><strong>This guide.</strong> Brighter LEDs; Reset Patches per bank; Glide; SEQ long notes, voice binding, Step length, Chain; EDIT Init Voice, Rename, Copy Voice, OP mute; FX and ENV 0–100; velocity 0 = note off; CC table for effects</td></tr>
+<tr><td>V16</td><td>21 Oct 2026</td><td>Multitimbral (8 voices), 64-step patterns, ratchet, FX library, new SAVE menu, new MIDI map. Not covered here.</td></tr>
+</table></div>
+<p>A V14 release (6 July 2026) also existed as a desktop-updater package; its page order is where older photos come from. We found no public release notes for it.</p>
+
+<h2 id="unknowns">What we could not confirm</h2>
+<p>These details are not written down in the official manual, the MIDI guide, the release notes or the reviews we could read. Do not trust anyone (including this guide) who states them as fact without testing on a real unit.</p>
+<ul>
+<li>The step-by-step <strong>firmware update procedure</strong> (button combination, if any).</li>
+<li>The full list of <strong>ARP / SEQ Rate</strong> values and the default.</li>
+<li>How ARP <strong>Octave</strong> interacts with each Mode.</li>
+<li>What exactly <strong>Init Voice</strong> sets (the DX7 template is assumed).</li>
+<li>Whether <strong>MONO/POLY</strong> and Glide are stored per voice or globally.</li>
+<li>Factory <strong>effect and ENV settings</strong> for each of the 128 voices.</li>
+<li>The effect algorithms; the mapping between the panel Filter Q (0–100) and the MIDI Q (0–10); the cut-off step table.</li>
+<li>What <strong>aftertouch</strong> and <strong>mod wheel</strong> control exactly.</li>
+<li>Whether a <strong>single-voice SysEx dump</strong> is auto-saved.</li>
+<li>Details of <strong>Chain</strong> (looping), long-note and rest recording behaviour.</li>
+<li>The <strong>Bluetooth name</strong> the unit advertises.</li>
+<li>The PIT “no change” level; the display format of operator frequency.</li>
+<li>Whether the <strong>OP mute mirror bug</strong> exists on a given unit.</li>
+</ul>
+
+<div class="pager"><a class="prev" href="10-exercises.html"><small>← Previous</small>Build these sounds</a></div>
+</main>
+<footer class="site">Unofficial fan guide to the M-VAVE FM-1 stock firmware V15. Not affiliated with M-VAVE. Screens and diagrams are redrawn, not photographs. See <a href="SOURCES.md">SOURCES.md</a> for sources.</footer>
+</body>
+</html>
