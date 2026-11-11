@@ -105,6 +105,7 @@ before writing anything.
 | `fm` | the app's 6-operator DX7-compatible engine, the same one the stock firmware uses | DX7 VCED index 0–155 with raw values, or the names `algorithm`, `feedback`, `lfospeed`, `lfodelay`, `lfopmd`, `lfoamd`, `lfowave`, `transpose`, `op1.level` … `op6.level`, `op<n>.coarse`, `op<n>.fine`, `op<n>.detune`. `inst.preset(i)` loads voice *i* (0–127) of the user's bank and returns its name. |
 | `va` | virtual-analog polysynth, new for packages (`VASynth.swift`) | `wave1` `wave2` (0 saw, 1 pulse, 2 tri, 3 sine) · `pw` · `semi2` (index 0–48 = −24…+24) · `detune` (0.5 = 0) · `osc1` `osc2` `sub` `noise` (levels) · `sync` (0/1) · `polymod` (osc 2 → osc 1 FM) · `cutoff` (20 Hz·2^(10v)) · `res` · `ftype` (0 4-pole LP, 1 BP, 2 HP) · `envamt` (0.5 = 0) · `keytrack` · `fa fd fs fr` (filter ADSR) · `a d s r` (amp ADSR) · `drive` · `glide` · `mode` (0 poly, 1 mono, 2 legato, 3 unison) · `lforate` `lfowave` (0 tri, 1 sine, 2 square, 3 S&H) `lfopitch` `lfocutoff` `lfopw` · `level` · `vel` · `spread` |
 | `pd` | phase-distortion (CZ-style) polysynth, new for packages (`PDSynth.swift`) | `wave1` `wave2` (0 saw, 1 square, 2 pulse, 3 double sine, 4 saw-pulse, 5–7 resonance 1–3) · `line` (0 = 1, 1 = 1+2, 2 = 1+1′, 3 = 1×2 ring) · `semi2` · `detune` · `dcw` · `dcwenv` · `da dd ds dr` (DCW envelope) · `a d s r` (DCA) · `fold` · `vib` `vibrate` · `level` · `vel` · `glide` · `mode` (0 poly, 1 mono, 2 legato) |
+| `slot` | one track's sound source that can switch engine at runtime, new for packages (`SlotInstrument` in `HostInstruments.swift`). Declare `"engines": ["va", "fm", "pd"]` (any of the three) and the starting `"engine"`. Each engine inside keeps its own sound; an `fm` in a slot has an FM engine of its own, so several tracks can play FM voices at once. | those of the selected engine. `inst.engine()` reads it, `inst.engine("pd")` switches (notes in flight on the old engine are released, and its tail rings out), `inst.engines()` lists the choices and `inst.type` follows the selection. |
 | `drums` | the app's 11-voice analog drum kit, one private instance per package (`DrumKit.swift`) | lanes 0–10 are BD SD LT MT HT RM CP CB CY OH CH. Each lane has `<lane>.level`, `.tune`, `.decay` and `.tone`, for example `BD.decay`. There is also `accent`. Play a lane with `inst.hit(lane, vel)`. |
 
 Value rules:
@@ -235,7 +236,9 @@ The rest of `fm`:
 
 * `fm.inst(id)` returns an instrument with these methods: `note(n, v)`, `off(n)`, `hit(lane, v)`,
   `set(p, v)`, `setAll({…})`, `get(p)`, `params()`, `paramIndex(name)`, `level(v)`,
-  `mute(b)`, `meter()`, `allOff()`, `arp([{…}])` (see Arpeggiator above) and `preset(i)` (fm only).
+  `mute(b)`, `meter()`, `allOff()`, `arp([{…}])` (see Arpeggiator above), `engine([name])` and
+  `engines()` (slots), and `preset(i)` (an FM engine: loads voice *i* of the user's bank into that
+  instrument's own FM engine, or into the app's shared one for a plain `fm` instrument).
 * `fm.seq` has these functions:
   * `get(t, p, s, row)` and `set(t, p, s, {…}, row)`
   * `clear(t, p[, s, row])`, `copy(t, from, to)` and `has(t, p)`
@@ -256,7 +259,8 @@ The rest of `fm`:
 * `fm.store.get(k, default)` and `fm.store.set(k, v)` keep JSON values per package.
 * `fm.now()` and `fm.log(…)`.
 
-The host saves step data, songs, tempo, levels, instrument parameters, arpeggiator settings and `fm.store`. It saves
+The host saves step data, songs, tempo, levels, instrument parameters (every engine of a slot, and
+its selection), arpeggiator settings and `fm.store`. It saves
 them per package, when the firmware changes and when the app goes to the background, and
 restores them at the next boot.
 

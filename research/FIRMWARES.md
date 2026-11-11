@@ -117,11 +117,15 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 
 **Engine limits common to all three ports:**
 
-* Each original lets any track load any of 12 or 13 engines. This host fixes one engine per track:
-  * track 1 is ANALOG / PROPHET (`va`);
-  * track 2 is FM6 (the app's FM engine, presets from the user's 128-voice bank);
-  * track 3 is PHASE / CZ-1 (`pd`);
-  * track 4 is DRUM.
+* Each original lets any track load any of 12 or 13 engines. Here tracks 1–3 are host `slot`s
+  that each load one of three engines at any time: ANALOG / PROPHET (`va`), FM6 (`fm`, an FM
+  engine of its own per track, voices from the user's 128-voice bank) and PHASE / CZ-1 (`pd`).
+  They start on va, fm and pd. Track 4 stays DRUM.
+  * Felucca: SAVE > PRESETS, KNOB 3 (ENGINE).
+  * Melodee: the sound browser's ENGINE knob (KNOB 4).
+  * SLOOP: hold EDIT and turn PRESETS.
+  * Switching keeps each engine's sound for when you come back. Step locks recorded on one engine
+    are applied by parameter number, so they can land on a different parameter after a switch.
 * Physical models, granular, sampler, SID, organ, noise and similar engines are not available.
 * Drums come from the app's single 11-voice analog kit. The named kits (808, 909, 606, CR78, VA
   kits, genre kits) are parameter sets that **approximate** those machines. They are not
@@ -216,7 +220,8 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 
 **Missing:**
 
-* the modulation matrix, CLICK, MIDI LEARN, the 13-engine choice, SLICE and samples;
+* the modulation matrix, CLICK, MIDI LEARN, SLICE and samples;
+* 10 of the 13 engines (three are offered per track, see the engine limits above);
 * the HOME-hold menu and palettes.
 
 ### Melodee
@@ -316,6 +321,10 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
   screens.
 * **Install over the network:** `testInstallFromHTTPSAndRun` downloads Felucca's packed file from
   the public GitHub repo over https, then flashes and runs it.
+* **Engine slots, offline:** each of va, fm and pd sounds and releases; a switch mid-note lets
+  the old engine's tail ring while the new one plays; parameters reach the selected engine; three
+  playing slots cost about 1 % of realtime. The fuzz switched engines 80–850 times per run in
+  SLOOP and Melodee. `testFeluccaTrackEngineSwitch` turns Felucca's ENGINE knob on the device UI.
 * **MIDI in:** the script fuzz includes random note, CC and program messages on all 16 channels.
 * **Not verified:**
   * listening tests, since nothing was heard;

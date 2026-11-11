@@ -23,8 +23,11 @@ struct FirmwareManifest: Codable, Equatable {
     }
     struct Instrument: Codable, Equatable {
         var id: String
-        var type: String          // fm | va | pd | drums
+        var type: String          // fm | va | pd | drums | slot
         var voices: Int?
+        /// `slot` only: the engines it can switch between (va, fm, pd) and the one it starts with.
+        var engines: [String]? = nil
+        var engine: String? = nil
     }
     struct Sequencer: Codable, Equatable {
         var patterns: Int?
@@ -36,7 +39,7 @@ struct FirmwareManifest: Codable, Equatable {
         var lanes: Int?
     }
 
-    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums"]
+    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums", "slot"]
 
     /// Checks everything the host relies on. Throws a readable message.
     func validate(allowNative: Bool) throws {
@@ -60,6 +63,13 @@ struct FirmwareManifest: Codable, Equatable {
                 guard ids.insert(i.id).inserted else { throw fail("Duplicate instrument id '\(i.id)'") }
                 if i.type == "fm" { fmCount += 1 }
                 if let v = i.voices, !(1...12).contains(v) { throw fail("voices must be 1–12") }
+                if i.type == "slot" {
+                    let es = i.engines ?? []
+                    guard !es.isEmpty, es.count <= 3, es.allSatisfy({ SlotInstrument.engineTypes.contains($0) }) else {
+                        throw fail("Slot '\(i.id)' needs engines from va, fm, pd")
+                    }
+                    if let e = i.engine, !es.contains(e) { throw fail("Slot '\(i.id)' starts on '\(e)', which is not in its engines") }
+                }
             }
             guard fmCount <= 1 else { throw fail("Only one fm instrument (the host has one FM engine)") }
             if let s = e.sequencer {

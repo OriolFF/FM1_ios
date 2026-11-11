@@ -12,9 +12,9 @@
   "scripts": ["lib.js", "main.js"],
   "engine": {
     "instruments": [
-      {"id": "t1", "type": "va", "voices": 8},
-      {"id": "t2", "type": "fm"},
-      {"id": "t3", "type": "pd", "voices": 6},
+      {"id": "t1", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "va", "voices": 8},
+      {"id": "t2", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "fm", "voices": 6},
+      {"id": "t3", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "pd", "voices": 6},
       {"id": "drums", "type": "drums"}
     ],
     "sequencer": {

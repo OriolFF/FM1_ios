@@ -206,13 +206,26 @@ final class PackageHost {
         def(h, "arpModes", { () -> [String] in PkgArp.modeNames } as @convention(block) () -> [String])
         def(h, "arpRates", { () -> [String] in PkgArp.rateNames } as @convention(block) () -> [String])
         def(h, "meter", { (i: Int32) -> Double in Double(inst(i)?.meter ?? 0) } as @convention(block) (Int32) -> Double)
-        def(h, "fmPreset", { [unowned self] (i: Int32) -> String in
+        // loads FM bank voice i into the instrument's FM engine: its own one inside a slot, else the app's
+        def(h, "fmPreset", { [unowned self] (ii: Int32, i: Int32) -> String in
             let ps = self.model.presets
             guard !ps.isEmpty else { return "" }
             let p = ps[((Int(i) % ps.count) + ps.count) % ps.count]
-            self.model.engine.loadPatch(p)
+            var target = inst(ii)
+            if let s = target as? SlotInstrument { target = s.current }
+            if let f = target as? PrivateFMInstrument { f.engine.loadPatch(p) } else { self.model.engine.loadPatch(p) }
+            self.dirty = true
             return p.name
-        } as @convention(block) (Int32) -> String)
+        } as @convention(block) (Int32, Int32) -> String)
+        def(h, "instEngine", { [unowned self] (i: Int32, name: String) -> String in
+            guard let s = inst(i) as? SlotInstrument else { return inst(i)?.kind ?? "" }
+            if !name.isEmpty, s.engineNames[s.selected] != name, s.select(name) { self.dirty = true }
+            return s.engineNames[s.selected]
+        } as @convention(block) (Int32, String) -> String)
+        def(h, "instEngines", { (i: Int32) -> [String] in
+            if let s = inst(i) as? SlotInstrument { return s.engineNames }
+            return inst(i).map { [$0.kind] } ?? []
+        } as @convention(block) (Int32) -> [String])
         def(h, "fmPresetName", { [unowned self] (i: Int32) -> String in
             let ps = self.model.presets
             guard !ps.isEmpty else { return "" }
@@ -410,13 +423,21 @@ final class PackageHost {
 
     private var dataURL: URL { FirmwareCatalog.dataFolder(for: firmware.id).appendingPathComponent("state.plist") }
     private var pendingParams: [[Double]] = []
+    private var pendingSlots: [String: Any] = [:]
 
     func save() {
         let seq = engine.seq
+        func dump(_ inst: PkgInstrument) -> [Double] {
+            inst.kind == "fm" ? (0..<FMPatch.size).map { Double(inst.param($0)) } : (0..<inst.paramTable.count).map { Double(inst.param($0)) }
+        }
+        // slots keep every engine's sound and the selection: [instrument index: {engine, params}]
         var params: [[Double]] = []
-        for inst in engine.instruments {
-            if inst.kind == "fm" { params.append((0..<FMPatch.size).map { Double(inst.param($0)) }) }
-            else { params.append((0..<inst.paramTable.count).map { Double(inst.param($0)) }) }
+        var slots: [String: Any] = [:]
+        for (i, inst) in engine.instruments.enumerated() {
+            if let s = inst as? SlotInstrument {
+                params.append([])
+                slots[String(i)] = ["engine": s.engineNames[s.selected], "names": s.engineNames, "params": s.engines.map(dump)]
+            } else { params.append(dump(inst)) }
         }
         let T = seq.tracks.count
         let dict: [String: Any] = [
@@ -427,6 +448,7 @@ final class PackageHost {
             "selected": (0..<T).map { seq.selected[$0] },
             "levels": (0..<engine.instruments.count).map { Double(engine.levels[$0]) },
             "params": params,
+            "slots": slots,
             "arps": engine.arps.map { PackageHost.arpState($0).filter { $0.key != "step" && $0.key != "modeName" && $0.key != "rateName" } },
             "store": store,
             "song": Data(bytes: seq.songPatterns, count: PkgSequencer.maxSections * max(1, T)),
@@ -470,16 +492,25 @@ final class PackageHost {
             for (a, d) in zip(engine.arps, arps) { PackageHost.applyArp(a, d) }
         }
         pendingParams = dict["params"] as? [[Double]] ?? []
+        pendingSlots = dict["slots"] as? [String: Any] ?? [:]
     }
 
     /// Applied after the scripts ran (so a script's defaults are overridden by the saved sound).
     private func restoreParams() {
         guard pendingParams.count == engine.instruments.count, store["__restore"] != "\"no\"" else { return }
-        for (inst, ps) in zip(engine.instruments, pendingParams) {
+        func load(_ inst: PkgInstrument, _ ps: [Double]) {
             if inst.kind == "fm" { if ps.count == FMPatch.size { for (i, v) in ps.enumerated() { inst.setParam(i, Float(v)) } } }
             else if ps.count == inst.paramTable.count { for (i, v) in ps.enumerated() { inst.setParam(i, Float(v)) } }
         }
-        pendingParams = []
+        for (k, (inst, ps)) in zip(engine.instruments, pendingParams).enumerated() {
+            if let s = inst as? SlotInstrument {
+                guard let d = pendingSlots[String(k)] as? [String: Any], let names = d["names"] as? [String],
+                      names == s.engineNames, let all = d["params"] as? [[Double]], all.count == s.engines.count else { continue }
+                for (sub, p) in zip(s.engines, all) { load(sub, p) }
+                if let e = d["engine"] as? String { _ = s.select(e) }
+            } else { load(inst, ps) }
+        }
+        pendingParams = []; pendingSlots = [:]
     }
 }
 

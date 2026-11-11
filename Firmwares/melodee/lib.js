@@ -159,7 +159,7 @@ var LIB = (function () {
       if (rec) fm.seq.recordHit(t, lane, v);
       return lane;
     }
-    if (kind === "on") { i.note(n, v); if (rec) fm.seq.record(t, n, v); } else i.off(n);
+    if (kind === "on") { i.note(n, v); if (rec && n > 0) fm.seq.record(t, n, v); } else i.off(n);   // step note 0 means "empty"
     return n;
   }
 

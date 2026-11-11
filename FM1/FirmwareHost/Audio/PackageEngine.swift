@@ -45,6 +45,10 @@ final class PackageEngine: FMBlockHook, @unchecked Sendable {
                 inst = FMInstrument(engine: fm); fmi = insts.count
             case "pd": inst = PDSynth(sampleRate: sampleRate, voices: d.voices ?? 6)
             case "drums": inst = DrumsInstrument(sampleRate: sampleRate)
+            case "slot":
+                let s = SlotInstrument(engines: d.engines ?? ["va"], sampleRate: sampleRate, voices: d.voices ?? 6)
+                if let e = d.engine { _ = s.select(e) }
+                inst = s
             default: inst = VASynth(sampleRate: sampleRate, voices: d.voices ?? 6)
             }
             insts.append(inst); ids.append(d.id)

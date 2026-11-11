@@ -210,4 +210,34 @@ final class FirmwarePackageTests: XCTestCase {
         while Date() < deadline && !screen.label.contains("HOME") { RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
         XCTAssertTrue(screen.label.contains("HOME"), "downloaded Felucca boots to HOME, got: \(screen.label)")
     }
+    /// Track 1 can load another engine: SAVE > PRESETS, KNOB 3 (ENGINE) goes ANALOG -> FM6 and back.
+    func testFeluccaTrackEngineSwitch() throws {
+        let app = makeApp()
+        app.launchArguments = ["-firmware", "felucca"]
+        app.launch()
+        let screen = packageScreen(app)
+        XCTAssertTrue(screen.waitForExistence(timeout: 8))
+        func screenShows(_ s: String, _ timeout: TimeInterval = 6) -> Bool {
+            let deadline = Date().addingTimeInterval(timeout)
+            while Date() < deadline { if screen.label.contains(s) { return true }; RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
+            return false
+        }
+        XCTAssertTrue(screenShows("HOME"))
+        app.staticTexts["SAVE"].firstMatch.tap()
+        XCTAssertTrue(screenShows("SAVE > PRESETS"), "SAVE opens PRESETS, got: \(screen.label)")
+        XCTAssertTrue(screenShows("ENGINE"), "ENGINE knob card, got: \(screen.label)")
+
+        let label = app.staticTexts["KNOB3"]
+        func turn(up: Bool) {
+            let a = label.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 4))
+            a.press(forDuration: 0.1, thenDragTo: label.coordinate(withNormalizedOffset: CGVector(dx: up ? 1.5 : -0.5, dy: 4)))
+        }
+        // start from ANALOG (engine choices persist per package)
+        for _ in 0..<4 where !screenShows("ENGINE ANALOG", 1) { turn(up: false) }
+        XCTAssertTrue(screenShows("ENGINE ANALOG"), "track 1 on ANALOG, got: \(screen.label)")
+        turn(up: true)
+        XCTAssertTrue(screenShows("ENGINE FM6") || screenShows("ENGINE PHASE", 1), "KNOB 3 changes the engine, got: \(screen.label)")
+        for _ in 0..<4 where !screenShows("ENGINE ANALOG", 1) { turn(up: false) }
+        XCTAssertTrue(screenShows("ENGINE ANALOG"), "and back, got: \(screen.label)")
+    }
 }

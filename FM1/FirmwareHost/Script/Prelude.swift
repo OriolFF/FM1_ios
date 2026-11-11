@@ -30,8 +30,11 @@ var fm = (function () {
     this.id = id;
     this.index = __host.instIndex(id);
     if (this.index < 0) throw new Error("unknown instrument " + id);
-    this.type = __host.instType(this.index);
   }
+  // the sounding engine's type (a slot changes it with engine())
+  Object.defineProperty(Inst.prototype, "type", { get: function () { return __host.instType(this.index); } });
+  Inst.prototype.engine = function (name) { return __host.instEngine(this.index, name === undefined ? "" : String(name)); };
+  Inst.prototype.engines = function () { return __host.instEngines(this.index); };
   Inst.prototype.note = function (n, v) { __host.noteOn(this.index, n, v === undefined ? 100 : v); };
   Inst.prototype.off = function (n) { __host.noteOff(this.index, n); };
   Inst.prototype.hit = function (lane, v) { __host.hit(this.index, lane, v === undefined ? 100 : v); };
@@ -45,7 +48,7 @@ var fm = (function () {
   Inst.prototype.meter = function () { return __host.meter(this.index); };
   Inst.prototype.arp = function (o) { return __host.arp(this.index, o || {}); };
   Inst.prototype.allOff = function () { __host.allOff(this.index); };
-  Inst.prototype.preset = function (i) { return __host.fmPreset(i); };
+  Inst.prototype.preset = function (i) { return __host.fmPreset(this.index, i); };
 
   var tracks = __host.trackIDs();
   function T(t) { if (typeof t === "number") return t; var i = tracks.indexOf(t); if (i < 0) throw new Error("unknown track " + t); return i; }
