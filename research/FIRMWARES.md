@@ -118,15 +118,22 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 **Engine limits common to all three ports:**
 
 * Each original lets any track load any of 12 or 13 engines. Here tracks 1–3 are host `slot`s
-  that each load one of three engines at any time: ANALOG / PROPHET (`va`), FM6 (`fm`, an FM
-  engine of its own per track, voices from the user's 128-voice bank) and PHASE / CZ-1 (`pd`).
+  that each load one of four engines at any time:
+  * ANALOG / PROPHET (`va`);
+  * FM6 (`fm`, an FM engine of its own per track, with voices from the user's 128-voice bank);
+  * PHASE / CZ-1 (`pd`);
+  * SAMPLE (`smp`). Its sounds are PIANO, FLUTE and SAX (multisampled, CC0, from the
+    VSCO-2 CE / VCSL samples that Felucca ships), a BREAK sliced into 16, and the user's own
+    WAV files.
   They start on va, fm and pd. Track 4 stays DRUM.
   * Felucca: SAVE > PRESETS, KNOB 3 (ENGINE).
   * Melodee: the sound browser's ENGINE knob (KNOB 4).
   * SLOOP: hold EDIT and turn PRESETS.
   * Switching keeps each engine's sound for when you come back. Step locks recorded on one engine
     are applied by parameter number, so they can land on a different parameter after a switch.
-* Physical models, granular, sampler, SID, organ, noise and similar engines are not available.
+* Physical models, granular, SID, organ, noise and similar engines are not available.
+* Felucca's SLICE engine is approximated by the sliced BREAK set and by slicing in the SAMPLE
+  engine. Felucca's per-slot sample RATE/BITS, recording and trim are not ported.
 * Drums come from the app's single 11-voice analog kit. The named kits (808, 909, 606, CR78, VA
   kits, genre kits) are parameter sets that **approximate** those machines. They are not
   separate drum models.
@@ -175,7 +182,7 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 * free-tempo REC (it shows "n/a");
 * song recording (SAVE + key 14);
 * five punches (tape wobble, octave up, flanger, auto-pan, fade out), shown as "n/a here";
-* TEXTURE, the INSERT effects, MIDI LEARN, user samples and the HOME-hold menu settings (the
+* TEXTURE, the INSERT effects, MIDI LEARN and the HOME-hold menu settings (the
   menu shows ABOUT only).
 
 ### Felucca
@@ -220,7 +227,7 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 
 **Missing:**
 
-* the modulation matrix, CLICK, MIDI LEARN, SLICE and samples;
+* the modulation matrix, CLICK and MIDI LEARN;
 * 10 of the 13 engines (three are offered per track, see the engine limits above);
 * the HOME-hold menu and palettes.
 
@@ -332,6 +339,22 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
   the old engine's tail ring while the new one plays; parameters reach the selected engine; three
   playing slots cost about 1 % of realtime. The fuzz switched engines 80–850 times per run in
   SLOOP and Melodee. `testFeluccaTrackEngineSwitch` turns Felucca's ENGINE knob on the device UI.
+* **Sampler, offline:**
+  * test WAVs in 16-bit, 24-bit stereo, 8-bit and float decode to the same sine, and a bad file
+    is refused;
+  * a C4 zone played at C5 on a 48 kHz engine measures 523 Hz, and so does C4 with TUNE +12;
+  * a 4-slice set plays one quarter at the original pitch and stops by itself;
+  * reverse plays and ends, and release goes silent;
+  * every shipped set plays with no invalid samples.
+* **Samples on the device UI:**
+  * `testFeluccaSampleEngineWithUserSample` switches Felucca's track 1 to SAMPLE, sees the
+    shipped sets, and reaches a user sample put in place through the same import code the menu
+    uses.
+  * The URL-install test now carries its own base64 WAV in the bundle, and the installed
+    package lists that set.
+  * `pack.py` round-trips a package-local sample byte for byte.
+* **Every bundled manifest passes the app's own validation**, checked with the app's
+  `FirmwareManifest.validate`.
 * **MIDI out:** a CoreMIDI round trip on the Mac. `MIDIOutInstrument` sent to a virtual
   destination in the test process, which received the expected note-ons and note-offs on the
   right channels (including after a channel change), with `allOff` releasing what was held. The

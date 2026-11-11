@@ -28,6 +28,7 @@
 		4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EBEB3921BB73FD5B6F50984 /* Theme.swift */; };
 		4C76F50CD834D19815079A6F /* TutorialBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A44131962A8BE7CE9C3BAED /* TutorialBrowserTests.swift */; };
 		4CE27134BFCEC4696C132F78 /* PackageMIDIOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF48BE805E62EF12DF181C90 /* PackageMIDIOut.swift */; };
+		51DE2F3497C26ED020AF166F /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B857EDC1695113A7719ACCA6 /* Sampler.swift */; };
 		53B89F4FCECAEFB7ED7CA178 /* FirmwareCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBC1472A6D1F9D762E531 /* FirmwareCatalog.swift */; };
 		553AE540E0907976AA61C142 /* PkgInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57766E331279ED700CDB03AE /* PkgInstrument.swift */; };
 		566D29ECA701A4F8DD80F7EB /* Nunito.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9B1C03D65236759C2FE18EC /* Nunito.ttf */; };
@@ -105,6 +106,7 @@
 		A95811FA66C19DCD0A3D8155 /* FM1UITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FM1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACABC2EB3793BDCB8DE865ED /* FM1_V15_factory_bank_A.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_A.syx; sourceTree = "<group>"; };
 		B035B24749FE1CDD959B7F47 /* PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelComponents.swift; sourceTree = "<group>"; };
+		B857EDC1695113A7719ACCA6 /* Sampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
 		BBAD32D8F760E724131191F0 /* FirmwarePackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwarePackageTests.swift; sourceTree = "<group>"; };
 		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
 		C032BB19A77C15DD2299768C /* MasterBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterBus.swift; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 				39AF4F3F1174F1F9BF191098 /* PkgArp.swift */,
 				57766E331279ED700CDB03AE /* PkgInstrument.swift */,
 				79577CFF27758EAA058E6513 /* PkgSequencer.swift */,
+				B857EDC1695113A7719ACCA6 /* Sampler.swift */,
 				74D1711E8329D3DC8882FEC3 /* VASynth.swift */,
 			);
 			path = Audio;
@@ -420,6 +423,7 @@
 				553AE540E0907976AA61C142 /* PkgInstrument.swift in Sources */,
 				EA9BD9B919BC71AB6D31E7C5 /* PkgSequencer.swift in Sources */,
 				4B853A9A8B129069EF2FDB8A /* Prelude.swift in Sources */,
+				51DE2F3497C26ED020AF166F /* Sampler.swift in Sources */,
 				AF9219A623DF2BD9E20E1780 /* ScreenView.swift in Sources */,
 				E65A73134E14D1E3A9449C44 /* SynthModel+Groove.swift in Sources */,
 				0A2D6505B27E07AABBD90BEB /* SynthModel+Package.swift in Sources */,

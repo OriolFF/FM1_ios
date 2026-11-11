@@ -50,11 +50,19 @@ You can install more firmwares **without rebuilding the app**: **Install from UR
 package is data plus JavaScript (run in JavaScriptCore) that drives the app's native sound
 blocks. It never contains native code.
 
+In these firmwares:
+
+* each of tracks 1–3 can load the ANALOG, FM6, PHASE or SAMPLE engine;
+* Melodee's tracks 5–8 play external instruments over MIDI;
+* incoming MIDI plays the selected track;
+* for firmwares that take them, **Add samples…** in the menu adds your own WAV files.
+
 | Area | Where |
 |---|---|
 | Packages (one folder each), the format documentation and the pack tool | `Firmwares/` (start with `Firmwares/README.md`) |
 | Host: catalog and installer, script runtime, screen renderer, menu | `FM1/FirmwareHost/` |
-| Native blocks for packages: VA and phase-distortion synths, master bus and punch FX, step sequencer | `FM1/FirmwareHost/Audio/` |
+| Native blocks for packages: VA, phase-distortion and sampler voices, engine slots, arpeggiator, MIDI output, master bus and punch FX, step sequencer | `FM1/FirmwareHost/Audio/` |
+| Samples shared by packages (CC0 and original; see its LICENSE.txt) | `Firmwares/_samples/` |
 
 ## Groove firmware (groovebox)
 

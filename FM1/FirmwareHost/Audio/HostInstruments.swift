@@ -163,11 +163,11 @@ final class PrivateFMInstrument: PkgInstrument {
 }
 
 /// `"type": "slot"`: one track's sound source that can switch between engines at runtime
-/// (`"engines": ["va", "fm", "pd"]`). The script picks one with `inst.engine(name)`; parameters,
+/// (`"engines": ["va", "fm", "pd", "smp"]`). The script picks one with `inst.engine(name)`; parameters,
 /// notes and locks go to the selected engine. The previous engine keeps rendering for two
 /// seconds after a switch so its release is not cut.
 final class SlotInstrument: PkgInstrument {
-    static let engineTypes: Set<String> = ["va", "fm", "pd"]
+    static let engineTypes: Set<String> = ["va", "fm", "pd", "smp"]
     let engines: [PkgInstrument]
     let engineNames: [String]
     /// Main thread writes; the audio thread follows at its next call.
@@ -177,13 +177,14 @@ final class SlotInstrument: PkgInstrument {
     private var tailLeft = 0
     private let tailFrames: Int
 
-    init(engines names: [String], sampleRate: Float, voices: Int) {
+    init(engines names: [String], sampleRate: Float, voices: Int, samples: PkgSampleLibrary = .empty) {
         var subs: [PkgInstrument] = []
         var kept: [String] = []
         for n in names where SlotInstrument.engineTypes.contains(n) && !kept.contains(n) {
             switch n {
             case "fm": subs.append(PrivateFMInstrument(sampleRate: sampleRate, voices: voices))
             case "pd": subs.append(PDSynth(sampleRate: sampleRate, voices: voices))
+            case "smp": subs.append(SamplerInstrument(sampleRate: sampleRate, voices: voices, library: samples))
             default: subs.append(VASynth(sampleRate: sampleRate, voices: voices))
             }
             kept.append(n)

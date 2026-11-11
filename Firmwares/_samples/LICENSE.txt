@@ -1,0 +1,15 @@
+Samples shared by FM Pocket's firmware packages (referenced as @samples/<file> in a manifest).
+
+piano_c1.wav … piano_c5.wav, flute_c4.wav … flute_c6.wav, sax_as1.wav … sax_as3.wav
+  Licence: CC0 1.0 Universal (public domain dedication)
+  https://creativecommons.org/publicdomain/zero/1.0/
+  Source: Versilian Studios (Sam Gossner)
+    VCSL         https://github.com/sgossner/VCSL        (Grand Piano, Kawai; Tenor Saxophone)
+    VSCO-2 CE    https://github.com/sgossner/VSCO-2-CE   (Flute, sustain vibrato)
+  Taken from Felucca's CC0 sample folder (github.com/hugelton/Felucca, assets/samples-cc0),
+  which keeps the first ~400 KB of each original file. Here they were mixed to mono 16-bit,
+  normalised, and given a 60 ms fade at the cut.
+
+break_120.wav
+  A one-bar break at 120 BPM rendered from this app's own drum kit (FM1/Engine/DrumKit.swift).
+  Original work, same licence as the app.

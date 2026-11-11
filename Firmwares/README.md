@@ -35,14 +35,19 @@ my-firmware/
   manifest.json
   lib.js               any number of scripts, run in the order the manifest lists them
   main.js
+  samples/             optional: the package's own WAV files (see Samples below)
 ```
 
 To distribute a package as one file, run `python3 Firmwares/tools/pack.py Firmwares/my-firmware`.
 This writes `Firmwares/dist/my-firmware.fm1fw`, a JSON file:
 
 ```json
-{"fm1fw": 1, "files": {"manifest.json": "…", "lib.js": "…", "main.js": "…"}}
+{"fm1fw": 1, "files": {"manifest.json": "…", "lib.js": "…", "main.js": "…",
+                       "samples/kick.wav": {"base64": "…"}}}
 ```
+
+Text files are strings and the package's own samples are base64. Samples that ship with the app
+(`@samples/…`) are not packed.
 
 You can install it in three ways:
 
@@ -107,6 +112,7 @@ before writing anything.
 | `pd` | phase-distortion (CZ-style) polysynth, new for packages (`PDSynth.swift`) | `wave1` `wave2` (0 saw, 1 square, 2 pulse, 3 double sine, 4 saw-pulse, 5–7 resonance 1–3) · `line` (0 = 1, 1 = 1+2, 2 = 1+1′, 3 = 1×2 ring) · `semi2` · `detune` · `dcw` · `dcwenv` · `da dd ds dr` (DCW envelope) · `a d s r` (DCA) · `fold` · `vib` `vibrate` · `level` · `vel` · `glide` · `mode` (0 poly, 1 mono, 2 legato) |
 | `slot` | one track's sound source that can switch engine at runtime, new for packages (`SlotInstrument` in `HostInstruments.swift`). Declare `"engines": ["va", "fm", "pd"]` (any of the three) and the starting `"engine"`. Each engine inside keeps its own sound; an `fm` in a slot has an FM engine of its own, so several tracks can play FM voices at once. | those of the selected engine. `inst.engine()` reads it, `inst.engine("pd")` switches (notes in flight on the old engine are released, and its tail rings out), `inst.engines()` lists the choices and `inst.type` follows the selection. |
 | `midi` | a MIDI track for an external instrument, new for packages (`PackageMIDIOut.swift`). Optional `"channel"` 1–16 to start on. Notes from keys, the arpeggiator and the sequencer go out to every MIDI destination and to the app's virtual source "FM Pocket". It renders no audio. | `channel` (0–15 = channel 1–16). |
+| `sampler` | sample playback, new for packages (`Sampler.swift`); also the `smp` engine of a slot. It plays the package's sample sets (see Samples below). | `set` (index of the set) · `tune` (index 0–48 = −24…+24) · `fine` (0.5 = 0) · `start` (offset into the sample) · `a d s r` · `cutoff` (1 = open) · `reverse` (0/1) · `level` · `vel`. `inst.sets()` lists the set names. |
 | `drums` | the app's 11-voice analog drum kit, one private instance per package (`DrumKit.swift`) | lanes 0–10 are BD SD LT MT HT RM CP CB CY OH CH. Each lane has `<lane>.level`, `.tune`, `.decay` and `.tone`, for example `BD.decay`. There is also `accent`. Play a lane with `inst.hit(lane, vel)`. |
 
 Value rules:
@@ -159,6 +165,35 @@ page. A script firmware starts with every effect off.
 If a firmware needs a sound block the host lacks, add it natively in
 `FM1/FirmwareHost/Audio/`, register its `type` in `PackageEngine.init` and
 `FirmwareManifest.instrumentTypes`, and document it here. Packages can then use it.
+
+## Samples
+
+`engine.samples` lists the sample sets that `sampler` instruments and `smp` slot engines play:
+
+```json
+"samples": [
+  {"name": "PIANO", "zones": [{"file": "@samples/piano_c3.wav", "root": 48}, {"file": "@samples/piano_c4.wav", "root": 60}]},
+  {"name": "MY KICK", "zones": [{"file": "samples/kick.wav", "root": 60}]},
+  {"name": "BREAK", "file": "@samples/break_120.wav", "slices": 16}
+],
+"userSamples": true
+```
+
+* **A multisampled set** (`zones`, 1–16 of them) plays the zone whose root note is nearest to
+  the key, re-pitched.
+* **A sliced set** (`file` + `slices`, 1–64) cuts one sample into equal slices. Key C3 (48) plays
+  slice 1, the next key slice 2, and so on, at the original pitch.
+* **Paths:** `@samples/<file>.wav` means the samples shipped with the app, in
+  `Firmwares/_samples/`: `piano_c1`–`c5`, `flute_c4`–`c6`, `sax_as1`–`as3` and `break_120`.
+  `samples/<file>.wav` means a file inside the package.
+* **WAV formats:** PCM 8, 16, 24 or 32-bit, or 32-bit float, at any rate. Multi-channel files are
+  mixed to mono. A package can use up to 8 million sample frames in all.
+* **`"userSamples": true`** adds the user's own WAV files after the manifest's sets, one set per
+  file with root C4. The user adds them in the firmware menu ("Add samples…"), and the running
+  firmware reboots to load them. They are stored per package.
+* **Licences:** the shipped piano, flute and sax are CC0 1.0, from Versilian Studios' VCSL and
+  VSCO-2 CE, taken from Felucca's CC0 sample folder. `break_120` was rendered from this app's
+  own drum kit. See `_samples/LICENSE.txt`.
 
 ## The sequencer
 

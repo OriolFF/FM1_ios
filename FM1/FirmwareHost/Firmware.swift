@@ -20,10 +20,31 @@ struct FirmwareManifest: Codable, Equatable {
     struct Engine: Codable, Equatable {
         var instruments: [Instrument]
         var sequencer: Sequencer?
+        /// Sample sets for `sampler` instruments and slots with the `smp` engine.
+        var samples: [SampleSet]? = nil
+        /// Adds the user's own WAV files (imported from the firmware menu) as extra sets.
+        var userSamples: Bool? = nil
+    }
+    /// Multisampled (`zones`) or sliced (`file` + `slices`). Paths: `@samples/<file>` (shared,
+    /// shipped with the app) or `samples/<file>` inside the package.
+    struct SampleSet: Codable, Equatable {
+        var name: String
+        var zones: [Zone]? = nil
+        var file: String? = nil
+        var slices: Int? = nil
+    }
+    struct Zone: Codable, Equatable {
+        var file: String
+        var root: Int
+    }
+    static func safeSamplePath(_ p: String) -> Bool {
+        let parts = p.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count == 2, parts[0] == "@samples" || parts[0] == "samples" else { return false }
+        return safeFileName(parts[1]) && parts[1].lowercased().hasSuffix(".wav")
     }
     struct Instrument: Codable, Equatable {
         var id: String
-        var type: String          // fm | va | pd | drums | slot
+        var type: String          // fm | va | pd | drums | slot | midi | sampler
         var voices: Int?
         /// `slot` only: the engines it can switch between (va, fm, pd) and the one it starts with.
         var engines: [String]? = nil
@@ -41,7 +62,7 @@ struct FirmwareManifest: Codable, Equatable {
         var lanes: Int?
     }
 
-    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums", "slot", "midi"]
+    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums", "slot", "midi", "sampler"]
 
     /// Checks everything the host relies on. Throws a readable message.
     func validate(allowNative: Bool) throws {
@@ -68,13 +89,30 @@ struct FirmwareManifest: Codable, Equatable {
                 if let c = i.channel, !(1...16).contains(c) { throw fail("channel must be 1–16") }
                 if i.type == "slot" {
                     let es = i.engines ?? []
-                    guard !es.isEmpty, es.count <= 3, es.allSatisfy({ SlotInstrument.engineTypes.contains($0) }) else {
-                        throw fail("Slot '\(i.id)' needs engines from va, fm, pd")
+                    guard !es.isEmpty, Set(es).count == es.count, es.allSatisfy({ SlotInstrument.engineTypes.contains($0) }) else {
+                        throw fail("Slot '\(i.id)' needs engines from va, fm, pd, smp (each once)")
                     }
                     if let e = i.engine, !es.contains(e) { throw fail("Slot '\(i.id)' starts on '\(e)', which is not in its engines") }
                 }
             }
             guard fmCount <= 1 else { throw fail("Only one fm instrument (the host has one FM engine)") }
+            if let sets = e.samples {
+                guard sets.count <= 32 else { throw fail("At most 32 sample sets") }
+                for s in sets {
+                    guard !s.name.isEmpty, s.name.count <= 16 else { throw fail("Sample set names: 1–16 characters") }
+                    if let f = s.file {
+                        guard FirmwareManifest.safeSamplePath(f) else { throw fail("Bad sample path '\(f)'") }
+                        if let n = s.slices, !(1...64).contains(n) { throw fail("slices must be 1–64") }
+                    } else {
+                        let z = s.zones ?? []
+                        guard !z.isEmpty, z.count <= 16 else { throw fail("Set '\(s.name)' needs 1–16 zones or a file") }
+                        for zone in z {
+                            guard FirmwareManifest.safeSamplePath(zone.file) else { throw fail("Bad sample path '\(zone.file)'") }
+                            guard (0...127).contains(zone.root) else { throw fail("Zone root must be 0–127") }
+                        }
+                    }
+                }
+            }
             if let s = e.sequencer {
                 guard s.tracks.count <= 8 else { throw fail("At most 8 sequencer tracks") }
                 if let p = s.patterns, !(1...16).contains(p) { throw fail("patterns must be 1–16") }

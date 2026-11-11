@@ -24,6 +24,18 @@ final class FirmwareCatalog: ObservableObject {
         if ProcessInfo.processInfo.environment["FM1_TEST_RESET_PACKAGES"] == "1" {
             try? FileManager.default.removeItem(at: Self.installedRoot)
         }
+        // UI tests: one generated user sample ("TEST SINE") for the firmware with this id
+        if let id = ProcessInfo.processInfo.environment["FM1_TEST_USER_SAMPLE"] {
+            Self.removeUserSamples(for: id)
+            var pcm = Data()
+            for i in 0..<22050 { var v = Int16(12000 * sin(2 * Double.pi * 261.6256 * Double(i) / 22050)); pcm.append(Data(bytes: &v, count: 2)) }
+            var wav = Data("RIFF".utf8)
+            func put<T>(_ x: T) { var y = x; wav.append(Data(bytes: &y, count: MemoryLayout<T>.size)) }
+            put(UInt32(36 + pcm.count)); wav.append(Data("WAVEfmt ".utf8))
+            put(UInt32(16)); put(UInt16(1)); put(UInt16(1)); put(UInt32(22050)); put(UInt32(44100)); put(UInt16(2)); put(UInt16(16))
+            wav.append(Data("data".utf8)); put(UInt32(pcm.count)); wav.append(pcm)
+            try? Self.addUserSample(wav, name: "TEST SINE.wav", to: id)
+        }
         #endif
         reload()
     }
@@ -59,6 +71,46 @@ final class FirmwareCatalog: ObservableObject {
         }
     }
 
+    // MARK: user samples (Application Support/FirmwareData/<id>/samples)
+
+    static func userSamples(for id: String) -> [String] {
+        let dir = PackageHost.userSampleFolder(id)
+        return ((try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? []).filter { $0.lowercased().hasSuffix(".wav") }.sorted()
+    }
+
+    /// Adds one WAV file to a package's user samples (checked as WAV, name made safe). Returns the stored name.
+    @discardableResult
+    static func addUserSample(_ data: Data, name: String, to id: String) throws -> String {
+        guard data.count <= 32_000_000 else { throw FirmwareError.invalid("\(name) is larger than 32 MB") }
+        _ = try PkgSample.decodeWAV(data, maxFrames: 1)
+        guard userSamples(for: id).count < 32 else { throw FirmwareError.invalid("At most 32 user samples per firmware") }
+        var base = (name as NSString).deletingPathExtension.replacingOccurrences(of: "[^A-Za-z0-9_-]+", with: "_", options: .regularExpression)
+        base = String(base.trimmingCharacters(in: CharacterSet(charactersIn: "_-")).prefix(40))
+        if base.isEmpty { base = "sample" }
+        let dir = PackageHost.userSampleFolder(id)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        var file = base + ".wav", n = 2
+        while FileManager.default.fileExists(atPath: dir.appendingPathComponent(file).path) { file = "\(base)_\(n).wav"; n += 1 }
+        try data.write(to: dir.appendingPathComponent(file), options: .atomic)
+        return file
+    }
+
+    /// Imports WAV files picked in Files. Returns how many were added and the first error, if any.
+    static func importUserSamples(_ urls: [URL], to id: String) -> (added: Int, error: String?) {
+        var added = 0, err: String? = nil
+        for url in urls {
+            let ok = url.startAccessingSecurityScopedResource()
+            defer { if ok { url.stopAccessingSecurityScopedResource() } }
+            do { try addUserSample(try Data(contentsOf: url), name: url.lastPathComponent, to: id); added += 1 }
+            catch { if err == nil { err = "\(url.lastPathComponent): \(error.localizedDescription)" } }
+        }
+        return (added, err)
+    }
+
+    static func removeUserSamples(for id: String) {
+        try? FileManager.default.removeItem(at: PackageHost.userSampleFolder(id))
+    }
+
     func firmware(id: String) -> Firmware? {
         let migrated = id == "stockV15" ? "stock-v15" : id
         return all.first { $0.id == migrated }
@@ -81,8 +133,13 @@ final class FirmwareCatalog: ObservableObject {
         }
         var files: [String: Data] = [:]
         if obj["fm1fw"] != nil {
-            guard let f = obj["files"] as? [String: String] else { throw FirmwareError.invalid("bundle has no files") }
-            for (k, v) in f { files[k] = Data(v.utf8) }
+            // text files are strings; binary files (package samples) are {"base64": "…"}
+            guard let f = obj["files"] as? [String: Any] else { throw FirmwareError.invalid("bundle has no files") }
+            for (k, v) in f {
+                if let s = v as? String { files[k] = Data(s.utf8) }
+                else if let o = v as? [String: Any], let b = o["base64"] as? String, let d = Data(base64Encoded: b) { files[k] = d }
+                else { throw FirmwareError.invalid("bad entry \(k)") }
+            }
         } else if obj["runtime"] != nil {
             files["manifest.json"] = data
             let man = try Self.decode(data)
@@ -114,6 +171,14 @@ final class FirmwareCatalog: ObservableObject {
         try fm.createDirectory(at: tmp, withIntermediateDirectories: true)
         for (name, d) in files where name == "manifest.json" || (man.scripts ?? []).contains(name) || (FirmwareManifest.safeFileName(name) && name.hasSuffix(".json")) {
             try d.write(to: tmp.appendingPathComponent(name))
+        }
+        // the package's own samples (`samples/<file>.wav` in its manifest), checked as WAV
+        let own = Set((man.engine?.samples ?? []).flatMap { s in ([s.file].compactMap { $0 }) + (s.zones ?? []).map(\.file) }.filter { $0.hasPrefix("samples/") })
+        if !own.isEmpty { try fm.createDirectory(at: tmp.appendingPathComponent("samples"), withIntermediateDirectories: true) }
+        for path in own {
+            guard let d = files[path] else { throw FirmwareError.invalid("missing sample \(path)") }
+            _ = try PkgSample.decodeWAV(d, maxFrames: 1)
+            try d.write(to: tmp.appendingPathComponent(path))
         }
         let dest = Self.installedRoot.appendingPathComponent(man.id, isDirectory: true)
         if fm.fileExists(atPath: dest.path) { try fm.removeItem(at: dest) }
@@ -152,7 +217,7 @@ final class FirmwareCatalog: ObservableObject {
         do {
             let (d, resp) = try await URLSession.shared.data(from: url)
             if let h = resp as? HTTPURLResponse, !(200..<300).contains(h.statusCode) { throw FirmwareError.download("HTTP \(h.statusCode)") }
-            guard d.count < 4_000_000 else { throw FirmwareError.download("package too large") }
+            guard d.count < 24_000_000 else { throw FirmwareError.download("package too large") }
             return d
         } catch let e as FirmwareError { throw e } catch { throw FirmwareError.download(error.localizedDescription) }
     }

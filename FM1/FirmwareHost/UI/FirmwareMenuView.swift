@@ -10,6 +10,9 @@ struct FirmwareView: View {
     @State private var selected: Firmware? = nil
     @State private var urlText = Self.defaultURL
     @State private var importing = false
+    @State private var importingSamples = false
+    @State private var sampleMessage: String? = nil
+    @State private var sampleCount = 0
     @State private var busy = false
     @State private var message: String? = nil
 
@@ -28,6 +31,29 @@ struct FirmwareView: View {
                     }
                 } footer: {
                     Text("Switching firmware stops playback and reboots the panel. Presets, sequencer patterns and global settings are kept. Choose FM-1 Stock V15 to restore the original firmware.")
+                }
+                if choice.manifest.engine?.userSamples == true {
+                    Section {
+                        Button { importingSamples = true } label: { Label("Add samples…", systemImage: "waveform.badge.plus") }
+                        if sampleCount > 0 {
+                            Button(role: .destructive) {
+                                FirmwareCatalog.removeUserSamples(for: choice.id)
+                                samplesChanged(choice, "Removed the user samples.")
+                            } label: { Label("Remove user samples", systemImage: "trash") }
+                        }
+                        if let sampleMessage { Text(sampleMessage).font(.footnote).foregroundStyle(.secondary) }
+                    } header: {
+                        Text("Samples for \(choice.name)")
+                    } footer: {
+                        Text("\(sampleCount) of your own WAV files. They appear as extra sounds of the SAMPLE engine (root note C4).")
+                    }
+                    .fileImporter(isPresented: $importingSamples, allowedContentTypes: [.wav, .audio], allowsMultipleSelection: true) { result in
+                        guard case .success(let urls) = result else { return }
+                        let r = FirmwareCatalog.importUserSamples(urls, to: choice.id)
+                        samplesChanged(choice, r.error.map { "Added \(r.added). \($0)" } ?? "Added \(r.added) sample\(r.added == 1 ? "" : "s").")
+                    }
+                    .onAppear { sampleCount = FirmwareCatalog.userSamples(for: choice.id).count }
+                    .onChange(of: choice.id) { _, id in sampleCount = FirmwareCatalog.userSamples(for: id).count; sampleMessage = nil }
                 }
                 Section {
                     NavigationLink {
@@ -71,6 +97,13 @@ struct FirmwareView: View {
                 if case .success(let urls) = result, let url = urls.first { installURL(url.absoluteString, file: url) }
             }
         }
+    }
+
+    /// Refreshes the count and reboots the firmware if it is the one running, so it loads the samples.
+    private func samplesChanged(_ fw: Firmware, _ msg: String) {
+        sampleCount = FirmwareCatalog.userSamples(for: fw.id).count
+        sampleMessage = msg
+        if model.firmware.id == fw.id && model.packageHost != nil { model.startPackage(model.firmware) }
     }
 
     private var urlPage: some View {

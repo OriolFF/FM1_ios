@@ -21,16 +21,26 @@ final class FirmwarePackageTests: XCTestCase {
         let manifest = """
         {"format":1,"id":"ui-test","name":"UI Test Firmware","version":"0.1","bootTitle":"TEST",
          "summary":"Installed by FirmwarePackageTests.","runtime":"script","scripts":["main.js"],
-         "engine":{"instruments":[{"id":"lead","type":"va","voices":2},{"id":"drums","type":"drums"}],
+         "engine":{"instruments":[{"id":"lead","type":"va","voices":2},{"id":"drums","type":"drums"},{"id":"smp","type":"sampler"}],
+                   "samples":[{"name":"BLIP","zones":[{"file":"samples/blip.wav","root":60}]}],
                    "sequencer":{"patterns":1,"tracks":[{"id":"lead","instrument":"lead"}]}}}
         """
         let script = """
         var lead = fm.inst("lead");
         function onBoot() { lead.setAll({cutoff: 0.6, mode: 1}); }
         function onKey(k, down, v) { var n = 53 + k; if (down) lead.note(n, v); else lead.off(n); }
-        function render(g) { g.clear("#101418"); g.text(120, 100, "HELLO PACKAGE", {size: 20, align: "center"}); }
+        function render(g) { g.clear("#101418"); g.text(120, 100, "HELLO PACKAGE", {size: 20, align: "center"}); g.text(120, 140, "SET " + fm.inst("smp").sets().join(","), {size: 12, align: "center"}); }
         """
-        let bundle: [String: Any] = ["fm1fw": 1, "files": ["manifest.json": manifest, "main.js": script]]
+        // a package-own sample travels in the bundle as base64: 0.1 s of 440 Hz, 16-bit mono 22.05 kHz
+        var pcm = Data()
+        for i in 0..<2205 { var v = Int16(10000 * sin(2 * Double.pi * 440 * Double(i) / 22050)); pcm.append(Data(bytes: &v, count: 2)) }
+        var wav = Data("RIFF".utf8)
+        func put<T>(_ x: T) { var y = x; wav.append(Data(bytes: &y, count: MemoryLayout<T>.size)) }
+        put(UInt32(36 + pcm.count)); wav.append(Data("WAVEfmt ".utf8))
+        put(UInt32(16)); put(UInt16(1)); put(UInt16(1)); put(UInt32(22050)); put(UInt32(44100)); put(UInt16(2)); put(UInt16(16))
+        wav.append(Data("data".utf8)); put(UInt32(pcm.count)); wav.append(pcm)
+        let bundle: [String: Any] = ["fm1fw": 1, "files": ["manifest.json": manifest, "main.js": script,
+                                                           "samples/blip.wav": ["base64": wav.base64EncodedString()]]]
         let data = try! JSONSerialization.data(withJSONObject: bundle)
         return "data:application/json;base64," + data.base64EncodedString()
     }
@@ -101,6 +111,7 @@ final class FirmwarePackageTests: XCTestCase {
         let deadline = Date().addingTimeInterval(6)
         while Date() < deadline && !screen.label.contains("HELLO PACKAGE") { RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
         XCTAssertTrue(screen.label.contains("HELLO PACKAGE"), "script output on the TFT, got: \(screen.label)")
+        XCTAssertTrue(screen.label.contains("SET BLIP"), "the package's own sample installed and loaded, got: \(screen.label)")
     }
 
     func testSwitchBetweenBundledPackageAndStock() throws {
@@ -236,7 +247,8 @@ final class FirmwarePackageTests: XCTestCase {
         for _ in 0..<4 where !screenShows("ENGINE ANALOG", 1) { turn(up: false) }
         XCTAssertTrue(screenShows("ENGINE ANALOG"), "track 1 on ANALOG, got: \(screen.label)")
         turn(up: true)
-        XCTAssertTrue(screenShows("ENGINE FM6") || screenShows("ENGINE PHASE", 1), "KNOB 3 changes the engine, got: \(screen.label)")
+        let moved = ["FM6", "PHASE", "SAMPLE"].contains { screenShows("ENGINE \($0)", 1) }
+        XCTAssertTrue(moved, "KNOB 3 changes the engine, got: \(screen.label)")
         for _ in 0..<4 where !screenShows("ENGINE ANALOG", 1) { turn(up: false) }
         XCTAssertTrue(screenShows("ENGINE ANALOG"), "and back, got: \(screen.label)")
     }
@@ -252,7 +264,7 @@ final class FirmwarePackageTests: XCTestCase {
             while Date() < deadline { if screen.label.contains(s) { return true }; RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
             return false
         }
-        XCTAssertTrue(screenShows("T1"), "Melodee boots on its stage, got: \(screen.label)")
+        XCTAssertTrue(screenShows("■") || screenShows("▶", 1), "Melodee boots on its stage (track selection persists), got: \(screen.label)")
         let enc = app.staticTexts["ALGORITHM"]
         func turn(up: Bool) {
             let a = enc.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 4))
@@ -261,5 +273,35 @@ final class FirmwarePackageTests: XCTestCase {
         for _ in 0..<12 where !screenShows("MIDI CH", 1) { turn(up: true) }
         XCTAssertTrue(screenShows("MIDI CH"), "a MIDI track shows its channel, got: \(screen.label)")
         for _ in 0..<12 where !screenShows("T1 ", 1) { turn(up: false) }   // leave track 1 selected
+    }
+    /// Track 1 on the SAMPLE engine: the shipped sets and a user sample (made by the debug hook) are its sounds.
+    func testFeluccaSampleEngineWithUserSample() throws {
+        let app = makeApp()
+        app.launchArguments = ["-firmware", "felucca"]
+        app.launchEnvironment["FM1_TEST_USER_SAMPLE"] = "felucca"
+        app.launch()
+        let screen = packageScreen(app)
+        XCTAssertTrue(screen.waitForExistence(timeout: 8))
+        func screenShows(_ s: String, _ timeout: TimeInterval = 6) -> Bool {
+            let deadline = Date().addingTimeInterval(timeout)
+            while Date() < deadline { if screen.label.contains(s) { return true }; RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
+            return false
+        }
+        XCTAssertTrue(screenShows("HOME"))
+        app.staticTexts["SAVE"].firstMatch.tap()
+        XCTAssertTrue(screenShows("SAVE > PRESETS"))
+        // `reach` is how far the drag goes (in label widths): short drags give one or two steps
+        func turn(_ knob: String, up: Bool, reach: CGFloat = 1) {
+            let l = app.staticTexts[knob]
+            l.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 4))
+                .press(forDuration: 0.1, thenDragTo: l.coordinate(withNormalizedOffset: CGVector(dx: 0.5 + (up ? reach : -reach), dy: 4)))
+        }
+        for _ in 0..<6 where !screenShows("ENGINE SAMPLE", 1) { turn("KNOB3", up: true) }
+        XCTAssertTrue(screenShows("ENGINE SAMPLE"), "SAMPLE is the last engine, got: \(screen.label)")
+        XCTAssertTrue(screenShows("PIANO"), "shipped sample sets are listed, got: \(screen.label)")
+        for _ in 0..<16 where !screenShows("▶ TEST_SINE", 1) { turn("KNOB2", up: true, reach: 0.4) }
+        XCTAssertTrue(screenShows("▶ TEST_SINE"), "the user sample is a sound, got: \(screen.label)")
+        for _ in 0..<6 where !screenShows("ENGINE ANALOG", 1) { turn("KNOB3", up: false) }
+        XCTAssertTrue(screenShows("ENGINE ANALOG"), "back to ANALOG, got: \(screen.label)")
     }
 }

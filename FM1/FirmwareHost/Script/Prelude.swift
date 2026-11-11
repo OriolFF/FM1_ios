@@ -35,6 +35,7 @@ var fm = (function () {
   Object.defineProperty(Inst.prototype, "type", { get: function () { return __host.instType(this.index); } });
   Inst.prototype.engine = function (name) { return __host.instEngine(this.index, name === undefined ? "" : String(name)); };
   Inst.prototype.engines = function () { return __host.instEngines(this.index); };
+  Inst.prototype.sets = function () { return __host.instSets(this.index); };
   Inst.prototype.note = function (n, v) { __host.noteOn(this.index, n, v === undefined ? 100 : v); };
   Inst.prototype.off = function (n) { __host.noteOff(this.index, n); };
   Inst.prototype.hit = function (lane, v) { __host.hit(this.index, lane, v === undefined ? 100 : v); };

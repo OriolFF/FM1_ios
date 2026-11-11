@@ -33,7 +33,7 @@ final class PackageEngine: FMBlockHook, @unchecked Sendable {
     let scope: UnsafeMutablePointer<Float>
     private(set) var scopeWrite = 0
 
-    init(manifest: FirmwareManifest.Engine, fm: FMEngine, sampleRate: Float) {
+    init(manifest: FirmwareManifest.Engine, fm: FMEngine, sampleRate: Float, samples: PkgSampleLibrary = .empty) {
         self.fm = fm
         var insts: [PkgInstrument] = []
         var ids: [String] = []
@@ -46,8 +46,9 @@ final class PackageEngine: FMBlockHook, @unchecked Sendable {
             case "pd": inst = PDSynth(sampleRate: sampleRate, voices: d.voices ?? 6)
             case "drums": inst = DrumsInstrument(sampleRate: sampleRate)
             case "midi": inst = MIDIOutInstrument(channel: (d.channel ?? 1) - 1)
+            case "sampler": inst = SamplerInstrument(sampleRate: sampleRate, voices: d.voices ?? 8, library: samples)
             case "slot":
-                let s = SlotInstrument(engines: d.engines ?? ["va"], sampleRate: sampleRate, voices: d.voices ?? 6)
+                let s = SlotInstrument(engines: d.engines ?? ["va"], sampleRate: sampleRate, voices: d.voices ?? 6, samples: samples)
                 if let e = d.engine { _ = s.select(e) }
                 inst = s
             default: inst = VASynth(sampleRate: sampleRate, voices: d.voices ?? 6)

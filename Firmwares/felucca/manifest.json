@@ -9,22 +9,141 @@
   "license": "Package: original work. Felucca itself is GPL-3.0-only (engines MIT, BSP MPL-2.0); not copied.",
   "source": "https://github.com/hugelton/Felucca",
   "runtime": "script",
-  "scripts": ["lib.js", "main.js"],
+  "scripts": [
+    "lib.js",
+    "main.js"
+  ],
   "engine": {
     "instruments": [
-      {"id": "t1", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "va", "voices": 4},
-      {"id": "t2", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "fm", "voices": 6},
-      {"id": "t3", "type": "slot", "engines": ["va", "fm", "pd"], "engine": "pd", "voices": 4},
-      {"id": "drums", "type": "drums"}
+      {
+        "id": "t1",
+        "type": "slot",
+        "engines": [
+          "va",
+          "fm",
+          "pd",
+          "smp"
+        ],
+        "engine": "va",
+        "voices": 4
+      },
+      {
+        "id": "t2",
+        "type": "slot",
+        "engines": [
+          "va",
+          "fm",
+          "pd",
+          "smp"
+        ],
+        "engine": "fm",
+        "voices": 6
+      },
+      {
+        "id": "t3",
+        "type": "slot",
+        "engines": [
+          "va",
+          "fm",
+          "pd",
+          "smp"
+        ],
+        "engine": "pd",
+        "voices": 4
+      },
+      {
+        "id": "drums",
+        "type": "drums"
+      }
     ],
     "sequencer": {
       "patterns": 4,
       "tracks": [
-        {"id": "t1", "instrument": "t1"},
-        {"id": "t2", "instrument": "t2"},
-        {"id": "t3", "instrument": "t3"},
-        {"id": "dr", "instrument": "drums", "lanes": 11}
+        {
+          "id": "t1",
+          "instrument": "t1"
+        },
+        {
+          "id": "t2",
+          "instrument": "t2"
+        },
+        {
+          "id": "t3",
+          "instrument": "t3"
+        },
+        {
+          "id": "dr",
+          "instrument": "drums",
+          "lanes": 11
+        }
       ]
-    }
+    },
+    "samples": [
+      {
+        "name": "PIANO",
+        "zones": [
+          {
+            "file": "@samples/piano_c1.wav",
+            "root": 24
+          },
+          {
+            "file": "@samples/piano_c2.wav",
+            "root": 36
+          },
+          {
+            "file": "@samples/piano_c3.wav",
+            "root": 48
+          },
+          {
+            "file": "@samples/piano_c4.wav",
+            "root": 60
+          },
+          {
+            "file": "@samples/piano_c5.wav",
+            "root": 72
+          }
+        ]
+      },
+      {
+        "name": "FLUTE",
+        "zones": [
+          {
+            "file": "@samples/flute_c4.wav",
+            "root": 60
+          },
+          {
+            "file": "@samples/flute_c5.wav",
+            "root": 72
+          },
+          {
+            "file": "@samples/flute_c6.wav",
+            "root": 84
+          }
+        ]
+      },
+      {
+        "name": "SAX",
+        "zones": [
+          {
+            "file": "@samples/sax_as1.wav",
+            "root": 34
+          },
+          {
+            "file": "@samples/sax_as2.wav",
+            "root": 46
+          },
+          {
+            "file": "@samples/sax_as3.wav",
+            "root": 58
+          }
+        ]
+      },
+      {
+        "name": "BREAK",
+        "file": "@samples/break_120.wav",
+        "slices": 16
+      }
+    ],
+    "userSamples": true
   }
 }

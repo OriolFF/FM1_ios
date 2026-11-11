@@ -32,7 +32,11 @@ final class PackageHost {
         guard let em = firmware.manifest.engine else { throw FirmwareError.invalid("no engine") }
         self.firmware = firmware
         self.model = model
-        engine = PackageEngine(manifest: em, fm: model.engine, sampleRate: model.engine.sampleRate)
+        let needsSamples = em.instruments.contains { $0.type == "sampler" || ($0.engines ?? []).contains("smp") }
+        let samples = needsSamples ? try PkgSampleLibrary.load(em.samples ?? [], packageFolder: firmware.folder,
+                                                              sharedFolder: PkgSampleLibrary.sharedFolder,
+                                                              userFolder: em.userSamples == true ? PackageHost.userSampleFolder(firmware.id) : nil) : .empty
+        engine = PackageEngine(manifest: em, fm: model.engine, sampleRate: model.engine.sampleRate, samples: samples)
         guard let c = JSContext() else { throw FirmwareError.invalid("JavaScriptCore unavailable") }
         ctx = c
         ctx.name = firmware.name
@@ -43,6 +47,11 @@ final class PackageHost {
         }
         installBridge()
         loadPersisted()
+    }
+
+    /// The user's WAV files for a package (imported from the firmware menu).
+    static func userSampleFolder(_ id: String) -> URL {
+        FirmwareCatalog.dataFolder(for: id).appendingPathComponent("samples", isDirectory: true)
     }
 
     // MARK: lifecycle
@@ -210,6 +219,12 @@ final class PackageHost {
         def(h, "arpModes", { () -> [String] in PkgArp.modeNames } as @convention(block) () -> [String])
         def(h, "arpRates", { () -> [String] in PkgArp.rateNames } as @convention(block) () -> [String])
         def(h, "meter", { (i: Int32) -> Double in Double(inst(i)?.meter ?? 0) } as @convention(block) (Int32) -> Double)
+        // sample set names of a sampler (or a slot's smp engine)
+        def(h, "instSets", { (i: Int32) -> [String] in
+            var target = inst(i)
+            if let s = target as? SlotInstrument { target = s.engines.first { $0 is SamplerInstrument } }
+            return (target as? SamplerInstrument)?.setNames ?? []
+        } as @convention(block) (Int32) -> [String])
         // loads FM bank voice i into the instrument's FM engine: its own one inside a slot, else the app's
         def(h, "fmPreset", { [unowned self] (ii: Int32, i: Int32) -> String in
             let ps = self.model.presets

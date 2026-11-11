@@ -3,10 +3,11 @@
 
 usage: python3 Firmwares/tools/pack.py Firmwares/<package> [more packages…] [-o OUTDIR]
 
-The bundle is JSON: {"fm1fw": 1, "files": {"manifest.json": "...", "<script>": "..."}}.
+The bundle is JSON: {"fm1fw": 1, "files": {"manifest.json": "...", "<script>": "...",
+"samples/<file>.wav": {"base64": "..."}}}. Samples shared by the app (@samples/…) are not included.
 Install it in FM Pocket from Firmware → Install from URL… (host it anywhere) or from Files.
 """
-import json, os, sys
+import base64, json, os, sys
 
 def pack(folder, outdir):
     with open(os.path.join(folder, "manifest.json"), encoding="utf-8") as f:
@@ -20,11 +21,20 @@ def pack(folder, outdir):
             raise SystemExit(f"{folder}: bad script name {name!r}")
         with open(os.path.join(folder, name), encoding="utf-8") as f:
             files[name] = f.read()
+    for s in (man.get("engine") or {}).get("samples", []):
+        for path in [s.get("file")] + [z["file"] for z in s.get("zones", [])]:
+            if path and path.startswith("samples/"):
+                name = path.split("/", 1)[1]
+                if "/" in name or name.startswith(".") or not name.lower().endswith(".wav"):
+                    raise SystemExit(f"{folder}: bad sample path {path!r}")
+                with open(os.path.join(folder, path), "rb") as f:
+                    files[path] = {"base64": base64.b64encode(f.read()).decode("ascii")}
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, man["id"] + ".fm1fw")
     with open(out, "w", encoding="utf-8") as f:
         json.dump({"fm1fw": 1, "files": files}, f, ensure_ascii=False)
-    print(f"{out}  ({os.path.getsize(out)} bytes, {len(files) - 1} scripts)")
+    n_samples = sum(1 for k in files if k.startswith("samples/"))
+    print(f"{out}  ({os.path.getsize(out)} bytes, {len(man.get('scripts', []))} scripts, {n_samples} samples)")
 
 if __name__ == "__main__":
     args = sys.argv[1:]
