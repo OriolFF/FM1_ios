@@ -264,6 +264,13 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 * Chords: AUTO and AUTO2 (an approximation of Melodee's voice leading: closest inversion, or
   melody on top), plus triads, sevenths and fixed shapes.
 * Eight palettes.
+* Tracks 5–8 are MIDI tracks. They have the same keys, scales, chords, arpeggiator, sequencer
+  and SONG paths as the instruments, and play an external instrument on a channel (KNOB 1 CH,
+  starting on 5–8). The black keys and ALGORITHM reach them, and the stage, PATTERNS and SONG
+  views show the bank of four that holds the selected track. Output goes to every MIDI
+  destination and to the app's own virtual source "FM Pocket", stamped to line up with the
+  audio. The app's MIDI input ignores that source, so a MIDI track can't loop back. Songs saved
+  before this get REST on tracks 5–8.
 
 **Approximated:**
 
@@ -277,7 +284,7 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
 
 **Missing:**
 
-* the MIDI-only tracks 5–8 and USB host;
+* USB host, and TRS THRU on the MIDI tracks;
 * SID and the per-track note FX;
 * the 27 timed punch FX in SONG;
 * a preset per block or pattern;
@@ -325,6 +332,13 @@ The package host is in `FM1/FirmwareHost/`. The format is described in `Firmware
   the old engine's tail ring while the new one plays; parameters reach the selected engine; three
   playing slots cost about 1 % of realtime. The fuzz switched engines 80–850 times per run in
   SLOOP and Melodee. `testFeluccaTrackEngineSwitch` turns Felucca's ENGINE knob on the device UI.
+* **MIDI out:** a CoreMIDI round trip on the Mac. `MIDIOutInstrument` sent to a virtual
+  destination in the test process, which received the expected note-ons and note-offs on the
+  right channels (including after a channel change), with `allOff` releasing what was held. The
+  fuzz played 600–900 notes on Melodee's MIDI tracks per run. `testMelodeeMIDITrack` reaches
+  track 5 on the device UI.
+* **Package updates keep saved projects:** saved tracks are restored by id and songs are
+  re-mapped, so adding tracks 5–8 doesn't drop Melodee's existing patterns.
 * **MIDI in:** the script fuzz includes random note, CC and program messages on all 16 channels.
 * **Not verified:**
   * listening tests, since nothing was heard;

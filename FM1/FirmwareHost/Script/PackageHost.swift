@@ -82,6 +82,10 @@ final class PackageHost {
         started = false
         model.engine.blockHook = nil
         model.engine.allNotesOff()
+        // the engine is detached before its mailbox drains: release external MIDI notes from here,
+        // once the audio thread has certainly finished its last block with this engine
+        let midi = engine.instruments.compactMap { $0 as? MIDIOutInstrument }
+        if !midi.isEmpty { DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { for m in midi { m.allOff() } } }
     }
 
     // MARK: events from the panel
@@ -470,12 +474,22 @@ final class PackageHost {
         guard let d = try? Data(contentsOf: dataURL),
               let dict = try? PropertyListSerialization.propertyList(from: d, format: nil) as? [String: Any] else { return }
         let seq = engine.seq
-        // only restore tracks whose layout still matches the manifest
-        if let ids = dict["trackIDs"] as? [String], ids == seq.tracks.map(\.id), let tracks = dict["tracks"] as? [Data] {
-            for (i, td) in tracks.enumerated() where i < seq.data.count { seq.data[i].restore(td) }
-            if let sel = dict["selected"] as? [Int] { for (i, p) in sel.enumerated() where i < seq.tracks.count { seq.selected[i] = min(p, seq.patterns - 1) } }
-            if let s = dict["song"] as? Data, s.count == PkgSequencer.maxSections * max(1, seq.tracks.count) {
-                s.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in for k in 0..<s.count { seq.songPatterns[k] = raw[k] } }
+        // restore tracks by id, so a package update that adds or reorders tracks keeps the others
+        if let ids = dict["trackIDs"] as? [String], let tracks = dict["tracks"] as? [Data], ids.count == tracks.count {
+            let now = seq.tracks.map(\.id)
+            let map = ids.map { now.firstIndex(of: $0) }            // saved index -> current index
+            for (i, td) in tracks.enumerated() { if let j = map[i] { seq.data[j].restore(td) } }
+            if let sel = dict["selected"] as? [Int] {
+                for (i, p) in sel.enumerated() where i < map.count { if let j = map[i] { seq.selected[j] = min(p, seq.patterns - 1) } }
+            }
+            let oldT = max(1, ids.count), T = max(1, now.count)
+            if let s = dict["song"] as? Data, s.count == PkgSequencer.maxSections * oldT {
+                s.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
+                    for k in 0..<(PkgSequencer.maxSections * T) { seq.songPatterns[k] = PkgSequencer.rest }
+                    for sec in 0..<PkgSequencer.maxSections {
+                        for i in 0..<ids.count { if let j = map[i] { seq.songPatterns[sec * T + j] = raw[sec * oldT + i] } }
+                    }
+                }
             }
             if let s = dict["songRepeats"] as? Data, s.count == PkgSequencer.maxSections {
                 s.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in for k in 0..<s.count { seq.songRepeats[k] = raw[k] } }
@@ -497,7 +511,7 @@ final class PackageHost {
 
     /// Applied after the scripts ran (so a script's defaults are overridden by the saved sound).
     private func restoreParams() {
-        guard pendingParams.count == engine.instruments.count, store["__restore"] != "\"no\"" else { return }
+        guard !pendingParams.isEmpty, store["__restore"] != "\"no\"" else { return }   // by position; each checks its own size
         func load(_ inst: PkgInstrument, _ ps: [Double]) {
             if inst.kind == "fm" { if ps.count == FMPatch.size { for (i, v) in ps.enumerated() { inst.setParam(i, Float(v)) } } }
             else if ps.count == inst.paramTable.count { for (i, v) in ps.enumerated() { inst.setParam(i, Float(v)) } }

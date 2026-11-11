@@ -124,6 +124,8 @@ final class AudioController {
         var external = false
         for i in 0..<MIDIGetNumberOfSources() {
             let src = MIDIGetSource(i)
+            // the app's own MIDI output (package MIDI tracks) would loop straight back in
+            if src == PackageMIDIOut.ownSource { MIDIPortDisconnectSource(midiIn, src); continue }
             MIDIPortConnectSource(midiIn, src, nil)
             var offline: Int32 = 0
             MIDIObjectGetIntegerProperty(src, kMIDIPropertyOffline, &offline)

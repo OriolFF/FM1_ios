@@ -28,6 +28,8 @@ struct FirmwareManifest: Codable, Equatable {
         /// `slot` only: the engines it can switch between (va, fm, pd) and the one it starts with.
         var engines: [String]? = nil
         var engine: String? = nil
+        /// `midi` only: the output channel it starts on, 1–16.
+        var channel: Int? = nil
     }
     struct Sequencer: Codable, Equatable {
         var patterns: Int?
@@ -39,7 +41,7 @@ struct FirmwareManifest: Codable, Equatable {
         var lanes: Int?
     }
 
-    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums", "slot"]
+    static let instrumentTypes: Set<String> = ["fm", "va", "pd", "drums", "slot", "midi"]
 
     /// Checks everything the host relies on. Throws a readable message.
     func validate(allowNative: Bool) throws {
@@ -63,6 +65,7 @@ struct FirmwareManifest: Codable, Equatable {
                 guard ids.insert(i.id).inserted else { throw fail("Duplicate instrument id '\(i.id)'") }
                 if i.type == "fm" { fmCount += 1 }
                 if let v = i.voices, !(1...12).contains(v) { throw fail("voices must be 1–12") }
+                if let c = i.channel, !(1...16).contains(c) { throw fail("channel must be 1–16") }
                 if i.type == "slot" {
                     let es = i.engines ?? []
                     guard !es.isEmpty, es.count <= 3, es.allSatisfy({ SlotInstrument.engineTypes.contains($0) }) else {

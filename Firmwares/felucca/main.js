@@ -77,7 +77,8 @@ function E(t) { return t === DR ? "drums" : inst(t).engine(); }
 function engineName(t) { return ENGINE_NAMES[E(t)]; }
 function setEngine(t, d) {
   if (t === DR) return;
-  var list = inst(t).engines(), e = list[LIB.wrap(list.indexOf(E(t)) + d, list.length)];
+  var list = inst(t).engines(), e = list[LIB.clamp(list.indexOf(E(t)) + d, 0, list.length - 1)];
+  if (e === E(t)) return;                     // a knob: stops at the ends
   inst(t).allOff(); inst(t).engine(e);
   loadSound(t, 0); saveUI(); say("T" + (t + 1) + " " + ENGINE_NAMES[e]);
 }

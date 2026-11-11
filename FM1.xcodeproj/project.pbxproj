@@ -27,6 +27,7 @@
 		4B853A9A8B129069EF2FDB8A /* Prelude.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9187682186F2555D1E6E7619 /* Prelude.swift */; };
 		4BC8B0FD9DC2881D5161F26A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EBEB3921BB73FD5B6F50984 /* Theme.swift */; };
 		4C76F50CD834D19815079A6F /* TutorialBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A44131962A8BE7CE9C3BAED /* TutorialBrowserTests.swift */; };
+		4CE27134BFCEC4696C132F78 /* PackageMIDIOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF48BE805E62EF12DF181C90 /* PackageMIDIOut.swift */; };
 		53B89F4FCECAEFB7ED7CA178 /* FirmwareCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBC1472A6D1F9D762E531 /* FirmwareCatalog.swift */; };
 		553AE540E0907976AA61C142 /* PkgInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57766E331279ED700CDB03AE /* PkgInstrument.swift */; };
 		566D29ECA701A4F8DD80F7EB /* Nunito.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9B1C03D65236759C2FE18EC /* Nunito.ttf */; };
@@ -107,6 +108,7 @@
 		BBAD32D8F760E724131191F0 /* FirmwarePackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwarePackageTests.swift; sourceTree = "<group>"; };
 		BD0EAE88493226030B7F1ED1 /* FM1_V15_factory_bank_D.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_D.syx; sourceTree = "<group>"; };
 		C032BB19A77C15DD2299768C /* MasterBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterBus.swift; sourceTree = "<group>"; };
+		CF48BE805E62EF12DF181C90 /* PackageMIDIOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageMIDIOut.swift; sourceTree = "<group>"; };
 		D16A670BF32476A6FBC734CC /* PDSynth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDSynth.swift; sourceTree = "<group>"; };
 		D3DACCF6C9F945FC7C3C6B62 /* FM1_V15_factory_bank_B.syx */ = {isa = PBXFileReference; path = FM1_V15_factory_bank_B.syx; sourceTree = "<group>"; };
 		DE6DD706EB043B9819F88985 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -172,6 +174,7 @@
 				386F7587D17D811CBBA88AEF /* HostInstruments.swift */,
 				C032BB19A77C15DD2299768C /* MasterBus.swift */,
 				FF5E9C5853087F058318C547 /* PackageEngine.swift */,
+				CF48BE805E62EF12DF181C90 /* PackageMIDIOut.swift */,
 				D16A670BF32476A6FBC734CC /* PDSynth.swift */,
 				39AF4F3F1174F1F9BF191098 /* PkgArp.swift */,
 				57766E331279ED700CDB03AE /* PkgInstrument.swift */,
@@ -409,6 +412,7 @@
 				7FBC4BE5F58BE8D3E15AFE0D /* PDSynth.swift in Sources */,
 				F0278DAF1397A469CEEF5921 /* PackageEngine.swift in Sources */,
 				440F5AF68870519D54A25700 /* PackageHost.swift in Sources */,
+				4CE27134BFCEC4696C132F78 /* PackageMIDIOut.swift in Sources */,
 				879D5E4DB5D80C1D7DC5053B /* PackageScreenView.swift in Sources */,
 				1F95CA4629A73A55429B7B73 /* PanelComponents.swift in Sources */,
 				391BA8E0E78A2B6413378EC6 /* PanelView.swift in Sources */,

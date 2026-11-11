@@ -240,4 +240,26 @@ final class FirmwarePackageTests: XCTestCase {
         for _ in 0..<4 where !screenShows("ENGINE ANALOG", 1) { turn(up: false) }
         XCTAssertTrue(screenShows("ENGINE ANALOG"), "and back, got: \(screen.label)")
     }
+    /// Melodee's tracks 5–8 are MIDI tracks: ALGORITHM walks the tracks up to T5, which shows its MIDI channel.
+    func testMelodeeMIDITrack() throws {
+        let app = makeApp()
+        app.launchArguments = ["-firmware", "melodee"]
+        app.launch()
+        let screen = packageScreen(app)
+        XCTAssertTrue(screen.waitForExistence(timeout: 8))
+        func screenShows(_ s: String, _ timeout: TimeInterval = 6) -> Bool {
+            let deadline = Date().addingTimeInterval(timeout)
+            while Date() < deadline { if screen.label.contains(s) { return true }; RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
+            return false
+        }
+        XCTAssertTrue(screenShows("T1"), "Melodee boots on its stage, got: \(screen.label)")
+        let enc = app.staticTexts["ALGORITHM"]
+        func turn(up: Bool) {
+            let a = enc.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 4))
+            a.press(forDuration: 0.1, thenDragTo: enc.coordinate(withNormalizedOffset: CGVector(dx: up ? 1.0 : 0.0, dy: 4)))
+        }
+        for _ in 0..<12 where !screenShows("MIDI CH", 1) { turn(up: true) }
+        XCTAssertTrue(screenShows("MIDI CH"), "a MIDI track shows its channel, got: \(screen.label)")
+        for _ in 0..<12 where !screenShows("T1 ", 1) { turn(up: false) }   // leave track 1 selected
+    }
 }

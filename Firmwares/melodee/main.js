@@ -12,9 +12,13 @@ var PALETTES = [
   { name: "CANDY", bg: "#fff2f8", panel: "#ffffff", text: "#3a2340", sub: "#9a7ca2", tracks: ["#ff6fa8", "#6fb8ff", "#b58cff", "#ffb86f"] },
   { name: "LO-FI", bg: "#1c1b17", panel: "#2a2822", text: "#e8e2cf", sub: "#a39c86", tracks: ["#d9a066", "#8fb3a0", "#b49ab8", "#d6c56b"] }
 ];
-var INST = ["t1", "t2", "t3", "drums"];
+var INST = ["t1", "t2", "t3", "drums", "m5", "m6", "m7", "m8"];
+// tracks 5–8 are MIDI tracks: they play external instruments on their channel (KNOB 1, CH)
+var NT = 8;
+function isMidi(t) { return t >= 4; }
+function bank(t) { return t < 4 ? 0 : 4; }
 // tracks 1–3 are host slots: each can load PROPHET (va), FM6 (fm) or CZ-1 (pd)
-var ENGINE_NAMES = { va: "PROPHET", fm: "FM6", pd: "CZ-1", drums: "DRUM" };
+var ENGINE_NAMES = { va: "PROPHET", fm: "FM6", pd: "CZ-1", drums: "DRUM", midi: "MIDI" };
 var DEFAULT_ENGINE = ["va", "fm", "pd"];
 var DR = 3, NPAT = 16;
 var HOSTN = ["BD", "SD", "LT", "MT", "HT", "RM", "CP", "CB", "CY", "OH", "CH"];
@@ -66,16 +70,18 @@ var heldKeys = {}, sounding = {}, lastChord = [], lastVoicing = [];
 var capture = [];                           // [beat, note|lane, vel, track]
 var jam = [], lastLoop = -1;
 var song = fm.store.get("song", []), songCur = 0, songTrack = 0;
+song.forEach(function (sec) { while (sec.p.length < NT) sec.p.push(-1); });   // songs from before the MIDI tracks: they rest
 var tapTimes = [], lastNote = 60;
 
 function P() { return PALETTES[S.palette]; }
-function TC(t) { return P().tracks[t]; }
+function TC(t) { return t < 4 ? P().tracks[t] : LIB.hexA(P().tracks[t - 4], "aa"); }
 function inst(t) { return fm.inst(INST[t]); }
-function E(t) { return t === DR ? "drums" : inst(t).engine(); }
+function E(t) { return t === DR ? "drums" : (isMidi(t) ? "midi" : inst(t).engine()); }
 function engineName(t) { return ENGINE_NAMES[E(t)]; }
 function setEngine(t, d) {
-  if (t === DR) return;
-  var list = inst(t).engines(), e = list[LIB.wrap(list.indexOf(E(t)) + d, list.length)];
+  if (t === DR || isMidi(t)) return;
+  var list = inst(t).engines(), e = list[LIB.clamp(list.indexOf(E(t)) + d, 0, list.length - 1)];
+  if (e === E(t)) return;                     // a knob: stops at the ends
   inst(t).allOff(); inst(t).engine(e);
   loadSound(t, 0); say("T" + (t + 1) + " " + ENGINE_NAMES[e]);
 }
@@ -85,11 +91,13 @@ function saveUI() { fm.store.set("ui", S); }
 function page() { var p = PAGES[section]; return p[pageIx % p.length]; }
 function soundName(t) {
   if (t === DR) return KITS[S.kit].name + " KIT";
+  if (isMidi(t)) return "MIDI CH " + (Math.round(inst(t).get("channel")) + 1);
   if (E(t) === "fm") return fm.presetName(S.sound[t]);
   return SOUNDS[E(t)][S.sound[t]].name;
 }
 var DEF = { wave1: 0, wave2: 1, pw: 0.5, semi2: 24, detune: 0.5, osc1: 1, osc2: 0.7, sub: 0, noise: 0, sync: 0, polymod: 0, cutoff: 0.55, res: 0.2, ftype: 0, envamt: 0.7, keytrack: 0.5, fa: 0.05, fd: 0.45, fs: 0.3, fr: 0.4, a: 0.02, d: 0.5, s: 0.8, r: 0.35, drive: 0.15, glide: 0, mode: 0, lforate: 0.5, lfowave: 0, lfopitch: 0, lfocutoff: 0, lfopw: 0, level: 0.8, vel: 0.5, spread: 0.3, line: 0, dcw: 0.3, dcwenv: 0.6, da: 0.02, dd: 0.5, ds: 0.3, dr: 0.4, fold: 0, vib: 0, vibrate: 0.55 };
 function loadSound(t, i, quiet) {
+  if (isMidi(t)) return;                      // a MIDI track has one DEFAULT preset
   if (t === DR) {
     S.kit = LIB.wrap(i, KITS.length);
     var d = fm.inst("drums");
@@ -214,7 +222,7 @@ function patternKey(k, w, b, down) {
     else if (b === 4) { undo.push(t, patDialog.p); LIB.double(t, patDialog.p); say("DOUBLED · LEN " + fm.seq.length(t, patDialog.p)); }
     return;
   }
-  if (b >= 0) { if (down && b < 4) { selectTrack(b); } return; }
+  if (b >= 0) { if (down && b < NT) { selectTrack(b); } return; }
   if (w < 0) return;
   if (down) { heldPat = w; heldPatT0 = fm.now(); return; }
   if (heldPat !== w) return;
@@ -228,7 +236,7 @@ function patternKey(k, w, b, down) {
   else say(fm.seq.playing() ? "NEXT: " + (w + 1) : "PATTERN " + (w + 1));
 }
 var lastPatTap = { k: -1, t: 0 };
-function selectTrack(t) { for (var i = 0; i < 3; i++) inst(i).allOff(); S.track = LIB.clamp(t, 0, 3); saveUI(); }
+function selectTrack(t) { for (var i = 0; i < NT; i++) if (i !== DR) inst(i).allOff(); S.track = LIB.clamp(t, 0, NT - 1); saveUI(); }
 
 // ---- GLO quick layer: mutes, solos, fill, tap ----
 function gloKey(k, w, b, down) {
@@ -237,6 +245,7 @@ function gloKey(k, w, b, down) {
   if (w >= 0 && w < 4) { var m = !fm.seq.mute(w); fm.seq.mute(w, m); say("T" + (w + 1) + (m ? " MUTE" : " ON")); }
   else if (w >= 4 && w < 8) { var t = w - 4; var solo = !fm.seq.mute(t) && [0, 1, 2, 3].every(function (i) { return i === t || fm.seq.mute(i); }); for (var i = 0; i < 4; i++) fm.seq.mute(i, !solo && i !== t); say(solo ? "SOLO OFF" : "SOLO T" + (t + 1)); }
   else if (w === 8) fm.seq.fill(true);
+  else if (w >= 9 && w < 13) { var mt = w - 5, mm = !fm.seq.mute(mt); fm.seq.mute(mt, mm); say("T" + (mt + 1) + (mm ? " MUTE" : " ON")); }
   else if (w === 15) tap();
 }
 function tap() {
@@ -286,7 +295,7 @@ function onButton(name, down) {
   sheet = null;
 }
 function startOrStop() {
-  if (fm.seq.playing()) { fm.seq.stop(); recording = false; recWait = false; for (var t = 0; t < 3; t++) inst(t).allOff(); return; }
+  if (fm.seq.playing()) { fm.seq.stop(); recording = false; recWait = false; for (var t = 0; t < NT; t++) if (t !== DR) inst(t).allOff(); return; }
   if (armed) { undo.push(S.track, pat(S.track)); recording = true; recWait = false; }
   lastLoop = -1; jam = [];
   fm.seq.play();
@@ -325,7 +334,7 @@ function applySheet() {
 }
 function songOct(up) {
   if (up) {
-    var cur = song[songCur] || { p: [pat(0), pat(1), pat(2), pat(3)], r: 1 };
+    var cur = song[songCur] || { p: [0, 1, 2, 3, 4, 5, 6, 7].map(pat), r: 1 };
     song.splice(songCur + 1, 0, JSON.parse(JSON.stringify(cur))); if (song.length > 64) song.pop();
     songCur = Math.min(song.length - 1, songCur + 1); say("SECTION ADDED");
   } else if (song.length) { song.splice(songCur, 1); songCur = Math.max(0, songCur - 1); say("SECTION REMOVED"); }
@@ -374,7 +383,12 @@ function PK(t, name, label, fmt) {
     function (d) { var v = i.get(name); if (E(t) === "fm") i.set(name, LIB.clamp(v + d, 0, name === "algorithm" || /coarse$/.test(name) ? 31 : (name === "feedback" ? 7 : 99))); else i.set(name, disc ? v + d : LIB.clamp(v + d / 127, 0, 1)); });
 }
 var CZW = ["SAW", "SQUARE", "PULSE", "DBL SINE", "SAW-PULSE", "RESO 1", "RESO 2", "RESO 3"];
+function midiK(t) {
+  return K("CH", function () { return String(Math.round(inst(t).get("channel")) + 1); }, function () { return inst(t).get("channel") / 15; },
+    function (d) { inst(t).allOff(); inst(t).set("channel", LIB.clamp(Math.round(inst(t).get("channel")) + d, 0, 15)); });
+}
 function stageKnobs(t) {
+  if (isMidi(t)) return [midiK(t), null, null, null];
   if (E(t) === "va") return [PK(t, "cutoff", "CUTOFF"), PK(t, "res", "RESO"), PK(t, "envamt", "FILT ENV"), PK(t, "r", "RELEASE")];
   if (E(t) === "fm") return [PK(t, "op2.level", "MLVL"), PK(t, "op2.coarse", "MRAT"), PK(t, "feedback", "MEG"), PK(t, "op1.detune", "DTUN")];
   if (E(t) === "pd") return [PK(t, "wave1", "WAVE", function (v) { return CZW[v]; }), PK(t, "dcw", "DCW"), PK(t, "detune", "DETUNE"), PK(t, "vib", "VIBRATO")];
@@ -406,7 +420,7 @@ function knobs() {
     K("SOUND", function () { return soundName(t).slice(0, 9); }, function () { return 0.5; }, function (d) { browse(d); }), null,
     K("ENGINE", function () { return engineName(t); }, function () { return t === DR ? 0 : inst(t).engines().indexOf(E(t)) / 2; }, function (d) { if (t === DR) say("THE DRUM TRACK KEEPS ITS KIT"); else setEngine(t, d > 0 ? 1 : -1); })];
   if (layer === "GLO") return [0, 1, 2, 3].map(function (i) { return K("T" + (i + 1) + " LVL", function () { return String(Math.round(inst(i).level() * 100)); }, function () { return inst(i).level(); }, function (d) { inst(i).level(LIB.clamp(inst(i).level() + d * 0.02, 0, 1)); B.use("GLO"); }); });
-  if (B.isDown("SEQ")) return [0, 1, 2, 3].map(function (i) { return K("T" + (i + 1), function () { return String(pat(i) + 1); }, function () { return pat(i) / 15; }, function (d) { fm.seq.select(i, LIB.clamp(fm.seq.select(i) + d, 0, NPAT - 1)); B.use("SEQ"); }); });
+  if (B.isDown("SEQ")) return [0, 1, 2, 3].map(function (j) { var i = j + bank(S.track); return K("T" + (i + 1), function () { return String(pat(i) + 1); }, function () { return pat(i) / 15; }, function (d) { fm.seq.select(i, LIB.clamp(fm.seq.select(i) + d, 0, NPAT - 1)); B.use("SEQ"); }); });
   if (sheet) return [K("ACTION", function () { return SHEET[sheet.i]; }, function () { return sheet.i / 4; }, function (d) { sheet.i = LIB.clamp(sheet.i + d, 0, SHEET.length - 1); }), null, null, null];
   switch (section + ":" + page()) {
     case "ARP:ARP": return t === DR ? [null, null, null, null] : LIB.arpKnobs(inst(t), false);
@@ -423,7 +437,7 @@ function knobs() {
       K("SWG", function () { return Math.round(fm.seq.swing()) + "%"; }, function () { return (fm.seq.swing() - 50) / 25; }, function (d) { fm.seq.swing(LIB.clamp(fm.seq.swing() + d, 50, 75)); }),
       K("QNT", function () { return "1/16"; }, function () { return 0.5; }, function () { say("QNT fixed to the step grid here"); }), null];
     case "SEQ:SONG": return [K("SECTION", function () { return song.length ? (songCur + 1) + "/" + song.length : "--"; }, function () { return song.length ? songCur / Math.max(1, song.length - 1) : 0; }, function (d) { songCur = LIB.clamp(songCur + d, 0, Math.max(0, song.length - 1)); }),
-      K("TRACK", function () { return "T" + (songTrack + 1); }, function () { return songTrack / 3; }, function (d) { songTrack = LIB.clamp(songTrack + d, 0, 3); }),
+      K("TRACK", function () { return "T" + (songTrack + 1); }, function () { return songTrack / 3; }, function (d) { songTrack = LIB.clamp(songTrack + d, 0, NT - 1); }),
       K("PATTERN", function () { var s = song[songCur]; return !s ? "--" : (s.p[songTrack] < 0 ? "REST" : String(s.p[songTrack] + 1)); }, function () { var s = song[songCur]; return s ? (s.p[songTrack] + 1) / 16 : 0; }, function (d) { var s = song[songCur]; if (!s) return; s.p[songTrack] = LIB.clamp(s.p[songTrack] + d, -1, NPAT - 1); applySong(); }),
       K("REPEAT", function () { var s = song[songCur]; return s ? "x" + s.r : "--"; }, function () { var s = song[songCur]; return s ? s.r / 16 : 0; }, function (d) { var s = song[songCur]; if (!s) return; s.r = LIB.clamp(s.r + d, 1, 16); applySong(); })];
     case "SCL:SCALE": return [K("ROOT", function () { return LIB.noteName(60 + S.root).replace(/-?\d+$/, ""); }, function () { return S.root / 11; }, function (d) { S.root = LIB.wrap(S.root + d, 12); saveUI(); }),
@@ -436,7 +450,7 @@ function knobs() {
       K("LOOP SONG", function () { return S.loopSong ? "ON" : "OFF"; }, function () { return S.loopSong ? 1 : 0; }, function () { S.loopSong = !S.loopSong; saveUI(); applySong(); }), null, null];
     case "MENU:MENU": return [K("PALETTE", function () { return P().name; }, function () { return S.palette / 7; }, function (d) { S.palette = LIB.wrap(S.palette + d, PALETTES.length); saveUI(); }),
       K("AUTOSAVE", function () { return S.autosave ? "ON" : "OFF"; }, function () { return S.autosave ? 1 : 0; }, function () { S.autosave = !S.autosave; saveUI(); }), null, null];
-    case "ENV:ENV": return t === DR ? stageKnobs(t) : E(t) === "fm" ? [PK(t, "op1.level", "OP1"), PK(t, "op2.level", "OP2"), PK(t, "op3.level", "OP3"), PK(t, "op4.level", "OP4")] : [PK(t, "a", "ATTACK"), PK(t, "d", "DECAY"), PK(t, "s", "SUSTAIN"), PK(t, "r", "RELEASE")];
+    case "ENV:ENV": return t === DR || isMidi(t) ? stageKnobs(t) : E(t) === "fm" ? [PK(t, "op1.level", "OP1"), PK(t, "op2.level", "OP2"), PK(t, "op3.level", "OP3"), PK(t, "op4.level", "OP4")] : [PK(t, "a", "ATTACK"), PK(t, "d", "DECAY"), PK(t, "s", "SUSTAIN"), PK(t, "r", "RELEASE")];
     case "LFO:LFO": return E(t) === "va" ? [PK(t, "lforate", "RATE"), PK(t, "lfopitch", "PITCH"), PK(t, "lfocutoff", "FILTER"), PK(t, "lfopw", "PWM")] : E(t) === "pd" ? [PK(t, "vibrate", "RATE"), PK(t, "vib", "DEPTH"), null, null] : E(t) === "fm" ? [PK(t, "lfospeed", "SPEED"), PK(t, "lfopmd", "PMD"), PK(t, "lfoamd", "AMD"), null] : stageKnobs(t);
     case "EDIT:EDIT 1": return E(t) === "va" ? [PK(t, "wave1", "OSC A"), PK(t, "wave2", "OSC B"), PK(t, "semi2", "B SEMI", function (v) { return String(v - 24); }), PK(t, "polymod", "POLY-MOD")]
       : E(t) === "pd" ? [PK(t, "wave1", "WAVE 1", function (v) { return CZW[v]; }), PK(t, "wave2", "WAVE 2", function (v) { return CZW[v]; }), PK(t, "line", "LINE", function (v) { return ["1", "1+2", "1+1'", "1x2"][v]; }), PK(t, "dcwenv", "DCW ENV")]
@@ -457,6 +471,7 @@ function fxK(kind, label) {
 function browse(d) {
   var t = S.track, cat = CATS[browser.cat];
   if (t === DR) { loadSound(t, S.kit + d); return; }
+  if (isMidi(t)) { say("MIDI TRACK · DEFAULT"); return; }
   if (E(t) === "fm") { loadSound(t, S.sound[t] + d); return; }
   var list = SOUNDS[E(t)], i = S.sound[t];
   if (cat === "RECENT") {
@@ -470,10 +485,10 @@ function browse(d) {
 
 function onKnob(i, d) { var k = knobs()[i]; if (k) k.turn(d); }
 function onEncoder(name, d) {
-  if (name === "ALGORITHM") { selectTrack(LIB.clamp(S.track + d, 0, 3)); return; }
+  if (name === "ALGORITHM") { selectTrack(LIB.clamp(S.track + d, 0, NT - 1)); return; }
   if (name === "PRESETS") {
     if (section === "SEQ" && page() === "NOTES" && !browser) { zoom = LIB.clamp(zoom * (d > 0 ? 0.5 : 2), 1, 16); return; }
-    if (!browser) browser = { cat: 0, prev: S.track === DR ? S.kit : S.sound[S.track] };
+    if (!browser) browser = { cat: 0, prev: S.track === DR || isMidi(S.track) ? S.kit : S.sound[S.track] };
     browse(d); return;
   }
   if (name === "SELECT") {
@@ -494,7 +509,7 @@ function onTick(ms) {
     waitLoop = lp;
     // jam to song: every loop of track 1 logs the patterns of all tracks
     var l0 = fm.seq.loop(0);
-    if (l0 !== lastLoop) { lastLoop = l0; jam.push([pat(0), pat(1), pat(2), pat(3)]); if (jam.length > 64) jam.shift(); }
+    if (l0 !== lastLoop) { lastLoop = l0; jam.push([0, 1, 2, 3, 4, 5, 6, 7].map(pat)); if (jam.length > 64) jam.shift(); }
   } else waitLoop = -1;
 }
 var waitLoop = -1;
@@ -531,8 +546,8 @@ function drawStage(g) {
     for (var l = 0; l < 8; l++) { var hit = fm.now() - (sounding["d" + GM[l][1]] || 0) < 160; g.rect(14 + l * 27, 70, 22, 18, hit ? TC(t) : LIB.hexA(p.sub, "30"), 4); g.text(25 + l * 27, 74, GM[l][0].slice(0, 2), { size: 8, weight: "bold", align: "center", color: hit ? p.bg : p.sub }); }
   } else g.text(120, 46, names || " ", { size: 18, weight: "bold", align: "center", color: p.text });
   // a lane per track: its sound, its pattern (and the next one), every step as dots
-  for (var tr = 0; tr < 4; tr++) {
-    var y = 100 + tr * 24, pp = pat(tr), sel = fm.seq.select(tr), len = fm.seq.length(tr, pp), cur = fm.seq.step(tr);
+  for (var tr = bank(t); tr < bank(t) + 4; tr++) {
+    var y = 100 + (tr - bank(t)) * 24, pp = pat(tr), sel = fm.seq.select(tr), len = fm.seq.length(tr, pp), cur = fm.seq.step(tr);
     g.rect(4, y, 232, 21, tr === t ? LIB.hexA(TC(tr), "33") : p.panel, 4);
     if (tr === t && armed) g.frame(4, y, 232, 21, (recording && (fm.seq.beat() % 1) < 0.25) || (!recording && fm.now() % 1400 < 700) ? "#ff4a3d" : "#ff4a3d55", 1.5, 4);
     g.text(10, y + 4, String(tr + 1), { size: 10, weight: "bold", color: fm.seq.mute(tr) ? p.sub : TC(tr) });
@@ -601,9 +616,9 @@ function drawNotes(g) {
 }
 function drawPatterns(g) {
   var p = P();
-  header(g, "PATTERNS");
-  for (var t = 0; t < 4; t++) {
-    var y = 30 + t * 34;
+  header(g, "PATTERNS" + (bank(S.track) ? " · T5–8 MIDI" : ""));
+  for (var t = bank(S.track); t < bank(S.track) + 4; t++) {
+    var y = 30 + (t - bank(S.track)) * 34;
     g.text(8, y + 8, String(t + 1), { size: 11, weight: "bold", color: TC(t) });
     var playing = pat(t), queued = fm.seq.select(t);
     for (var i = 0; i < NPAT; i++) {
@@ -628,14 +643,15 @@ function drawSong(g) {
   header(g, "SEQ · SONG" + (fm.seq.songOn() ? " · PLAYING " + (fm.seq.songSection() + 1) : ""));
   if (!song.length) { g.text(120, 80, "No song yet", { size: 14, weight: "bold", align: "center", color: p.text }); g.text(120, 104, "OCT+ add a section · hold REC: take the jam", { size: 10, align: "center", color: p.sub }); return; }
   var start = Math.max(0, songCur - 6), beatsTotal = 0;
-  for (var t = 0; t < 4; t++) g.text(6, 46 + t * 30, String(t + 1), { size: 10, weight: "bold", color: TC(t) });
+  var sb = bank(songTrack);
+  for (var t = sb; t < sb + 4; t++) g.text(6, 46 + (t - sb) * 30, String(t + 1), { size: 10, weight: "bold", color: TC(t) });
   for (var i = 0; i < 8 && start + i < song.length; i++) {
     var s = song[start + i], x = 18 + i * 27;
     g.text(x + 12, 30, String.fromCharCode(65 + ((start + i) % 26)), { size: 10, weight: "bold", align: "center", color: start + i === songCur ? p.text : p.sub });
-    for (var t2 = 0; t2 < 4; t2++) {
-      var v = s.p[t2];
-      g.rect(x, 42 + t2 * 30, 24, 24, v < 0 ? LIB.hexA(p.sub, "12") : LIB.hexA(TC(t2), "bb"), 3);
-      g.text(x + 12, 47 + t2 * 30, v < 0 ? "–" : String(v + 1), { size: 10, weight: "bold", align: "center", color: v < 0 ? p.sub : p.bg });
+    for (var t2 = sb; t2 < sb + 4; t2++) {
+      var v = s.p[t2] === undefined ? -1 : s.p[t2], r2 = t2 - sb;
+      g.rect(x, 42 + r2 * 30, 24, 24, v < 0 ? LIB.hexA(p.sub, "12") : LIB.hexA(TC(t2), "bb"), 3);
+      g.text(x + 12, 47 + r2 * 30, v < 0 ? "–" : String(v + 1), { size: 10, weight: "bold", align: "center", color: v < 0 ? p.sub : p.bg });
     }
     g.text(x + 12, 164, "x" + s.r, { size: 8, align: "center", color: p.sub });
     if (start + i === songCur) g.frame(x - 2, 40, 28, 120, p.text, 1.5, 4);
@@ -650,9 +666,10 @@ function drawBrowser(g) {
   header(g, "SOUNDS · T" + (t + 1) + " " + engineName(t) + " · " + CATS[browser.cat]);
   var list = [];
   if (t === DR) list = KITS.map(function (k, i) { return [i, k.name + " KIT", "DRUM"]; });
+  else if (isMidi(t)) list = [[0, "DEFAULT", "MIDI"]];
   else if (E(t) === "fm") for (var i = -5; i <= 5; i++) { var ix = LIB.wrap(S.sound[t] + i, 128); list.push([ix, fm.presetName(ix), "FM6"]); }
   else list = SOUNDS[E(t)].map(function (s, i) { return [i, s.name, s.cat]; }).filter(function (x) { return CATS[browser.cat] === "ALL" || CATS[browser.cat] === "RECENT" || x[2] === CATS[browser.cat]; });
-  var cur = t === DR ? S.kit : S.sound[t];
+  var cur = t === DR ? S.kit : (isMidi(t) ? 0 : S.sound[t]);
   for (var j = 0; j < list.length && j < 10; j++) {
     var sel = list[j][0] === cur, y = 30 + j * 16;
     if (sel) g.rect(4, y - 1, 232, 16, LIB.hexA(TC(t), "44"), 3);
@@ -711,7 +728,7 @@ function leds() {
     }
     fm.led.key(k, c);
   }
-  for (var b = 0; b < 4; b++) if (B.isDown("SEQ")) fm.led.key(fm.keyOfBlack(b), b === t ? TC(b) : (armed && b === t ? "#ff4a3d" : null));
+  for (var b = 0; b < NT; b++) if (B.isDown("SEQ")) fm.led.key(fm.keyOfBlack(b), b === t ? TC(b) : (armed && b === t ? "#ff4a3d" : null));
   fm.led.button("PLAY", playing ? "green" : "off");
   fm.led.button("REC", recording ? "red" : (armed && fm.now() % 1000 < 500 ? "red" : "off"));
   var names = ["SEQ", "SAVE", "FX", "ENV", "LFO", "EDIT", "ARP", "HOME"];
