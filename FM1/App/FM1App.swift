@@ -37,11 +37,24 @@ struct ContentView: View {
             if fullScreen {
                 ZStack(alignment: .topTrailing) {
                     PanelView(model: model, width: geo.size.width, height: geo.size.height, framed: false)
-                    optionsMenu {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(model.colorway.silkscreen.opacity(0.45))
-                            .frame(width: 44, height: 44)
+                    HStack(spacing: 2) {
+                        // direct toggle: the badges are the point of the mode, so keep it one tap away
+                        Button { tutorialMode.toggle() } label: {
+                            Image(systemName: tutorialMode ? "graduationcap.fill" : "graduationcap")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(tutorialMode ? Color(hex: 0xffc83d) : model.colorway.silkscreen.opacity(0.45))
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Tutorial mode")
+                        .accessibilityValue(tutorialMode ? "On" : "Off")
+                        .accessibilityIdentifier("tutorial.toggle")
+                        optionsMenu {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(model.colorway.silkscreen.opacity(0.45))
+                                .frame(width: 44, height: 44)
+                        }
                     }
                     .padding(.top, 6)
                     .padding(.trailing, 8)
@@ -163,7 +176,9 @@ struct ContentView: View {
                     }
                 }
                 Button { showHelp = true } label: { Label("Controls", systemImage: "questionmark.circle") }
-                Toggle(isOn: $tutorialMode) { Label("Tutorial Mode", systemImage: "graduationcap") }
+                Button { tutorialMode.toggle() } label: {
+                    Label(tutorialMode ? "Hide Tutorial Badges" : "Show Tutorial Badges", systemImage: "graduationcap")
+                }
                 Button { model.showFirmware = true } label: { Label("Firmware… (\(model.firmware.name))", systemImage: "cpu") }
                 Divider()
             } else {
